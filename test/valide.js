@@ -231,6 +231,28 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
   console.log('— Divers');
   egal(S.matchsEquipe(), 0, 'Fiche 0-0-0 → 0 match d\'équipe');
 
+  console.log('— XtraStats en repli de TeamScoring (archive ou saison courante)');
+  const xtraY21 = [{nom:'Aa', gp:82}, {nom:'Bb', gp:75}];
+  const xtraY22 = [{nom:'Aa', gp:9}, {nom:'Bb', gp:10}];
+  egal(S.xtraEstArchive(xtraY21, 0), true, 'Club à 0 match → archive Y21');
+  egal(S.xtraEstArchive(xtraY21, 10), true, 'GP max 82 pour un club à 10 matchs → archive');
+  egal(S.xtraEstArchive(xtraY22, 10), false, 'GP max 10 pour un club à 10 matchs → saison courante');
+  egal(S.xtraEstArchive(xtraY22, 82), false, 'Fin de saison : GP max ≈ matchs du club → saison courante');
+  // repli effectif : sans TeamScoring, XtraStats devient la source de production
+  const ETAT = S.ETAT;
+  ok(!!ETAT, 'État global accessible pour la simulation du repli');
+  if (ETAT){
+    const avantY21 = ETAT.xtraEstY21, avantScoring = ETAT.scoring;
+    ETAT.xtraEstY21 = false;            // XtraStats jugé «saison courante»
+    ETAT.scoring = {patineurs:[], gardiens:[]}; // TeamScoring indisponible
+    const jSchwartz = S.SECOURS_ROSTER.find(x2=>x2.nom==='Jaden Schwartz');
+    const prodRepli = S.productionDe(jSchwartz);
+    ok(!!prodRepli && prodRepli._xtraSource===true, 'Production servie par XtraStats (drapeau _xtraSource)');
+    egal(prodRepli?.pts, 94, 'Points lus depuis XtraStats en repli');
+    egal(prodRepli?._reference, false, 'Pas traitée comme simple référence Y21');
+    ETAT.xtraEstY21 = avantY21; ETAT.scoring = avantScoring;
+  }
+
   console.log(`\n${total - echecs}/${total} vérifications réussies`);
   process.exit(echecs ? 1 : 0);
 })().catch(e => { console.error('ERREUR FATALE', e); process.exit(1); });

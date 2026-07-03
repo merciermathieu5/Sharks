@@ -1253,6 +1253,7 @@ const ETAT = {
   scoring: {patineurs:[], gardiens:[]},
   xtra: SECOURS_Y21.map(x=>({...x})),
   xtraEstY21: true,
+  xtraDate: null,
   fiche: 'SANJOSE 0-0-0',
   source: 'données intégrées (' + DATE_SECOURS + ')',
   filtreProg: 'tous',
@@ -1330,6 +1331,17 @@ async function chargerLimites(forcer){
   return ETAT.limites.size;
 }
 
+/* XtraStats : archive de la saison précédente ou saison en cours ?
+   Si le club n'a disputé aucun match, c'est forcément l'archive (Y21).
+   Sinon, on compare le maximum de parties jouées des patineurs du club
+   dans XtraStats au nombre de matchs de l'équipe : s'il le dépasse
+   nettement, la page est encore l'archive de la saison complète. */
+function xtraEstArchive(xtra, matchsEq){
+  if (!matchsEq || matchsEq <= 0) return true;
+  const maxGP = Math.max(0, ...xtra.map(p => p.gp || 0));
+  return maxGP > matchsEq + 2;
+}
+
 function extraireFiche(html){
   const m = html.match(/SANJOSE\s+(\d+)-(\d+)-(\d+)/);
   return m ? `SANJOSE ${m[1]}-${m[2]}-${m[3]}` : null;
@@ -1373,9 +1385,14 @@ async function actualiserTout(){
     const x = parseXtra(texte, CONFIG.equipe);
     if (x.length >= 5){
       ETAT.xtra = x;
-      // si la saison courante a des matchs, XtraStats reflète la saison en cours
-      ETAT.xtraEstY21 = !(ETAT.scoring.patineurs.length > 0);
-      rapport.push('XtraStats ✓ ('+x.length+' patineurs)');
+      const mDate = texte.match(/As of\s+([0-9\/]+)/i);
+      ETAT.xtraDate = mDate ? mDate[1] : null;
+      ETAT.xtraEstY21 = xtraEstArchive(x, matchsEquipe());
+      if (!ETAT.xtraEstY21 && !ETAT.scoring.patineurs.length){
+        rapport.push('XtraStats ✓ ('+x.length+' patineurs — sert de production, TeamScoring indisponible)');
+      } else {
+        rapport.push('XtraStats ✓ ('+x.length+' patineurs'+(ETAT.xtraEstY21?', archive Y21':'')+')');
+      }
     } else rapport.push('XtraStats : rien trouvé pour '+CONFIG.equipe);
   }catch(e){ rapport.push('XtraStats ✗ ('+e.message+')'); }
   // 4) Limites d'utilisation des gardiens (GitHub Pages : requête directe permise)
@@ -1408,6 +1425,7 @@ function productionDe(j){
   const ref = (!saisonCourante && ETAT.xtraEstY21) ? xt : null; // Y21 comme référence
   const src = base || ref;
   if (!src) return null;
+  const xtraCommeSource = !sc && base === xt;
   const out = {
     gp: src.gp ?? null,
     goals: src.goals ?? null, assists: src.assists ?? null, pts: src.pts ?? null,
@@ -1418,7 +1436,8 @@ function productionDe(j){
     hits: (xt?.hits ?? sc?.hits) ?? null,
     w: sc?.w ?? null, avg: sc?.avg ?? null, svpct: sc?.svpct ?? null, qs: sc?.qs ?? null,
     hs: sc?.hs ?? sc?.so ?? null,
-    _reference: !saisonCourante && !!ref
+    _reference: !saisonCourante && !!ref,
+    _xtraSource: xtraCommeSource
   };
   if (out.svpct!==null && out.svpct!==undefined && out.svpct>1) out.svpct = out.svpct/100; // «90.5» → 0.905
   out.shotpct = (out.goals!==null && out.shots) ? (out.goals/out.shots*100) : null;
@@ -1649,6 +1668,9 @@ function rendreProgression(){
     if (prod && prod._reference){
       html += `<div class="jc-note">Repère : saison Y21 complète (aucun match Y22 encore disputé). Les barres reflètent la Y21 face aux seuils actuels.</div>`;
     }
+    if (prod && prod._xtraSource){
+      html += `<div class="jc-note">Production tirée de XtraStats${ETAT.xtraDate?` (en date du ${ETAT.xtraDate})`:''} — TeamScoring indisponible. Les buts gagnants, buts en avantage numérique et le différentiel n'y figurent pas.</div>`;
+    }
     if (!prod){
       html += `<div class="jc-note">Aucune production disponible pour ce joueur.</div>`;
     }
@@ -1791,7 +1813,7 @@ chargerLimites(false).then(()=>rendreProgression()).catch(()=>{});
 if (typeof window !== 'undefined'){
   window.__SJS__ = {parseRoster, parseScoring, parseXtra, determinerProfil, evaluerStat,
     normaliserNom, seuilsPour, seuilsMatrice, statutSelonSeuils, valeurStat, calculerPmRangs,
-    modA, convertirJet, fourchetteRecote, modsEstime, matchsEquipe,
+    modA, convertirJet, fourchetteRecote, modsEstime, matchsEquipe, xtraEstArchive, productionDe, ETAT,
     MATRICES, STATS_PAR_MATRICE, NIVEAUX, SECOURS_ROSTER, SECOURS_Y21, PROFILS, STATS_DEF};
 }
 </script>
