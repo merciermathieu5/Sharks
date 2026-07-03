@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sharks de San Jose — Tableau de bord du DG</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Bebas+Neue&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+  :root{
+    --teal:#006D75; --teal-dark:#003b40; --teal-deep:#01262a; --teal-bright:#00a0ac;
+    --orange:#EA7200; --orange-bright:#ff8c1a;
+    --ink:#070b0c; --panel:#0d1517; --panel2:#122023; --line:#1e3438;
+    --txt:#e8f1f2; --txt-dim:#93aeb2; --txt-faint:#5f7a7e;
+    --ok:#3ecf8e; --warn:#f2c14e; --bad:#e05252; --memo:#EA7200;
+    --font-display:'Bebas Neue', 'Oswald', sans-serif;
+    --font-body:'Oswald', sans-serif;
+    --font-data:'JetBrains Mono', monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--ink); color:var(--txt); font-family:var(--font-body); font-weight:400; letter-spacing:.2px; min-height:100vh;}
+
+  /* ---------- En-tête ---------- */
+  header{
+    background:linear-gradient(115deg, #000 0%, var(--teal-deep) 40%, var(--teal-dark) 75%, var(--teal) 100%);
+    border-bottom:3px solid var(--orange);
+    padding:22px 28px 18px; position:relative; overflow:hidden;
+  }
+  header::before{content:''; position:absolute; inset:0;
+    background:repeating-linear-gradient(-45deg, transparent 0 22px, rgba(255,255,255,.02) 22px 23px); pointer-events:none;}
+  .head-row{display:flex; align-items:center; gap:18px; flex-wrap:wrap; position:relative;}
+  .logo{width:64px; height:64px; object-fit:contain; filter:drop-shadow(0 2px 6px rgba(0,0,0,.5));}
+  .head-titles h1{font-family:var(--font-display); font-size:2.3rem; letter-spacing:2px; line-height:1;}
+  .head-titles h1 em{font-style:normal; color:var(--orange-bright);}
+  .head-titles .sub{color:var(--txt-dim); font-size:.85rem; text-transform:uppercase; letter-spacing:2px;}
+  .head-meta{margin-left:auto; text-align:right; font-family:var(--font-data); font-size:.75rem; color:var(--txt-dim);}
+  .head-meta .fiche{font-size:1.05rem; color:var(--txt); font-weight:600;}
+  .memo-strip{margin-top:12px; font-family:var(--font-display); letter-spacing:3px; font-size:1rem;
+    color:var(--orange-bright); text-transform:uppercase; position:relative;}
+  .memo-strip::after{content:''; display:inline-block; width:120px; height:1px; background:var(--orange); margin-left:12px; vertical-align:middle; opacity:.6;}
+
+  /* ---------- Barre d'outils / onglets ---------- */
+  nav{display:flex; gap:0; background:var(--panel); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:50; flex-wrap:wrap;}
+  nav button{
+    font-family:var(--font-body); font-weight:600; font-size:.9rem; letter-spacing:1.5px; text-transform:uppercase;
+    background:none; border:none; color:var(--txt-dim); padding:14px 22px; cursor:pointer;
+    border-bottom:3px solid transparent; transition:color .15s, border-color .15s;
+  }
+  nav button:hover{color:var(--txt);}
+  nav button.actif{color:var(--orange-bright); border-bottom-color:var(--orange);}
+  nav .maj-zone{margin-left:auto; display:flex; align-items:center; gap:10px; padding:8px 16px;}
+  #btnMaj{
+    font-family:var(--font-body); font-weight:600; letter-spacing:1px; text-transform:uppercase; font-size:.8rem;
+    background:var(--teal); color:#fff; border:none; padding:8px 18px; cursor:pointer; border-radius:2px;
+    transition:background .15s;
+  }
+  #btnMaj:hover{background:var(--teal-bright);}
+  #btnMaj:disabled{background:var(--line); cursor:wait;}
+  #etatMaj{font-family:var(--font-data); font-size:.7rem; color:var(--txt-faint); max-width:340px;}
+
+  main{max-width:1240px; margin:0 auto; padding:26px 20px 80px;}
+  section.vue{display:none;}
+  section.vue.actif{display:block;}
+  h2{font-family:var(--font-display); font-size:1.7rem; letter-spacing:2px; color:var(--txt); margin-bottom:4px;}
+  .h2-sous{color:var(--txt-dim); font-size:.85rem; margin-bottom:18px;}
+
+  /* ---------- Cartes sommaires ---------- */
+  .sommaire{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-bottom:24px;}
+  .stat-carte{background:var(--panel); border:1px solid var(--line); border-left:3px solid var(--teal); padding:14px 16px;}
+  .stat-carte .lbl{font-size:.7rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--txt-faint);}
+  .stat-carte .val{font-family:var(--font-data); font-size:1.35rem; font-weight:600; margin-top:4px;}
+  .stat-carte .det{font-family:var(--font-data); font-size:.7rem; color:var(--txt-dim); margin-top:2px;}
+  .stat-carte.alerte{border-left-color:var(--bad);}
+  .stat-carte.orange{border-left-color:var(--orange);}
+
+  /* ---------- Tables ---------- */
+  .table-wrap{overflow-x:auto; background:var(--panel); border:1px solid var(--line);}
+  table{border-collapse:collapse; width:100%; font-family:var(--font-data); font-size:.78rem;}
+  thead th{
+    background:var(--teal-deep); color:var(--txt-dim); text-transform:uppercase; font-size:.65rem; letter-spacing:1px;
+    padding:9px 8px; text-align:right; white-space:nowrap; position:sticky; top:0; cursor:pointer; user-select:none;
+  }
+  thead th:first-child{text-align:left;}
+  thead th.tri-actif{color:var(--orange-bright);}
+  tbody td{padding:7px 8px; text-align:right; border-top:1px solid var(--line); white-space:nowrap;}
+  tbody td:first-child{text-align:left; font-family:var(--font-body); font-weight:500; font-size:.85rem;}
+  tbody tr:hover{background:var(--panel2);}
+  tbody tr.backup{opacity:.45;}
+  .pos-badge{display:inline-block; min-width:26px; text-align:center; font-size:.65rem; font-weight:700;
+    padding:2px 4px; border-radius:2px; background:var(--teal-dark); color:var(--teal-bright); margin-right:8px;}
+  .pos-badge.g{background:#3a2506; color:var(--orange-bright);}
+  .pos-badge.d{background:#132a3a; color:#6db3e8;}
+  td.cote-forte{color:var(--ok); font-weight:600;}
+  td.cote-elite{color:var(--orange-bright); font-weight:700;}
+  .profil-tag{display:inline-block; font-size:.62rem; letter-spacing:.5px; padding:2px 7px; border:1px solid var(--teal); border-radius:10px; color:var(--teal-bright); text-transform:uppercase;}
+  .profil-tag.d-tag{border-color:#3a6d92; color:#6db3e8;}
+  .profil-tag.g-tag{border-color:var(--orange); color:var(--orange-bright);}
+
+  /* ---------- Progression ---------- */
+  .filtres{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px;}
+  .filtres button{
+    font-family:var(--font-body); font-size:.75rem; font-weight:600; letter-spacing:1px; text-transform:uppercase;
+    background:var(--panel); border:1px solid var(--line); color:var(--txt-dim); padding:6px 14px; cursor:pointer; border-radius:2px;
+  }
+  .filtres button.actif{border-color:var(--orange); color:var(--orange-bright);}
+  .prog-grille{display:grid; grid-template-columns:repeat(auto-fill,minmax(360px,1fr)); gap:16px;}
+  .joueur-carte{background:var(--panel); border:1px solid var(--line); padding:0; overflow:hidden;}
+  .jc-tete{display:flex; align-items:baseline; gap:10px; padding:13px 16px 10px;
+    background:linear-gradient(100deg, var(--teal-deep), var(--panel)); border-bottom:1px solid var(--line); flex-wrap:wrap;}
+  .jc-nom{font-family:var(--font-body); font-weight:600; font-size:1.02rem;}
+  .jc-meta{font-family:var(--font-data); font-size:.68rem; color:var(--txt-dim); margin-left:auto; text-align:right;}
+  .jc-corps{padding:12px 16px 14px;}
+  .stat-ligne{margin-bottom:11px;}
+  .stat-ligne:last-child{margin-bottom:0;}
+  .sl-tete{display:flex; justify-content:space-between; font-family:var(--font-data); font-size:.7rem; margin-bottom:4px;}
+  .sl-tete .nom-stat{color:var(--txt-dim); text-transform:uppercase; letter-spacing:1px;}
+  .sl-tete .valeurs{color:var(--txt);}
+  .sl-tete .valeurs .att{color:var(--txt-faint);}
+  .sl-tete .valeurs .proj{color:var(--teal-bright);}
+  .barre{position:relative; height:12px; background:var(--teal-deep); border-radius:2px; overflow:visible;}
+  .barre .rempli{position:absolute; left:0; top:0; bottom:0; background:var(--teal); border-radius:2px 0 0 2px; transition:width .5s;}
+  .barre .rempli.memo{background:linear-gradient(90deg, var(--teal), var(--orange));}
+  .barre .seuil{position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--orange-bright); box-shadow:0 0 4px rgba(234,114,0,.8);}
+  .badge-etat{font-family:var(--font-body); font-size:.6rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;
+    padding:2px 8px; border-radius:2px; margin-left:8px; vertical-align:middle;}
+  .badge-etat.memorable{background:var(--orange); color:#fff;}
+  .badge-etat.atteint{background:var(--teal); color:#fff;}
+  .badge-etat.envoie{background:transparent; border:1px solid var(--teal); color:var(--teal-bright);}
+  .badge-etat.retard{background:transparent; border:1px solid var(--bad); color:var(--bad);}
+  .badge-etat.indef{background:transparent; border:1px solid var(--txt-faint); color:var(--txt-faint);}
+  .att-input{width:64px; background:var(--teal-deep); border:1px solid var(--line); color:var(--txt);
+    font-family:var(--font-data); font-size:.7rem; padding:2px 5px; border-radius:2px; text-align:right;}
+  .att-input:focus{border-color:var(--orange); outline:none;}
+  .jc-note{font-size:.68rem; color:var(--txt-faint); padding:8px 16px 12px; border-top:1px dashed var(--line);}
+
+  /* ---------- Réglages ---------- */
+  .regl-bloc{background:var(--panel); border:1px solid var(--line); padding:18px 20px; margin-bottom:18px;}
+  .regl-bloc h3{font-family:var(--font-body); font-weight:600; text-transform:uppercase; letter-spacing:1.5px; font-size:.85rem; color:var(--orange-bright); margin-bottom:10px;}
+  .regl-bloc p{font-size:.82rem; color:var(--txt-dim); margin-bottom:10px; max-width:820px; line-height:1.55;}
+  .regl-bloc label{font-size:.75rem; text-transform:uppercase; letter-spacing:1px; color:var(--txt-faint); margin-right:8px;}
+  .regl-bloc select, .regl-bloc textarea{
+    background:var(--teal-deep); border:1px solid var(--line); color:var(--txt); font-family:var(--font-data);
+    font-size:.78rem; padding:6px 10px; border-radius:2px;}
+  .regl-bloc textarea{width:100%; min-height:140px; margin-top:8px;}
+  .regl-actions{display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;}
+  .regl-actions button{
+    font-family:var(--font-body); font-weight:600; font-size:.75rem; letter-spacing:1px; text-transform:uppercase;
+    background:var(--teal); color:#fff; border:none; padding:8px 16px; cursor:pointer; border-radius:2px;}
+  .regl-actions button.secondaire{background:transparent; border:1px solid var(--line); color:var(--txt-dim);}
+  .regl-actions button:hover{filter:brightness(1.15);}
+  table.matrice input{width:58px; background:var(--teal-deep); border:1px solid var(--line); color:var(--txt);
+    font-family:var(--font-data); font-size:.72rem; padding:3px 5px; text-align:right; border-radius:2px;}
+  table.matrice input:focus{border-color:var(--orange); outline:none;}
+  table.matrice td, table.matrice th{padding:5px 7px;}
+
+  .msg-flash{position:fixed; bottom:20px; right:20px; background:var(--teal); color:#fff; padding:10px 18px;
+    font-size:.8rem; border-radius:2px; box-shadow:0 4px 16px rgba(0,0,0,.5); opacity:0; transition:opacity .3s; pointer-events:none; z-index:99;}
+  .msg-flash.visible{opacity:1;}
+
+  @media (max-width:700px){
+    .head-meta{margin-left:0; text-align:left;}
+    .prog-grille{grid-template-columns:1fr;}
+    nav .maj-zone{width:100%; justify-content:flex-start;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important; animation:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="head-row">
+    <img class="logo" src="https://ushl.ca/ushl/menu_sim/USHL-pro/jamesishot/logos/sanjose.png" alt="Sharks de San Jose" onerror="this.style.display='none'">
+    <div class="head-titles">
+      <h1>SHARKS DE SAN JOSE <em>· POSTE DU DG</em></h1>
+      <div class="sub">USHL Pro — Formation, production et progression</div>
+    </div>
+    <div class="head-meta">
+      <div class="fiche" id="ficheEquipe">—</div>
+      <div id="sourceInfo">données locales</div>
+    </div>
+  </div>
+  <div class="memo-strip">Seul le mémorable compte</div>
+</header>
+
+<nav>
+  <button class="actif" data-vue="alignement">Alignement</button>
+  <button data-vue="production">Production</button>
+  <button data-vue="progression">Progression</button>
+  <button data-vue="reglages">Réglages</button>
+  <div class="maj-zone">
+    <button id="btnMaj">Actualiser depuis ushl.ca</button>
+    <span id="etatMaj"></span>
+  </div>
+</nav>
+
+<main>
+
+  <!-- ================= ALIGNEMENT ================= -->
+  <section class="vue actif" id="vue-alignement">
+    <h2>Alignement professionnel</h2>
+    <div class="h2-sous" id="alignSous">Cotes, salaires et contrats — source : TeamRosters.php (SANJOSE)</div>
+    <div class="sommaire" id="alignSommaire"></div>
+    <div class="table-wrap"><table id="tableAlignement"></table></div>
+  </section>
+
+  <!-- ================= PRODUCTION ================= -->
+  <section class="vue" id="vue-production">
+    <h2>Production — saison en cours</h2>
+    <div class="h2-sous" id="prodSous">Pointage de la saison actuelle (TeamScoring.php) enrichi de XtraStats (minutes, mises en échec)</div>
+    <div class="sommaire" id="prodSommaire"></div>
+    <div class="table-wrap"><table id="tableProduction"></table></div>
+  </section>
+
+  <!-- ================= PROGRESSION ================= -->
+  <section class="vue" id="vue-progression">
+    <h2>Charte de progression</h2>
+    <div class="h2-sous">Attentes selon l'âge, l'overall et le profil (règlements USHL, tableaux 10-11-12). Le <strong style="color:var(--orange-bright)">Mémorable</strong> exige de <em>dépasser</em> l'attente.</div>
+    <div class="filtres" id="progFiltres">
+      <button class="actif" data-f="tous">Tous</button>
+      <button data-f="av">Attaquants</button>
+      <button data-f="d">Défenseurs</button>
+      <button data-f="g">Gardiens</button>
+      <button data-f="memo">Mémorables</button>
+      <button data-f="retard">En retard</button>
+    </div>
+    <div class="prog-grille" id="progGrille"></div>
+  </section>
+
+  <!-- ================= RÉGLAGES ================= -->
+  <section class="vue" id="vue-reglages">
+    <h2>Réglages</h2>
+    <div class="h2-sous">Matrices d'attentes, sauvegarde et sources de données</div>
+
+    <div class="regl-bloc">
+      <h3>Matrices d'attentes (par catégorie d'âge, profil et overall)</h3>
+      <p>La structure suit les règlements USHL : chaque profil est évalué sur ses statistiques propres, avec une cible par tranche d'overall.
+      Saisis ici les valeurs de tes matrices officielles (celles de ton classeur Excel ou de la section 6.2 des règlements).
+      Les cases vides s'affichent «&nbsp;à définir&nbsp;» dans la charte de progression. Tout est conservé dans ce navigateur et exportable en JSON.</p>
+      <div>
+        <label>Catégorie</label>
+        <select id="selCategorie">
+          <option value="junior">Juniors (18-20 ans)</option>
+          <option value="prospect">Prospects (21-24 ans)</option>
+          <option value="pro" selected>Pros (25 ans et +)</option>
+        </select>
+        <label style="margin-left:14px">Profil</label>
+        <select id="selProfil"></select>
+      </div>
+      <div class="table-wrap" style="margin-top:12px"><table class="matrice" id="tableMatrice"></table></div>
+      <div class="regl-actions">
+        <button id="btnExportMat">Exporter les matrices (JSON)</button>
+        <button id="btnImportMat" class="secondaire">Importer un JSON</button>
+        <button id="btnViderMat" class="secondaire">Vider les matrices</button>
+      </div>
+      <textarea id="zoneJson" placeholder="Colle ici un JSON de matrices puis clique «Importer un JSON». L'export apparaît aussi ici."></textarea>
+    </div>
+
+    <div class="regl-bloc">
+      <h3>Attentes individuelles (surcharges)</h3>
+      <p>Chaque attente est modifiable directement sur la carte du joueur dans l'onglet Progression. Une valeur saisie à la main a priorité sur la matrice. Le bouton ci-dessous efface toutes les surcharges individuelles.</p>
+      <div class="regl-actions">
+        <button id="btnViderOverrides" class="secondaire">Effacer les attentes individuelles</button>
+      </div>
+    </div>
+
+    <div class="regl-bloc">
+      <h3>Sources et actualisation</h3>
+      <p id="sourcesTexte"></p>
+      <p>Les pages de la USHL n'autorisent pas les requêtes directes entre sites : l'interface passe par une chaîne de relais publics (le premier qui répond est conservé). Si l'actualisation échoue, les données intégrées du <span id="dateSecours"></span> demeurent affichées. Les données récupérées sont mises en cache (formation : 12 h · production : 30 min).</p>
+      <div class="regl-actions">
+        <button id="btnViderCache" class="secondaire">Vider le cache de données</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div class="msg-flash" id="flash"></div>
+
+<script>
+/* =====================================================================
+   SHARKS DE SAN JOSE — TABLEAU DE BORD DU DG (USHL)
+   Monofichier vanilla HTML/CSS/JS — aucune dépendance, aucun build.
+   Sources en direct : TeamRosters.php, TeamScoring.php, USHLxtrastats.html
+   ===================================================================== */
+'use strict';
+
+/* ------------------ CONFIGURATION ------------------ */
+const CONFIG = {
+  equipe: 'SANJOSE',
+  urls: {
+    roster:  'https://ushl.ca/ushl/menu_sim/USHL-pro/jamesishot/TeamRosters.php?team=SANJOSE',
+    scoring: 'https://ushl.ca/ushl/menu_sim/USHL-pro/jamesishot/TeamScoring.php?team=SANJOSE',
+    xtra:    'https://ushl.ca/ushl/menu_sim/USHL-pro/USHLxtrastats.html'
+  },
+  proxys: [
+    u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
+    u => 'https://corsproxy.io/?url=' + encodeURIComponent(u),
+    u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u),
+    u => 'https://proxy.cors.sh/' + u,
+    u => 'https://thingproxy.freeboard.io/fetch/' + u
+  ],
+  ttl: { roster: 12*3600*1000, scoring: 30*60*1000, xtra: 3600*1000 },
+  matchsSaison: 82
+};
+
+const CLES_LS = {
+  matrices: 'sjs_matrices_v1',
+  overrides: 'sjs_attentes_joueurs_v1',
+  proxy: 'sjs_proxy_prefere_v1',
+  cache: 'sjs_cache_v1'
+};
+
+/* ------------------ DÉFINITION DES STATS ------------------ */
+const STATS_DEF = {
+  goals:     {nom:'Buts',        court:'B',    rythme:true },
+  gwg:       {nom:'Buts gagnants', court:'BG', rythme:true },
+  ppg:       {nom:'Buts en AN',  court:'BAN', rythme:true },
+  assists:   {nom:'Passes',      court:'P',    rythme:true },
+  pts:       {nom:'Points',      court:'PTS',  rythme:true },
+  hits:      {nom:'Mises en échec', court:'MEÉ', rythme:true },
+  shots:     {nom:'Tirs',        court:'T',    rythme:true },
+  shotpct:   {nom:'% de tirs',   court:'%T',   rythme:false, decimales:1 },
+  plusminus: {nom:'Différentiel',court:'+/-',  rythme:true, signe:true },
+  mp:        {nom:'Minutes jouées', court:'MIN', rythme:true },
+  w:         {nom:'Victoires',   court:'V',    rythme:true },
+  avg:       {nom:'Moyenne (GAA)', court:'MOY', rythme:false, decimales:2, inverse:true },
+  svpct:     {nom:'% d\'arrêts', court:'%A',   rythme:false, decimales:3 },
+  qs:        {nom:'Départs de qualité', court:'DQ', rythme:true }
+};
+
+/* ------------------ PROFILS (règlements USHL, tableaux 10-11-12) ------------------
+   Chaque profil : conditions (fonction sur les cotes) et stats évaluées.
+   Cotes disponibles : it, sp, st, en, du, di, sk, pa, pc, df, sc, ex, ld, ov      */
+const PROFILS = {
+  junior: {
+    avants: [
+      {id:'Junior Elite',       cond:c=>c.sp+c.sk>=135 && c.pa+c.pc+c.sc>=209 && c.sc>=69 && c.ov>=72,
+        stats:['goals','gwg','ppg','assists','pts','shots','plusminus','mp']},
+      {id:'Junior Playmaker',   cond:c=>c.sp+c.sk>=132 && c.pa+c.pc>=132,
+        stats:['assists','pts','mp']},
+      {id:'Junior Power Forward', cond:c=>c.it+c.st>=135 && c.sc>=65,
+        stats:['goals','pts','hits','shots','mp']},
+      {id:'Junior Two-Way',     cond:c=>c.sp+c.en>=130 && c.pa+c.sc>=130 && c.df>=58,
+        stats:['pts','plusminus','mp']},
+      {id:'Junior Sniper',      cond:c=>c.sp+c.sk>=128 && c.sc>=65,
+        stats:['goals','gwg','ppg','pts','shots','shotpct','mp']},
+      {id:'Junior Grinder',     cond:c=>c.it+c.st>=130 && c.df>=56,
+        stats:['hits','plusminus','mp']},
+      {id:'Junior Defensive',   cond:c=>c.df>=60,
+        stats:['plusminus','mp']},
+      {id:'Junior Depth Forward', cond:()=>true, stats:['mp']}
+    ],
+    defenseurs: [
+      {id:'Junior DEliteQB',    cond:c=>c.sp+c.en+c.sk+c.pc>=270 && c.pa+c.sc>=135 && c.ov>=72,
+        stats:['goals','gwg','ppg','assists','pts','shots','mp']},
+      {id:'Junior DEliteShutdown', cond:c=>c.it+c.en+c.sk+c.pc>=270 && c.st+c.df>=140 && c.ov>=72,
+        stats:['assists','pts','hits','shots','plusminus','mp']},
+      {id:'Junior DOffensive',  cond:c=>(c.pa+c.sc)-(c.st+c.df)>=5,
+        stats:['goals','assists','pts','shots','mp']},
+      {id:'Junior DDefensive',  cond:c=>(c.st+c.df)-(c.pa+c.sc)>=5,
+        stats:['hits','plusminus','mp']},
+      {id:'Junior DTwo-Way',    cond:()=>true, stats:['mp']}
+    ],
+    gardiens: [
+      {id:'Junior Goalie', cond:()=>true, stats:['w','avg','svpct','qs','mp']}
+    ]
+  },
+  prospect: {
+    avants: [
+      {id:'Prospect Elite',     cond:c=>c.sp+c.sk>=150 && c.pa+c.pc+c.sc>=225 && c.sc>=74 && c.ov>=76,
+        stats:['goals','gwg','ppg','assists','pts','shots','plusminus','mp']},
+      {id:'Prospect Playmaker', cond:c=>c.sp+c.sk>=140 && c.pa+c.pc>=150,
+        stats:['assists','pts','mp']},
+      {id:'Prospect Power Forward', cond:c=>c.it+c.st>=150 && c.sc>=72,
+        stats:['goals','pts','hits','shots','mp']},
+      {id:'Prospect Two-Way Forward', cond:c=>c.sp+c.en>=140 && c.pa+c.sc>=140 && c.df>=62,
+        stats:['pts','plusminus','mp']},
+      {id:'Prospect Sniper',    cond:c=>c.sp+c.sk>=132 && c.sc>=74,
+        stats:['goals','gwg','ppg','shots','shotpct','mp']},
+      {id:'Prospect Grinder',   cond:c=>c.it+c.st>=140 && c.df>=60,
+        stats:['hits','mp']},
+      {id:'Prospect Defensive', cond:c=>c.df>=65,
+        stats:['plusminus','mp']},
+      {id:'Prospect Depth Forward', cond:()=>true, stats:['mp']}
+    ],
+    defenseurs: [
+      {id:'Prospect DEliteQB',  cond:c=>c.sp+c.en+c.sk+c.pc>=280 && c.pa+c.sc>=142 && c.ov>=76,
+        stats:['goals','gwg','ppg','assists','pts','shots','plusminus','mp']},
+      {id:'Prospect DEliteShutdown', cond:c=>c.it+c.en+c.sk+c.pc>=280 && c.st+c.df>=148 && c.ov>=76,
+        stats:['assists','pts','hits','shots','plusminus','mp']},
+      {id:'Prospect DOffensive', cond:c=>(c.pa+c.sc)-(c.st+c.df)>=5,
+        stats:['goals','assists','pts','shots','mp']},
+      {id:'Prospect DDefensive', cond:c=>(c.st+c.df)-(c.pa+c.sc)>=5,
+        stats:['hits','plusminus','mp']},
+      {id:'Prospect DTwo-Way',  cond:()=>true, stats:['mp']}
+    ],
+    gardiens: [
+      {id:'Prospect Goalie', cond:()=>true, stats:['w','avg','svpct','qs','mp']}
+    ]
+  },
+  pro: {
+    avants: [
+      {id:'Elite',              cond:c=>c.sp+c.sk>=157 && c.pa+c.pc+c.sc>=240 && c.sc>=78 && c.ov>=80,
+        stats:['goals','gwg','ppg','assists','pts','shots','plusminus']},
+      {id:'Playmaker',          cond:c=>c.sp+c.sk>=150 && c.pa+c.pc>=157,
+        stats:['assists','pts']},
+      {id:'Power Forward',      cond:c=>c.it+c.st>=155 && c.sc>=76,
+        stats:['goals','pts','hits','shots']},
+      {id:'Two-Way Forward',    cond:c=>c.sp+c.en>=150 && c.pa+c.sc>=150 && c.df>=65,
+        stats:['pts','plusminus','mp']},
+      {id:'Sniper',             cond:c=>c.sp+c.sk>=140 && c.sc>=78,
+        stats:['goals','gwg','ppg','shots','shotpct']},
+      {id:'Grinder',            cond:c=>c.it+c.st>=150 && c.it>=74 && c.df>=63,
+        stats:['hits','plusminus','mp']},
+      {id:'Defensive',          cond:c=>c.df>=70,
+        stats:['plusminus','mp']},
+      {id:'Depth Forward',      cond:()=>true, stats:[]}
+    ],
+    defenseurs: [
+      {id:'DEliteQB',           cond:c=>c.sp+c.en+c.sk+c.pc>=302 && c.pa+c.sc>=155 && c.ov>=80,
+        stats:['goals','gwg','ppg','assists','pts','shots','plusminus']},
+      {id:'DEliteShutdown',     cond:c=>c.it+c.en+c.sk+c.pc>=302 && c.st+c.df>=159 && c.ov>=80,
+        stats:['assists','pts','hits','shots','plusminus']},
+      {id:'DOffensive',         cond:c=>(c.pa+c.sc)-(c.st+c.df)>=5,
+        stats:['goals','assists','pts','shots']},
+      {id:'DDefensive',         cond:c=>(c.st+c.df)-(c.pa+c.sc)>=5,
+        stats:['hits','plusminus']},
+      {id:'DTwo-Way',           cond:()=>true, stats:[]}
+    ],
+    gardiens: [
+      {id:'Starter Goalie',     cond:c=>c.ov>=80, stats:['w','avg','svpct','qs','mp']},
+      {id:'Backup Goalie',      cond:()=>true,   stats:['w','avg','svpct']}
+    ]
+  }
+};
+
+const TRANCHES_OV = ['≤75','76-77','78-79','80-81','82-83','84-85','≥86'];
+function trancheDeOV(ov){
+  if (ov<=75) return '≤75';
+  if (ov<=77) return '76-77';
+  if (ov<=79) return '78-79';
+  if (ov<=81) return '80-81';
+  if (ov<=83) return '82-83';
+  if (ov<=85) return '84-85';
+  return '≥86';
+}
+
+/* ------------------ DONNÉES DE SECOURS ------------------
+   Alignement SANJOSE tel que publié sur ushl.ca (dernière mise à jour :
+   jeudi 25 juin 2026). Sert de base hors-ligne et de fixture de tests. */
+const DATE_SECOURS = '25 juin 2026';
+const SECOURS_ROSTER = [
+ {nom:'Jesperi Kotkaniemi', po:'C', hd:'G', it:70,sp:83,st:77,en:89,du:86,di:83,sk:83,pa:83,pc:79,df:62,sc:79,ex:61,ld:51,ov:82,age:25,salaire:7250000,ct:3},
+ {nom:'Brad Lambert',       po:'C', hd:'D', it:68,sp:85,st:69,en:77,du:79,di:75,sk:83,pa:71,pc:74,df:56,sc:74,ex:49,ld:37,ov:76,age:22,salaire:900000, ct:2},
+ {nom:'Backup_C',           po:'C', hd:'G', it:50,sp:50,st:50,en:50,du:50,di:50,sk:50,pa:50,pc:50,df:50,sc:50,ex:50,ld:50,ov:55,age:25,salaire:0,      ct:0, backup:true},
+ {nom:'Jaden Schwartz',     po:'C', hd:'G', it:62,sp:81,st:64,en:89,du:83,di:98,sk:89,pa:85,pc:83,df:66,sc:68,ex:99,ld:99,ov:81,age:33,salaire:5750000,ct:2},
+ {nom:'Ryan Johansen',      po:'C', hd:'D', it:61,sp:80,st:77,en:84,du:92,di:85,sk:82,pa:79,pc:76,df:67,sc:75,ex:95,ld:88,ov:81,age:33,salaire:4750000,ct:2},
+ {nom:'Joel ErikssonEk',    po:'AG',hd:'G', it:77,sp:71,st:82,en:79,du:79,di:77,sk:74,pa:78,pc:74,df:73,sc:78,ex:77,ld:64,ov:81,age:28,salaire:6000000,ct:2},
+ {nom:'Travis Konecny',     po:'AG',hd:'D', it:86,sp:78,st:74,en:81,du:75,di:70,sk:80,pa:79,pc:73,df:66,sc:80,ex:78,ld:68,ov:81,age:28,salaire:6000000,ct:3},
+ {nom:'Nathan Legare',      po:'AG',hd:'D', it:82,sp:69,st:92,en:83,du:95,di:77,sk:69,pa:72,pc:69,df:65,sc:87,ex:57,ld:66,ov:81,age:24,salaire:3000000,ct:1},
+ {nom:'Oskar Olausson',     po:'AG',hd:'G', it:68,sp:81,st:74,en:77,du:75,di:80,sk:77,pa:72,pc:72,df:69,sc:75,ex:51,ld:41,ov:77,age:23,salaire:800000, ct:1},
+ {nom:'Akil Thomas',        po:'AD',hd:'D', it:64,sp:85,st:73,en:87,du:77,di:85,sk:86,pa:78,pc:71,df:69,sc:79,ex:58,ld:58,ov:81,age:25,salaire:4750000,ct:3},
+ {nom:'Kent Johnson',       po:'AD',hd:'G', it:66,sp:77,st:72,en:76,du:76,di:79,sk:77,pa:77,pc:81,df:63,sc:76,ex:56,ld:41,ov:78,age:23,salaire:1500000,ct:1},
+ {nom:'Alexander Nylander', po:'AD',hd:'D', it:65,sp:86,st:79,en:87,du:81,di:85,sk:89,pa:70,pc:75,df:61,sc:84,ex:67,ld:58,ov:81,age:27,salaire:4750000,ct:1},
+ {nom:'Brandon Saad',       po:'AD',hd:'G', it:62,sp:76,st:75,en:77,du:78,di:80,sk:78,pa:71,pc:75,df:62,sc:78,ex:90,ld:75,ov:78,age:33,salaire:800000, ct:1},
+ {nom:'Samu Tuomaala',      po:'AD',hd:'G', it:69,sp:79,st:67,en:76,du:70,di:76,sk:78,pa:77,pc:74,df:67,sc:74,ex:45,ld:40,ov:77,age:22,salaire:800000, ct:1},
+ {nom:'Tyler Myers',        po:'D', hd:'D', it:73,sp:74,st:84,en:94,du:78,di:89,sk:81,pa:70,pc:70,df:80,sc:57,ex:99,ld:78,ov:81,age:35,salaire:2500000,ct:1},
+ {nom:'Ryan Graves',        po:'D', hd:'G', it:65,sp:72,st:82,en:78,du:75,di:79,sk:75,pa:71,pc:72,df:78,sc:60,ex:70,ld:65,ov:78,age:30,salaire:800000, ct:1},
+ {nom:'Haydn Fleury',       po:'D', hd:'G', it:80,sp:70,st:91,en:88,du:86,di:76,sk:85,pa:75,pc:70,df:82,sc:67,ex:69,ld:57,ov:84,age:29,salaire:9750000,ct:2},
+ {nom:'Jonas Brodin',       po:'D', hd:'G', it:68,sp:70,st:78,en:84,du:68,di:82,sk:72,pa:73,pc:74,df:84,sc:62,ex:85,ld:80,ov:80,age:31,salaire:6100000,ct:1},
+ {nom:'Adam Fox',           po:'D', hd:'D', it:64,sp:84,st:70,en:86,du:83,di:81,sk:85,pa:86,pc:76,df:79,sc:70,ex:60,ld:62,ov:83,age:27,salaire:7250000,ct:1},
+ {nom:'Nate Schmidt',       po:'D', hd:'G', it:68,sp:74,st:76,en:76,du:74,di:80,sk:76,pa:71,pc:72,df:78,sc:61,ex:80,ld:75,ov:78,age:34,salaire:1250000,ct:2},
+ {nom:'Braden Schneider',   po:'D', hd:'D', it:81,sp:73,st:85,en:92,du:89,di:80,sk:76,pa:66,pc:71,df:79,sc:58,ex:52,ld:53,ov:80,age:24,salaire:4750000,ct:3},
+ {nom:'Backup_D_SanJose',   po:'D', hd:'G', it:50,sp:50,st:50,en:50,du:50,di:50,sk:50,pa:50,pc:50,df:50,sc:50,ex:50,ld:50,ov:55,age:25,salaire:0,      ct:0, backup:true},
+ {nom:'Alexandar Georgiev', po:'G', hd:'G', it:83,sp:87,st:81,en:85,du:87,di:85,sk:88,pa:73,pc:80,df:null,sc:null,ex:83,ld:74,ov:80,age:29,salaire:3000000,ct:1},
+ {nom:'Cal Petersen',       po:'G', hd:'D', it:84,sp:83,st:82,en:80,du:73,di:82,sk:83,pa:75,pc:85,df:null,sc:null,ex:60,ld:50,ov:78,age:31,salaire:1000000,ct:1},
+ {nom:'Chris Driedger',     po:'G', hd:'G', it:83,sp:81,st:87,en:78,du:76,di:79,sk:84,pa:74,pc:81,df:null,sc:null,ex:50,ld:50,ov:77,age:31,salaire:800000, ct:1}
+];
+
+/* Saison de référence Y21 (XtraStats du 21 avril 2026) — patineurs SANJOSE.
+   Sert de repère tant que la saison Y22 n'a pas produit de matchs. */
+const SECOURS_Y21 = [
+ {nom:'Adam Fox',           gp:82, goals:17, assists:41, pts:58, shots:166, pim:34, mp:1839, hits:99},
+ {nom:'Akil Thomas',        gp:82, goals:32, assists:49, pts:81, shots:224, pim:16, mp:1863, hits:95},
+ {nom:'Alexander Nylander', gp:82, goals:32, assists:34, pts:66, shots:216, pim:48, mp:1472, hits:111},
+ {nom:'Brad Lambert',       gp:68, goals:2,  assists:7,  pts:9,  shots:31,  pim:4,  mp:283,  hits:12},
+ {nom:'Braden Schneider',   gp:80, goals:3,  assists:32, pts:35, shots:89,  pim:42, mp:1604, hits:184},
+ {nom:'Brandon Saad',       gp:65, goals:2,  assists:4,  pts:6,  shots:29,  pim:22, mp:235,  hits:13},
+ {nom:'Haydn Fleury',       gp:80, goals:11, assists:48, pts:59, shots:143, pim:43, mp:1854, hits:150},
+ {nom:'Jaden Schwartz',     gp:82, goals:25, assists:69, pts:94, shots:187, pim:10, mp:1767, hits:81},
+ {nom:'Jesperi Kotkaniemi', gp:75, goals:25, assists:36, pts:61, shots:203, pim:40, mp:1484, hits:96},
+ {nom:'Joel ErikssonEk',    gp:82, goals:24, assists:38, pts:62, shots:136, pim:59, mp:1413, hits:156},
+ {nom:'Jonas Brodin',       gp:82, goals:7,  assists:26, pts:33, shots:106, pim:45, mp:1377, hits:94},
+ {nom:'Kent Johnson',       gp:80, goals:27, assists:35, pts:62, shots:175, pim:42, mp:1529, hits:84},
+ {nom:'Nate Schmidt',       gp:28, goals:1,  assists:5,  pts:6,  shots:17,  pim:6,  mp:253,  hits:15},
+ {nom:'Nathan Legare',      gp:82, goals:31, assists:29, pts:60, shots:197, pim:64, mp:1519, hits:161},
+ {nom:'Oskar Olausson',     gp:83, goals:8,  assists:13, pts:21, shots:49,  pim:24, mp:532,  hits:27},
+ {nom:'Ryan Graves',        gp:66, goals:0,  assists:9,  pts:9,  shots:13,  pim:14, mp:292,  hits:18},
+ {nom:'Ryan Johansen',      gp:83, goals:28, assists:42, pts:70, shots:174, pim:34, mp:1502, hits:106},
+ {nom:'Samu Tuomaala',      gp:82, goals:11, assists:20, pts:31, shots:101, pim:22, mp:852,  hits:62},
+ {nom:'Travis Konecny',     gp:80, goals:33, assists:40, pts:73, shots:209, pim:75, mp:1622, hits:211},
+ {nom:'Tyler Myers',        gp:72, goals:5,  assists:23, pts:28, shots:115, pim:22, mp:1461, hits:120}
+];
+</script>
+<script>
+/* =====================================================================
+   MOTEUR : parseurs, profils, attentes, état
+   ===================================================================== */
+
+/* ---------- Utilitaires ---------- */
+function normaliserNom(s){
+  return (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[_\s]+/g,' ').trim().toLowerCase();
+}
+function nombre(s){
+  if (s===null || s===undefined) return null;
+  const t = String(s).replace(/\u00a0/g,' ').replace(/[$\s]/g,'').replace(',','.');
+  if (t==='' || t==='NA' || t==='-') return null;
+  const n = Number(t);
+  return isFinite(n) ? n : null;
+}
+function fmtArgent(n){
+  if (n===null || n===undefined) return '—';
+  return n.toLocaleString('fr-CA').replace(/,/g,' ') + ' $';
+}
+function fmtStat(cle, v){
+  if (v===null || v===undefined || !isFinite(v)) return '—';
+  const def = STATS_DEF[cle] || {};
+  if (def.decimales!==undefined) return v.toFixed(def.decimales);
+  const r = Math.round(v*10)/10;
+  const txt = (Math.abs(r % 1) < 1e-9) ? String(Math.round(r)) : r.toFixed(1);
+  return (def.signe && v>0 ? '+' : '') + txt;
+}
+
+/* ---------- Parseur : formation (TeamRosters.php) ----------
+   Repère la table dont l'en-tête contient OV, Age et Salary, puis lit
+   chaque rangée par position de colonne (en-têtes courts, sans chiffres). */
+function parseRoster(html, doc){
+  const d = doc || new DOMParser().parseFromString(html, 'text/html');
+  const tables = Array.from(d.querySelectorAll('table'));
+  const attendu = ['PO','HD','IN','SP','ST','EN','DU','DI','SK','PA','PC','DF','OF','EX','LD','OV'];
+  let joueurs = [];
+  for (const table of tables){
+    const lignes = Array.from(table.querySelectorAll('tr'));
+    if (!lignes.length) continue;
+    const entetes = Array.from(lignes[0].querySelectorAll('th,td'))
+      .map(c => c.textContent.trim().toUpperCase());
+    // en-têtes valides : courts et sans chiffres (leçon du projet gardiens)
+    const valides = entetes.every(h => h.length<=8 && !/\d/.test(h));
+    const score = attendu.filter(h => entetes.includes(h)).length;
+    if (!valides || score < 12 || !entetes.includes('OV') || !entetes.includes('AGE')) continue;
+    const idx = {};
+    entetes.forEach((h,i)=>{ idx[h]=i; });
+    const col = h => idx[h]!==undefined ? idx[h] : -1;
+    for (let i=1;i<lignes.length;i++){
+      const cel = Array.from(lignes[i].querySelectorAll('td,th')).map(c=>c.textContent.trim());
+      if (cel.length < entetes.length-2) continue;
+      const nomBrut = (cel[0]||'').replace(/\s+/g,' ').trim();
+      if (!nomBrut) continue; // rangée des moyennes
+      const j = {
+        nom: nomBrut.replace(/\\_/g,'_'),
+        po: cel[col('PO')]||'', hd: cel[col('HD')]||'',
+        it: nombre(cel[col('IN')]), sp: nombre(cel[col('SP')]), st: nombre(cel[col('ST')]),
+        en: nombre(cel[col('EN')]), du: nombre(cel[col('DU')]), di: nombre(cel[col('DI')]),
+        sk: nombre(cel[col('SK')]), pa: nombre(cel[col('PA')]), pc: nombre(cel[col('PC')]),
+        df: nombre(cel[col('DF')]), sc: nombre(cel[col('OF')]),
+        ex: nombre(cel[col('EX')]), ld: nombre(cel[col('LD')]),
+        ov: nombre(cel[col('OV')]), age: nombre(cel[col('AGE')]),
+        salaire: nombre(cel[col('SALARY')]), ct: nombre(cel[col('CT')])
+      };
+      if (j.ov===null || j.age===null) continue;
+      j.backup = /^backup/i.test(j.nom.replace(/[\s_]/g,'')) || /^back ?up/i.test(j.nom);
+      joueurs.push(j);
+    }
+    if (joueurs.length) break; // première table valide = formation PRO
+  }
+  return joueurs;
+}
+
+/* ---------- Parseur : pointage (TeamScoring.php) ----------
+   Table à en-têtes variables ; on mappe par nom d'en-tête reconnu. */
+const ENTETES_SCORING = {
+  gp:['GP','PJ','MJ'], goals:['G','B','BUTS'], assists:['A','P','PASSES'],
+  pts:['PTS','P','POINTS'], plusminus:['+/-','+-','DIFF'],
+  pim:['PIM','PUN','MIN PUN'], ppg:['PP','PPG','BAN'], gwg:['GW','GWG','BG'],
+  shots:['S','SH','SHOTS','T','TIRS'], shotpct:['PCT','%','S%','%T'],
+  w:['W','V'], l:['L','D'], t:['T','N','OTL'], avg:['AVG','GAA','MOY'],
+  svpct:['SV%','SVPCT','%A','SPCT'], so:['SO','BL'], qs:['QS','DQ']
+};
+function trouverColonne(entetes, candidats){
+  for (const c of candidats){
+    const i = entetes.indexOf(c);
+    if (i>=0) return i;
+  }
+  return -1;
+}
+function parseScoring(html, doc){
+  const d = doc || new DOMParser().parseFromString(html, 'text/html');
+  const tables = Array.from(d.querySelectorAll('table'));
+  const patineurs = [], gardiens = [];
+  for (const table of tables){
+    const lignes = Array.from(table.querySelectorAll('tr'));
+    if (lignes.length < 2) continue;
+    const entetes = Array.from(lignes[0].querySelectorAll('th,td'))
+      .map(c=>c.textContent.trim().toUpperCase());
+    const valides = entetes.every(h=>h.length<=10 && !/\d/.test(h));
+    if (!valides) continue;
+    const iGP = trouverColonne(entetes, ENTETES_SCORING.gp);
+    if (iGP < 0) continue;
+    const estGardien = trouverColonne(entetes, ENTETES_SCORING.svpct)>=0
+                    || trouverColonne(entetes, ENTETES_SCORING.avg)>=0;
+    const map = {};
+    for (const cle of Object.keys(ENTETES_SCORING)){
+      map[cle] = trouverColonne(entetes, ENTETES_SCORING[cle]);
+    }
+    // Attention : 'A' peut vouloir dire assists, 'P' points... on résout les conflits :
+    if (map.assists === map.pts && map.assists>=0){
+      // si 'P' a servi aux deux, points = colonne suivante d'assists si PTS absent
+      map.pts = trouverColonne(entetes, ['PTS','POINTS']);
+    }
+    for (let i=1;i<lignes.length;i++){
+      const cel = Array.from(lignes[i].querySelectorAll('td,th')).map(c=>c.textContent.trim());
+      if (!cel[0] || cel.length < 3) continue;
+      const rec = { nom: cel[0].replace(/\s+/g,' ').trim() };
+      for (const cle of Object.keys(map)){
+        if (map[cle]>=0 && map[cle]<cel.length) rec[cle] = nombre(cel[map[cle]]);
+      }
+      if (rec.gp===null || rec.gp===undefined) continue;
+      (estGardien ? gardiens : patineurs).push(rec);
+    }
+  }
+  return {patineurs, gardiens};
+}
+
+/* ---------- Parseur : XtraStats (texte préformaté) ----------
+   Colonnes fixes : Player Team POS GP G A P Sh PiM MP H ...
+   On filtre l'équipe demandée. */
+function parseXtra(texte, equipe){
+  const resultat = [];
+  const lignes = texte.split(/\r?\n/);
+  const re = new RegExp('^\\s*\\*?\\s*(.+?)\\s+' + equipe + '\\s+(C|LW|RW|D|G)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)');
+  for (const l of lignes){
+    // retirer la syntaxe markdown de liens éventuelle [Nom](url)
+    const propre = l.replace(/\[([^\]]+)\]\([^)]*\)/g, '$1');
+    const m = propre.match(re);
+    if (!m) continue;
+    resultat.push({
+      nom: m[1].trim(), pos: m[2],
+      gp: +m[3], goals: +m[4], assists: +m[5], pts: +m[6],
+      shots: +m[7], pim: +m[8], mp: +m[9], hits: +m[10]
+    });
+  }
+  return resultat;
+}
+
+/* ---------- Profils ---------- */
+function categorieAge(age){
+  if (age<=20) return 'junior';
+  if (age<=24) return 'prospect';
+  return 'pro';
+}
+function groupePosition(po){
+  if (po==='G') return 'gardiens';
+  if (po==='D') return 'defenseurs';
+  return 'avants';
+}
+function determinerProfil(j){
+  const cat = categorieAge(j.age);
+  const grp = groupePosition(j.po);
+  const liste = PROFILS[cat][grp];
+  const c = j;
+  for (const p of liste){
+    try { if (p.cond(c)) return {categorie:cat, groupe:grp, profil:p.id, stats:p.stats}; }
+    catch(e){ /* cotes manquantes (gardiens) */ }
+  }
+  const dernier = liste[liste.length-1];
+  return {categorie:cat, groupe:grp, profil:dernier.id, stats:dernier.stats};
+}
+
+/* ---------- Attentes ---------- */
+function chargerMatrices(){
+  try { return JSON.parse(localStorage.getItem(CLES_LS.matrices)) || {}; }
+  catch(e){ return {}; }
+}
+function sauverMatrices(m){ localStorage.setItem(CLES_LS.matrices, JSON.stringify(m)); }
+function chargerOverrides(){
+  try { return JSON.parse(localStorage.getItem(CLES_LS.overrides)) || {}; }
+  catch(e){ return {}; }
+}
+function sauverOverrides(o){ localStorage.setItem(CLES_LS.overrides, JSON.stringify(o)); }
+
+/* attente d'un joueur pour une stat : surcharge > matrice > null */
+function attentePour(j, statCle, matrices, overrides){
+  const cleJoueur = normaliserNom(j.nom);
+  const ov = overrides[cleJoueur];
+  if (ov && ov[statCle]!==undefined && ov[statCle]!==null && ov[statCle]!=='') {
+    return {valeur:Number(ov[statCle]), source:'individuelle'};
+  }
+  const p = j._profil;
+  const m = matrices?.[p.categorie]?.[p.profil]?.[statCle];
+  if (m){
+    const t = trancheDeOV(j.ov);
+    const v = m[t];
+    if (v!==undefined && v!==null && v!=='') return {valeur:Number(v), source:'matrice'};
+  }
+  return {valeur:null, source:null};
+}
+
+/* statut d'une stat : réel + projection vs attente.
+   Mémorable = la valeur (projetée si stat cumulée) DÉPASSE strictement l'attente. */
+function evaluerStat(statCle, reel, gp, attente){
+  const def = STATS_DEF[statCle] || {};
+  let projection = reel;
+  if (def.rythme && gp>0){
+    projection = reel / gp * CONFIG.matchsSaison;
+  }
+  if (attente===null || attente===undefined || !isFinite(attente)){
+    return {reel, projection, attente:null, statut:'indef', ratio:null};
+  }
+  const meilleure = def.inverse
+    ? (v)=> v < attente     // GAA : plus bas = mieux
+    : (v)=> v > attente;
+  const atteinte = def.inverse ? (v)=> v <= attente : (v)=> v >= attente;
+  let ratio;
+  if (def.inverse){
+    ratio = (projection>0) ? attente/projection : null;
+  } else {
+    ratio = (attente>0) ? projection/attente : null;
+  }
+  let statut;
+  if (meilleure(projection)) statut = 'memorable';
+  else if (atteinte(projection)) statut = 'atteint';
+  else if (ratio!==null && ratio>=0.85) statut = 'envoie';
+  else statut = 'retard';
+  return {reel, projection, attente, statut, ratio};
+}
+
+/* ---------- État global ---------- */
+const ETAT = {
+  roster: SECOURS_ROSTER.map(j=>({...j})),
+  scoring: {patineurs:[], gardiens:[]},
+  xtra: SECOURS_Y21.map(x=>({...x})),
+  xtraEstY21: true,
+  fiche: 'SANJOSE 0-0-0',
+  source: 'données intégrées (' + DATE_SECOURS + ')',
+  filtreProg: 'tous'
+};
+function preparerRoster(){
+  for (const j of ETAT.roster){ j._profil = determinerProfil(j); }
+}
+</script>
+<script>
+/* =====================================================================
+   COUCHE RÉSEAU : relais anti-CORS avec relais «collant» et cache local
+   ===================================================================== */
+function litCache(){ try{ return JSON.parse(localStorage.getItem(CLES_LS.cache))||{}; }catch(e){ return {}; } }
+function ecritCache(c){ try{ localStorage.setItem(CLES_LS.cache, JSON.stringify(c)); }catch(e){ /* quota */ } }
+
+async function chercherViaProxy(url, {timeout=15000}={}){
+  const prefere = Number(localStorage.getItem(CLES_LS.proxy));
+  const ordre = [...CONFIG.proxys.keys()];
+  if (!isNaN(prefere) && ordre.includes(prefere)){
+    ordre.splice(ordre.indexOf(prefere),1); ordre.unshift(prefere);
+  }
+  let derniereErreur = null;
+  for (const i of ordre){
+    const cible = CONFIG.proxys[i](url);
+    try{
+      const ctl = new AbortController();
+      const t = setTimeout(()=>ctl.abort(), timeout);
+      const rep = await fetch(cible, {signal:ctl.signal});
+      clearTimeout(t);
+      if (!rep.ok) throw new Error('HTTP '+rep.status);
+      const texte = await rep.text();
+      if (texte.length < 500) throw new Error('réponse trop courte');
+      localStorage.setItem(CLES_LS.proxy, String(i));
+      return texte;
+    }catch(e){
+      derniereErreur = e;
+      await new Promise(r=>setTimeout(r, 400)); // espacement anti rate-limit
+    }
+  }
+  throw derniereErreur || new Error('aucun relais disponible');
+}
+
+async function chercherSource(cle){
+  const cache = litCache();
+  const maintenant = Date.now();
+  const c = cache[cle];
+  if (c && (maintenant - c.t) < CONFIG.ttl[cle]) return {texte:c.v, duCache:true};
+  const texte = await chercherViaProxy(CONFIG.urls[cle]);
+  cache[cle] = {t:maintenant, v:texte};
+  ecritCache(cache);
+  return {texte, duCache:false};
+}
+
+function extraireFiche(html){
+  const m = html.match(/SANJOSE\s+(\d+)-(\d+)-(\d+)/);
+  return m ? `SANJOSE ${m[1]}-${m[2]}-${m[3]}` : null;
+}
+
+async function actualiserTout(){
+  const btn = document.getElementById('btnMaj');
+  const etat = document.getElementById('etatMaj');
+  btn.disabled = true;
+  const rapport = [];
+  // 1) Formation
+  etat.textContent = 'formation…';
+  try{
+    const {texte} = await chercherSource('roster');
+    const joueurs = parseRoster(texte);
+    if (joueurs.length >= 10){
+      ETAT.roster = joueurs; preparerRoster();
+      const f = extraireFiche(texte); if (f) ETAT.fiche = f;
+      ETAT.source = 'ushl.ca — ' + new Date().toLocaleString('fr-CA');
+      rapport.push('formation ✓ ('+joueurs.length+' joueurs)');
+    } else rapport.push('formation : table introuvable, données locales conservées');
+  }catch(e){ rapport.push('formation ✗ ('+e.message+')'); }
+  // 2) Pointage
+  etat.textContent = 'production…';
+  try{
+    const {texte} = await chercherSource('scoring');
+    const s = parseScoring(texte);
+    if (s.patineurs.length || s.gardiens.length){
+      ETAT.scoring = s;
+      rapport.push('production ✓ ('+s.patineurs.length+' patineurs)');
+    } else {
+      const f = extraireFiche(texte);
+      if (f) ETAT.fiche = f;
+      rapport.push('production : aucun match disputé pour le moment');
+    }
+  }catch(e){ rapport.push('production ✗ ('+e.message+')'); }
+  // 3) XtraStats
+  etat.textContent = 'XtraStats…';
+  try{
+    const {texte} = await chercherSource('xtra');
+    const x = parseXtra(texte, CONFIG.equipe);
+    if (x.length >= 5){
+      ETAT.xtra = x;
+      // si la saison courante a des matchs, XtraStats reflète la saison en cours
+      ETAT.xtraEstY21 = !(ETAT.scoring.patineurs.length > 0);
+      rapport.push('XtraStats ✓ ('+x.length+' patineurs)');
+    } else rapport.push('XtraStats : rien trouvé pour '+CONFIG.equipe);
+  }catch(e){ rapport.push('XtraStats ✗ ('+e.message+')'); }
+
+  etat.textContent = rapport.join(' · ');
+  btn.disabled = false;
+  toutRendre();
+}
+
+/* =====================================================================
+   FUSION DES DONNÉES PAR JOUEUR
+   ===================================================================== */
+function indexParNom(liste){
+  const m = new Map();
+  for (const x of liste) m.set(normaliserNom(x.nom), x);
+  return m;
+}
+/* production consolidée d'un joueur : scoring courant + xtra (MEÉ, MIN) */
+function productionDe(j){
+  const cle = normaliserNom(j.nom);
+  const sc = indexParNom(j.po==='G' ? ETAT.scoring.gardiens : ETAT.scoring.patineurs).get(cle) || null;
+  const xt = indexParNom(ETAT.xtra).get(cle) || null;
+  const saisonCourante = !!sc;
+  const base = sc || (ETAT.xtraEstY21 ? null : xt);
+  const ref = (!saisonCourante && ETAT.xtraEstY21) ? xt : null; // Y21 comme référence
+  const src = base || ref;
+  if (!src) return null;
+  const out = {
+    gp: src.gp ?? null,
+    goals: src.goals ?? null, assists: src.assists ?? null, pts: src.pts ?? null,
+    plusminus: (sc && sc.plusminus!==undefined) ? sc.plusminus : null,
+    ppg: sc?.ppg ?? null, gwg: sc?.gwg ?? null,
+    shots: src.shots ?? null, pim: src.pim ?? null,
+    mp: (sc?.mp ?? xt?.mp) ?? null,
+    hits: (xt?.hits ?? sc?.hits) ?? null,
+    w: sc?.w ?? null, avg: sc?.avg ?? null, svpct: sc?.svpct ?? null, qs: sc?.qs ?? null,
+    _reference: !saisonCourante && !!ref
+  };
+  if (out.shotpct===undefined || out.shotpct===null){
+    out.shotpct = (out.goals!==null && out.shots) ? (out.goals/out.shots*100) : null;
+  }
+  return out;
+}
+
+/* =====================================================================
+   RENDU
+   ===================================================================== */
+const $ = s => document.querySelector(s);
+function flash(msg){
+  const f = $('#flash'); f.textContent = msg; f.classList.add('visible');
+  setTimeout(()=>f.classList.remove('visible'), 2600);
+}
+
+/* ---------- Alignement ---------- */
+let triAlign = {col:'ov', desc:true};
+function rendreAlignement(){
+  $('#ficheEquipe').textContent = ETAT.fiche;
+  $('#sourceInfo').textContent = ETAT.source;
+  const actifs = ETAT.roster.filter(j=>!j.backup);
+  const masse = actifs.reduce((s,j)=>s+(j.salaire||0),0);
+  const cap = 81500000;
+  const moyOV = actifs.length ? (actifs.reduce((s,j)=>s+j.ov,0)/actifs.length) : 0;
+  const vedettes = actifs.filter(j=>j.ov>=80).length;
+  const expirants = actifs.filter(j=>j.ct===1).length;
+  $('#alignSommaire').innerHTML = `
+    <div class="stat-carte ${masse>cap?'alerte':''}">
+      <div class="lbl">Masse salariale</div>
+      <div class="val">${fmtArgent(masse)}</div>
+      <div class="det">plafond ${fmtArgent(cap)} · marge ${fmtArgent(cap-masse)}</div>
+    </div>
+    <div class="stat-carte"><div class="lbl">Joueurs actifs</div><div class="val">${actifs.length}</div>
+      <div class="det">${actifs.filter(j=>j.po!=='G'&&j.po!=='D').length} av · ${actifs.filter(j=>j.po==='D').length} déf · ${actifs.filter(j=>j.po==='G').length} gar</div></div>
+    <div class="stat-carte orange"><div class="lbl">Vedettes (80+ OV)</div><div class="val">${vedettes}</div>
+      <div class="det">OV moyen ${moyOV.toFixed(1)}</div></div>
+    <div class="stat-carte"><div class="lbl">Contrats qui expirent</div><div class="val">${expirants}</div>
+      <div class="det">CT = 1 an</div></div>`;
+
+  const cols = [
+    ['nom','Nom'],['po','PO'],['age','Âge'],['it','IT'],['sp','SP'],['st','ST'],['en','EN'],
+    ['du','DU'],['di','DI'],['sk','SK'],['pa','PA'],['pc','PC'],['df','DF'],['sc','SC'],
+    ['ex','EX'],['ld','LD'],['ov','OV'],['profil','Profil'],['salaire','Salaire'],['ct','CT']
+  ];
+  const liste = [...ETAT.roster].sort((a,b)=>{
+    const c = triAlign.col;
+    const va = c==='profil' ? a._profil.profil : a[c];
+    const vb = c==='profil' ? b._profil.profil : b[c];
+    if (va===vb) return 0;
+    if (va===null||va===undefined) return 1;
+    if (vb===null||vb===undefined) return -1;
+    const r = (typeof va==='string') ? va.localeCompare(vb) : va-vb;
+    return triAlign.desc ? -r : r;
+  });
+  let html = '<thead><tr>' + cols.map(([c,l])=>
+    `<th data-col="${c}" class="${triAlign.col===c?'tri-actif':''}">${l}${triAlign.col===c?(triAlign.desc?' ▾':' ▴'):''}</th>`).join('') + '</tr></thead><tbody>';
+  for (const j of liste){
+    const p = j._profil;
+    const badge = j.po==='G' ? 'g' : (j.po==='D' ? 'd' : '');
+    const tag = j.po==='G' ? 'g-tag' : (j.po==='D' ? 'd-tag' : '');
+    html += `<tr class="${j.backup?'backup':''}">`;
+    html += `<td><span class="pos-badge ${badge}">${j.po}</span>${j.nom}</td>`;
+    html += `<td>${j.po}</td><td>${j.age}</td>`;
+    for (const c of ['it','sp','st','en','du','di','sk','pa','pc','df','sc','ex','ld']){
+      const v = j[c];
+      const cls = v===null?'':(v>=85?'cote-elite':(v>=78?'cote-forte':''));
+      html += `<td class="${cls}">${v===null?'—':v}</td>`;
+    }
+    html += `<td class="${j.ov>=82?'cote-elite':(j.ov>=78?'cote-forte':'')}"><strong>${j.ov}</strong></td>`;
+    html += `<td style="text-align:left"><span class="profil-tag ${tag}">${p.profil}</span></td>`;
+    html += `<td>${fmtArgent(j.salaire)}</td><td>${j.ct??'—'}</td></tr>`;
+  }
+  html += '</tbody>';
+  const table = $('#tableAlignement');
+  table.innerHTML = html;
+  table.querySelectorAll('th').forEach(th=>{
+    th.addEventListener('click', ()=>{
+      const c = th.dataset.col;
+      if (triAlign.col===c) triAlign.desc = !triAlign.desc;
+      else { triAlign.col = c; triAlign.desc = true; }
+      rendreAlignement();
+    });
+  });
+}
+
+/* ---------- Production ---------- */
+function rendreProduction(){
+  const enCours = ETAT.scoring.patineurs.length > 0;
+  const lignes = [];
+  for (const j of ETAT.roster){
+    if (j.backup) continue;
+    const p = productionDe(j);
+    lignes.push({j, p});
+  }
+  const avecDonnees = lignes.filter(l=>l.p);
+  $('#prodSous').textContent = enCours
+    ? 'Pointage de la saison actuelle (TeamScoring.php) enrichi de XtraStats (minutes, mises en échec)'
+    : 'Aucun match Y22 pour le moment — affichage de la saison de référence Y21 (XtraStats du 21 avril 2026)';
+  const totPts = avecDonnees.reduce((s,l)=>s+(l.p.pts||0),0);
+  const totB = avecDonnees.reduce((s,l)=>s+(l.p.goals||0),0);
+  const totH = avecDonnees.reduce((s,l)=>s+(l.p.hits||0),0);
+  $('#prodSommaire').innerHTML = `
+    <div class="stat-carte"><div class="lbl">${enCours?'Saison en cours':'Référence Y21'}</div>
+      <div class="val">${ETAT.fiche}</div><div class="det">${enCours?'données en direct':'en attente des premiers matchs Y22'}</div></div>
+    <div class="stat-carte"><div class="lbl">Buts</div><div class="val">${totB}</div></div>
+    <div class="stat-carte"><div class="lbl">Points</div><div class="val">${totPts}</div></div>
+    <div class="stat-carte orange"><div class="lbl">Mises en échec</div><div class="val">${totH}</div></div>`;
+
+  let html = `<thead><tr><th>Nom</th><th>PJ</th><th>B</th><th>P</th><th>PTS</th><th>+/-</th>
+    <th>BAN</th><th>BG</th><th>T</th><th>%T</th><th>MEÉ</th><th>MIN</th><th>MIN/PJ</th></tr></thead><tbody>`;
+  avecDonnees.sort((a,b)=>(b.p.pts||0)-(a.p.pts||0));
+  for (const {j,p} of avecDonnees){
+    if (j.po==='G') continue;
+    const badge = j.po==='D' ? 'd' : '';
+    html += `<tr><td><span class="pos-badge ${badge}">${j.po}</span>${j.nom}</td>
+      <td>${p.gp??'—'}</td><td>${p.goals??'—'}</td><td>${p.assists??'—'}</td>
+      <td><strong>${p.pts??'—'}</strong></td><td>${fmtStat('plusminus',p.plusminus)}</td>
+      <td>${p.ppg??'—'}</td><td>${p.gwg??'—'}</td><td>${p.shots??'—'}</td>
+      <td>${p.shotpct!==null?p.shotpct.toFixed(1):'—'}</td>
+      <td>${p.hits??'—'}</td><td>${p.mp??'—'}</td>
+      <td>${(p.mp&&p.gp)?(p.mp/p.gp).toFixed(1):'—'}</td></tr>`;
+  }
+  // gardiens
+  const gardiens = lignes.filter(l=>l.j.po==='G');
+  if (gardiens.length){
+    html += `<tr><td colspan="13" style="text-align:left;color:var(--txt-faint);background:var(--teal-deep);
+      text-transform:uppercase;font-size:.65rem;letter-spacing:1px">Gardiens ${enCours?'(saison en cours)':'(matchs Y21)'}</td></tr>`;
+    for (const {j,p} of gardiens){
+      html += `<tr><td><span class="pos-badge g">G</span>${j.nom}</td>
+        <td>${p?.gp??'—'}</td><td colspan="3">V ${p?.w??'—'} · MOY ${p?.avg!==null&&p?.avg!==undefined?p.avg:'—'} · %A ${p?.svpct??'—'}</td>
+        <td colspan="8" style="text-align:left;color:var(--txt-faint)">DQ ${p?.qs??'—'} · MIN ${p?.mp??'—'}</td></tr>`;
+    }
+  }
+  html += '</tbody>';
+  $('#tableProduction').innerHTML = html;
+}
+
+/* ---------- Progression ---------- */
+function rendreProgression(){
+  const matrices = chargerMatrices();
+  const overrides = chargerOverrides();
+  const grille = $('#progGrille');
+  const enCours = ETAT.scoring.patineurs.length > 0;
+  let html = '';
+  for (const j of ETAT.roster){
+    if (j.backup) continue;
+    const p = j._profil;
+    const prod = productionDe(j);
+    const statsCles = p.stats;
+    // filtre
+    const grpF = j.po==='G'?'g':(j.po==='D'?'d':'av');
+    const evals = statsCles.map(cle=>{
+      const brute = prod ? prod[cle] : null;
+      const att = attentePour(j, cle, matrices, overrides);
+      const ev = (brute===null||brute===undefined)
+        ? {reel:null, projection:null, attente:att.valeur, statut: att.valeur===null?'indef':'indef', ratio:null}
+        : evaluerStat(cle, brute, prod.gp, att.valeur);
+      return {cle, ev, srcAtt:att.source};
+    });
+    const nbMemo = evals.filter(e=>e.ev.statut==='memorable').length;
+    const nbRetard = evals.filter(e=>e.ev.statut==='retard').length;
+    const f = ETAT.filtreProg;
+    if (f==='av'&&grpF!=='av') continue;
+    if (f==='d'&&grpF!=='d') continue;
+    if (f==='g'&&grpF!=='g') continue;
+    if (f==='memo'&&nbMemo===0) continue;
+    if (f==='retard'&&nbRetard===0) continue;
+
+    const tag = j.po==='G' ? 'g-tag' : (j.po==='D' ? 'd-tag' : '');
+    html += `<div class="joueur-carte" data-grp="${grpF}">
+      <div class="jc-tete">
+        <span class="jc-nom">${j.nom}</span>
+        <span class="profil-tag ${tag}">${p.profil}</span>
+        <span class="jc-meta">${j.age} ans · OV ${j.ov} (${trancheDeOV(j.ov)})<br>${fmtArgent(j.salaire)} · ${j.ct} an${j.ct>1?'s':''}</span>
+      </div>
+      <div class="jc-corps">`;
+    if (!statsCles.length){
+      html += `<div style="font-size:.75rem;color:var(--txt-faint)">Profil sans statistique évaluée à la recote (règlements).</div>`;
+    }
+    for (const {cle, ev} of evals){
+      const def = STATS_DEF[cle];
+      const cleJoueur = normaliserNom(j.nom);
+      const attAffiche = ev.attente!==null ? fmtStat(cle, ev.attente) : '';
+      let pctBarre = 0, seuilPos = 72; // le seuil (attente) est placé à 72 % de la barre
+      if (ev.attente!==null && ev.projection!==null){
+        const r = def.inverse
+          ? (ev.projection>0 ? ev.attente/ev.projection : 0)
+          : (ev.attente>0 ? ev.projection/ev.attente : (ev.projection>0?1.2:0));
+        pctBarre = Math.max(0, Math.min(100, r*seuilPos));
+        if (r>1) pctBarre = Math.min(100, seuilPos + (r-1)*seuilPos*0.6);
+      }
+      const badges = {
+        memorable:'<span class="badge-etat memorable">Mémorable</span>',
+        atteint:'<span class="badge-etat atteint">Attente atteinte</span>',
+        envoie:'<span class="badge-etat envoie">En voie</span>',
+        retard:'<span class="badge-etat retard">En retard</span>',
+        indef:'<span class="badge-etat indef">à définir</span>'
+      };
+      html += `<div class="stat-ligne">
+        <div class="sl-tete">
+          <span class="nom-stat">${def.nom}${badges[ev.statut]||''}</span>
+          <span class="valeurs">
+            ${ev.reel!==null?fmtStat(cle,ev.reel):'—'}
+            ${def.rythme&&ev.projection!==null&&enCours?` <span class="proj">(proj. ${fmtStat(cle,ev.projection)})</span>`:''}
+            <span class="att"> / attente </span>
+            <input class="att-input" type="number" step="any" data-joueur="${cleJoueur}" data-stat="${cle}"
+              value="${ev.attente!==null?ev.attente:''}" placeholder="—" title="Attente ${def.nom} — modifiable">
+          </span>
+        </div>
+        <div class="barre">
+          ${ev.attente!==null?`<div class="seuil" style="left:72%"></div>`:''}
+          <div class="rempli ${ev.statut==='memorable'?'memo':''}" style="width:${pctBarre}%"></div>
+        </div>
+      </div>`;
+    }
+    html += `</div>`;
+    if (prod && prod._reference){
+      html += `<div class="jc-note">Repère : saison Y21 complète (aucun match Y22 encore disputé). Les barres reflètent la Y21 face aux attentes actuelles.</div>`;
+    }
+    html += `</div>`;
+  }
+  grille.innerHTML = html || '<p style="color:var(--txt-faint)">Aucun joueur ne correspond au filtre.</p>';
+  grille.querySelectorAll('.att-input').forEach(inp=>{
+    inp.addEventListener('change', ()=>{
+      const o = chargerOverrides();
+      const cleJ = inp.dataset.joueur, cleS = inp.dataset.stat;
+      if (!o[cleJ]) o[cleJ] = {};
+      if (inp.value==='') delete o[cleJ][cleS];
+      else o[cleJ][cleS] = Number(inp.value);
+      sauverOverrides(o);
+      flash('Attente enregistrée');
+      rendreProgression();
+    });
+  });
+}
+
+/* ---------- Réglages : éditeur de matrices ---------- */
+function rendreSelectProfil(){
+  const cat = $('#selCategorie').value;
+  const sel = $('#selProfil');
+  const tous = [...PROFILS[cat].avants, ...PROFILS[cat].defenseurs, ...PROFILS[cat].gardiens];
+  sel.innerHTML = tous.map(p=>`<option value="${p.id}">${p.id}</option>`).join('');
+}
+function profilCourant(){
+  const cat = $('#selCategorie').value;
+  const id = $('#selProfil').value;
+  const tous = [...PROFILS[cat].avants, ...PROFILS[cat].defenseurs, ...PROFILS[cat].gardiens];
+  return {cat, def: tous.find(p=>p.id===id)};
+}
+function rendreMatrice(){
+  const {cat, def} = profilCourant();
+  const matrices = chargerMatrices();
+  const table = $('#tableMatrice');
+  if (!def || !def.stats.length){
+    table.innerHTML = '<tbody><tr><td style="text-align:left;color:var(--txt-faint)">Ce profil n\'a aucune statistique évaluée à la recote.</td></tr></tbody>';
+    return;
+  }
+  let html = '<thead><tr><th style="text-align:left">Statistique</th>' +
+    TRANCHES_OV.map(t=>`<th>${t}</th>`).join('') + '</tr></thead><tbody>';
+  for (const cle of def.stats){
+    html += `<tr><td style="text-align:left">${STATS_DEF[cle].nom}</td>`;
+    for (const t of TRANCHES_OV){
+      const v = matrices?.[cat]?.[def.id]?.[cle]?.[t];
+      html += `<td><input type="number" step="any" data-cat="${cat}" data-profil="${def.id}" data-stat="${cle}" data-tranche="${t}" value="${v??''}"></td>`;
+    }
+    html += '</tr>';
+  }
+  html += '</tbody>';
+  table.innerHTML = html;
+  table.querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('change', ()=>{
+      const m = chargerMatrices();
+      const {cat, profil, stat, tranche} = inp.dataset;
+      m[cat] = m[cat]||{}; m[cat][profil] = m[cat][profil]||{}; m[cat][profil][stat] = m[cat][profil][stat]||{};
+      if (inp.value==='') delete m[cat][profil][stat][tranche];
+      else m[cat][profil][stat][tranche] = Number(inp.value);
+      sauverMatrices(m);
+      flash('Matrice enregistrée');
+    });
+  });
+}
+
+/* ---------- Navigation et initialisation ---------- */
+function toutRendre(){
+  rendreAlignement();
+  rendreProduction();
+  rendreProgression();
+}
+document.querySelectorAll('nav button[data-vue]').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('nav button[data-vue]').forEach(x=>x.classList.remove('actif'));
+    document.querySelectorAll('section.vue').forEach(x=>x.classList.remove('actif'));
+    b.classList.add('actif');
+    document.getElementById('vue-'+b.dataset.vue).classList.add('actif');
+    if (b.dataset.vue==='progression') rendreProgression();
+    if (b.dataset.vue==='reglages') rendreMatrice();
+  });
+});
+document.getElementById('progFiltres').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if (!b) return;
+  document.querySelectorAll('#progFiltres button').forEach(x=>x.classList.remove('actif'));
+  b.classList.add('actif');
+  ETAT.filtreProg = b.dataset.f;
+  rendreProgression();
+});
+$('#btnMaj').addEventListener('click', actualiserTout);
+$('#selCategorie').addEventListener('change', ()=>{ rendreSelectProfil(); rendreMatrice(); });
+$('#selProfil').addEventListener('change', rendreMatrice);
+$('#btnExportMat').addEventListener('click', ()=>{
+  $('#zoneJson').value = JSON.stringify(chargerMatrices(), null, 2);
+  flash('Matrices exportées dans la zone de texte');
+});
+$('#btnImportMat').addEventListener('click', ()=>{
+  try{
+    const m = JSON.parse($('#zoneJson').value);
+    if (typeof m !== 'object' || m===null) throw new Error('format inattendu');
+    sauverMatrices(m); rendreMatrice(); rendreProgression();
+    flash('Matrices importées');
+  }catch(e){ flash('Import impossible : '+e.message); }
+});
+$('#btnViderMat').addEventListener('click', ()=>{
+  if (confirm('Vider toutes les matrices d\'attentes ?')){
+    sauverMatrices({}); rendreMatrice(); rendreProgression(); flash('Matrices vidées');
+  }
+});
+$('#btnViderOverrides').addEventListener('click', ()=>{
+  if (confirm('Effacer toutes les attentes individuelles ?')){
+    sauverOverrides({}); rendreProgression(); flash('Attentes individuelles effacées');
+  }
+});
+$('#btnViderCache').addEventListener('click', ()=>{
+  localStorage.removeItem(CLES_LS.cache); flash('Cache vidé — prochaine actualisation en direct');
+});
+$('#sourcesTexte').innerHTML =
+  `Formation : <a style="color:var(--teal-bright)" href="${CONFIG.urls.roster}" target="_blank" rel="noopener">TeamRosters.php</a> ·
+   Production : <a style="color:var(--teal-bright)" href="${CONFIG.urls.scoring}" target="_blank" rel="noopener">TeamScoring.php</a> ·
+   Minutes et mises en échec : <a style="color:var(--teal-bright)" href="${CONFIG.urls.xtra}" target="_blank" rel="noopener">USHLxtrastats.html</a> ·
+   Profils et statistiques évaluées : règlements USHL 2025, tableaux 10-11-12.`;
+$('#dateSecours').textContent = DATE_SECOURS;
+
+preparerRoster();
+rendreSelectProfil();
+rendreMatrice();
+toutRendre();
+
+/* exposition pour le harnais de tests (jsdom) */
+if (typeof window !== 'undefined'){
+  window.__SJS__ = {parseRoster, parseScoring, parseXtra, determinerProfil, evaluerStat,
+    trancheDeOV, normaliserNom, attentePour, SECOURS_ROSTER, SECOURS_Y21, PROFILS, STATS_DEF};
+}
+</script>
+</body>
+</html>
