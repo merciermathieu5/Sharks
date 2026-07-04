@@ -86,18 +86,17 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
   egal(S.statutSelonSeuils(null, sE82), 'indef', 'Valeur absente → à définir');
   egal(S.statutSelonSeuils(50, [60,null,null,null,null,null]), 'sousmemo', 'Seule cible Mémorable connue, non dépassée → sous le Mémorable');
 
-  console.log('— Évaluation avec projection sur 82 matchs');
-  let ev = S.evaluerStat('pts', 30, 20, sE82); // proj 123 > 97
-  proche(ev.projection, 123, 0.01, 'Projection 30 pts en 20 matchs');
-  egal(ev.statut, 'memorable', 'Projection au-delà du seuil Mémorable');
+  console.log('— Évaluation des totaux tels quels (aucune projection : facteur karma)');
+  let ev = S.evaluerStat('pts', 98, sE82);
+  egal(ev.valeur, 98, 'La valeur évaluée est le total courant, sans mise à l\'échelle');
+  egal(ev.statut, 'memorable', '98 pts → Mémorable');
   egal(ev.mods, 60, 'ModS +60 pour un Mémorable');
-  ev = S.evaluerStat('pts', 20, 41, sE82); // proj 40 → decevante
-  egal(ev.statut, 'decevante', 'Projection 40 pts → Décevante');
+  ev = S.evaluerStat('pts', 40, sE82);
+  egal(ev.statut, 'decevante', '40 pts → Décevante');
   egal(ev.mods, -20, 'ModS -20 pour une Décevante');
-  ev = S.evaluerStat('shotpct', 15.2, 40, S.seuilsMatrice('ELITE','shotpct',82));
-  proche(ev.projection, 15.2, 1e-9, 'Aucune mise à l\'échelle pour un taux');
+  ev = S.evaluerStat('shotpct', 15.2, S.seuilsMatrice('ELITE','shotpct',82));
   egal(ev.statut, 'excellente', 'PCTG 15,2 sur seuils OV 82 → Excellente');
-  ev = S.evaluerStat('pts', null, 0, sE82);
+  ev = S.evaluerStat('pts', null, sE82);
   egal(ev.statut, 'indef', 'Sans valeur → à définir');
 
   console.log('— Statistiques dérivées');
@@ -110,9 +109,9 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
   proche(S.valeurStat(jTest, prod, 'qggp'), 0.4, 1e-9, 'DQ/M = 8/20');
   proche(S.valeurStat(jTest, prod, 'psv'), 905, 1e-9, 'Psv = %A × 1000');
   egal(S.valeurStat(jTest, prod, 'pts'), 25, 'Stat directe inchangée');
-  const ctx = {limites: new Map([[S.normaliserNom('Test Joueur'), 62]]), matchsEquipe: 20};
-  proche(S.valeurStat(jTest, {gp:15}, 'ming', ctx), (15/20*82)/62, 1e-9, 'MIN gardien = parties projetées / limite');
-  egal(S.valeurStat(jTest, {gp:15}, 'ming', {limites:new Map(), matchsEquipe:20}), null, 'Sans limite connue → à définir');
+  const ctx = {limites: new Map([[S.normaliserNom('Test Joueur'), 62]])};
+  proche(S.valeurStat(jTest, {gp:15}, 'ming', ctx), 15/62, 1e-9, 'MIN gardien = parties jouées / limite (ratio brut)');
+  egal(S.valeurStat(jTest, {gp:15}, 'ming', {limites:new Map()}), null, 'Sans limite connue → à définir');
 
   console.log('— Rang du différentiel dans le club (tableau 20)');
   const rangs = S.calculerPmRangs([
@@ -131,7 +130,8 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
   egal(S.modA({po:'C', age:35}), -25, 'Patineur 35 ans → ModA -25');
   egal(S.modA({po:'G', age:29}), 5, 'Gardien 29 ans → ModA +5');
   egal(S.modA({po:'G', age:33}), -10, 'Gardien 33 ans → ModA -10');
-  egal(S.convertirJet(146), 4, 'Jet 146 → +4');
+  egal(S.convertirJet(146), 3, 'Jet 146 → +3 (recote plafonnée à +3)');
+  egal(S.convertirJet(200), 3, 'Aucun jet ne dépasse +3');
   egal(S.convertirJet(121), 2, 'Jet 121 → +2');
   egal(S.convertirJet(100), 0, 'Jet 100 → 0');
   egal(S.convertirJet(51), -1, 'Jet 51 → -1');

@@ -120,17 +120,16 @@
   .jc-corps{padding:12px 16px 14px;}
   .stat-ligne{margin-bottom:11px;}
   .stat-ligne:last-child{margin-bottom:0;}
-  .sl-tete{display:flex; justify-content:space-between; font-family:var(--font-data); font-size:.7rem; margin-bottom:4px;}
-  .sl-tete .nom-stat{color:var(--txt-dim); text-transform:uppercase; letter-spacing:1px;}
-  .sl-tete .valeurs{color:var(--txt);}
+  .sl-tete{display:flex; justify-content:space-between; align-items:center; gap:6px; flex-wrap:wrap; font-family:var(--font-data); font-size:.7rem; margin-bottom:4px;}
+  .sl-tete .nom-stat{color:var(--txt-dim); text-transform:uppercase; letter-spacing:1px; display:inline-flex; align-items:center; gap:8px; flex-wrap:wrap; row-gap:3px; min-width:0;}
+  .sl-tete .valeurs{color:var(--txt); display:inline-flex; align-items:center; gap:4px; white-space:nowrap; margin-left:auto;}
   .sl-tete .valeurs .att{color:var(--txt-faint);}
-  .sl-tete .valeurs .proj{color:var(--teal-bright);}
   .barre{position:relative; height:12px; background:var(--teal-deep); border-radius:2px; overflow:visible;}
   .barre .rempli{position:absolute; left:0; top:0; bottom:0; background:var(--teal); border-radius:2px 0 0 2px; transition:width .5s;}
   .barre .rempli.memo{background:linear-gradient(90deg, var(--teal), var(--orange));}
   .barre .seuil{position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--orange-bright); box-shadow:0 0 4px rgba(234,114,0,.8);}
   .badge-etat{font-family:var(--font-body); font-size:.6rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;
-    padding:2px 8px; border-radius:2px; margin-left:8px; vertical-align:middle;}
+    padding:2px 8px; border-radius:2px; white-space:nowrap; vertical-align:middle;}
   .badge-etat.memorable{background:linear-gradient(90deg, var(--teal), var(--orange)); color:#fff;}
   .badge-etat.excellente{background:var(--teal); color:#fff;}
   .badge-etat.satisfaisante{background:transparent; border:1px solid var(--teal); color:var(--teal-bright);}
@@ -208,7 +207,7 @@
     <button id="btnMaj">Actualiser depuis ushl.ca</button>
     <button id="btnModeY21" class="secondaire" title="Affiche l'interface avec les totaux complets de la saison Y21 pour vérifier le moteur des attentes">Vérifier avec la Y21</button>
     <span id="etatMaj"></span>
-    <div id="bandeauY21" style="display:none">MODE VÉRIFICATION — SAISON Y21 · totaux complets, sans projection · l'interface revient à la saison en cours à chaque ouverture</div>
+    <div id="bandeauY21" style="display:none">MODE VÉRIFICATION — SAISON Y21 · totaux complets de la saison · l'interface revient à la saison en cours à chaque ouverture</div>
   </div>
 </nav>
 
@@ -334,21 +333,21 @@ const CLES_LS = {
 const STATS_DEF = {
   goals:     {nom:'Buts',        court:'B',    rythme:true },
   gwg:       {nom:'Buts gagnants', court:'GW', rythme:true },
-  ppg:       {nom:'Buts en avantage numérique', court:'PP', rythme:true },
+  ppg:       {nom:'Buts en AN',  court:'PP',   rythme:true },
   assists:   {nom:'Passes',      court:'A',    rythme:true },
   pts:       {nom:'Points',      court:'PTS',  rythme:true },
   hits:      {nom:'Mises en échec', court:'MEÉ', rythme:true },
   shots:     {nom:'Tirs au but', court:'T',    rythme:true },
   shotpct:   {nom:'% de tirs (PCTG)', court:'%T', rythme:false, decimales:2 },
-  pmrang:    {nom:'Rang +/- dans le club', court:'+/- rang', rythme:false, decimales:2 },
-  hits20:    {nom:'MEÉ par 20 minutes', court:'MEÉ/20', rythme:false, decimales:2 },
-  shots20:   {nom:'Tirs par 20 minutes', court:'T/20', rythme:false, decimales:2 },
-  mg:        {nom:'Minutes par match', court:'MIN/M', rythme:false, decimales:1 },
+  pmrang:    {nom:'Rang +/- au club', court:'+/- rang', rythme:false, decimales:2 },
+  hits20:    {nom:'MEÉ / 20 min', court:'MEÉ/20', rythme:false, decimales:2 },
+  shots20:   {nom:'Tirs / 20 min', court:'T/20', rythme:false, decimales:2 },
+  mg:        {nom:'Minutes / match', court:'MIN/M', rythme:false, decimales:1 },
   mp:        {nom:'Minutes jouées', court:'MIN', rythme:true },
   hs:        {nom:'HS (« head stand »)', court:'HS', rythme:true },
-  qggp:      {nom:'Départs de qualité par match', court:'DQ/M', rythme:false, decimales:2 },
-  ming:      {nom:'Parties jouées / maximum permis', court:'MJ/max', rythme:false, decimales:2 },
-  psv:       {nom:'Persévérance (%A × 1000)', court:'Psv', rythme:false, decimales:0 },
+  qggp:      {nom:'DQ / match',  court:'DQ/M', rythme:false, decimales:2 },
+  ming:      {nom:'Parties / max permis', court:'MJ/max', rythme:false, decimales:2 },
+  psv:       {nom:'Psv (%A × 1000)', court:'Psv', rythme:false, decimales:0 },
   plusminus: {nom:'Différentiel',court:'+/-',  rythme:true, signe:true },
   w:         {nom:'Victoires',   court:'V',    rythme:true },
   avg:       {nom:'Moyenne (GAA)', court:'MOY', rythme:false, decimales:2, inverse:true },
@@ -472,10 +471,11 @@ function modA(j){
   return t[Math.max(18, Math.min(40, j.age))] ?? 0;
 }
 
-/* Tableau 19 : conversion du jet de progression en variation de cote. */
+/* Tableau 19 : conversion du jet de progression en variation de cote.
+   Règle de la ligue : la recote est plafonnée à +3 (et peut descendre à -5). */
 const CONVERSION = [[146,4],[136,3],[121,2],[101,1],[71,0],[51,-1],[26,-2],[11,-3],[-19,-4]];
 function convertirJet(total){
-  for (const [seuil, prog] of CONVERSION){ if (total >= seuil) return prog; }
+  for (const [seuil, prog] of CONVERSION){ if (total >= seuil) return Math.min(3, prog); }
   return -5;
 }
 
@@ -1202,17 +1202,13 @@ function statutSelonSeuils(v, seuils){
   return 'oublier';
 }
 
-/* Évaluation d'une stat : projection sur 82 matchs pour les stats cumulées,
-   comparaison directe pour les taux, puis statut et ModS. */
-function evaluerStat(statCle, reel, gp, seuils){
-  const def = STATS_DEF[statCle] || {};
-  let projection = reel;
-  if (def.rythme && reel!==null && gp>0){
-    projection = reel / gp * CONFIG.matchsSaison;
-  }
-  const statut = statutSelonSeuils(projection, seuils);
+/* Évaluation d'une stat : les totaux courants sont évalués tels quels.
+   Aucune projection sur la saison — le facteur karma de la ligue rend
+   toute extrapolation trompeuse. */
+function evaluerStat(statCle, valeur, seuils){
+  const statut = statutSelonSeuils(valeur, seuils);
   const mods = MODS_PAR_STATUT[statut] ?? null;
-  return {reel, projection, seuils, statut, mods};
+  return {valeur, seuils, statut, mods};
 }
 
 /* Valeur (dérivée au besoin) d'une statistique évaluée. ctx : {pmRangs, limites, matchsEquipe} */
@@ -1230,10 +1226,7 @@ function valeurStat(j, prod, statCle, ctx){
     case 'ming': {
       const lim = ctx?.limites?.get(normaliserNom(j.nom));
       if (!lim || ok(prod.gp)===null) return null;
-      // ratio projeté sur la saison si l'équipe a des matchs joués, sinon ratio brut
-      const me = ctx?.matchsEquipe || 0;
-      const gpProj = me>0 ? prod.gp/me*CONFIG.matchsSaison : prod.gp;
-      return gpProj / lim;
+      return prod.gp / lim;
     }
     default: return ok(prod[statCle]);
   }
@@ -1614,11 +1607,9 @@ function rendreProgression(){
   const matrices = chargerMatrices();
   const overrides = chargerOverrides();
   const grille = $('#progGrille');
-  const enCours = ETAT.scoring.patineurs.length > 0;
   const ctx = {
     pmRangs: calculerPmRangs(ETAT.scoring.patineurs),
-    limites: ETAT.limites,
-    matchsEquipe: matchsEquipe()
+    limites: ETAT.limites
   };
   let html = '';
   for (const j of ETAT.roster){
@@ -1629,8 +1620,7 @@ function rendreProgression(){
     const evals = p.stats.map(cle=>{
       const brute = valeurStat(j, prod, cle, ctx);
       const s = seuilsPour(j, cle, matrices, overrides);
-      // mode Y21 : saison complète, on évalue les totaux sans projection (gp=0 désactive la mise à l'échelle)
-      const ev = evaluerStat(cle, brute, ETAT.modeY21 ? 0 : (prod?.gp ?? 0), s.seuils);
+      const ev = evaluerStat(cle, brute, s.seuils);
       return {cle, ev, source:s.source};
     });
     const nbMemo = evals.filter(e=>e.ev.statut==='memorable').length;
@@ -1660,23 +1650,22 @@ function rendreProgression(){
       const memoSeuil = seuils ? seuils[0] : null;
       // barre : échelle linéaire de Décevante (10 %) à Mémorable (90 %)
       let pctBarre = 0, jalons = '';
-      if (seuils && ev.projection!==null && isFinite(ev.projection)
+      if (seuils && ev.valeur!==null && isFinite(ev.valeur)
           && memoSeuil!==null && seuils[4]!==null && memoSeuil>seuils[4]){
         const dec = seuils[4], memo = memoSeuil;
         const pos = v => 10 + 80*Math.max(0, Math.min(1, (v-dec)/(memo-dec)));
-        pctBarre = pos(ev.projection);
+        pctBarre = pos(ev.valeur);
         jalons = [1,2,3].map(i=> seuils[i]!==null?`<div class="jalon" style="left:${pos(seuils[i]).toFixed(1)}%" title="${NIVEAUX[i].nom} : ${fmtStat(cle,seuils[i])}"></div>`:'').join('')
                + `<div class="jalon memo" style="left:90%" title="Mémorable : ${fmtStat(cle,memo)}"></div>`;
-      } else if (ev.projection!==null && memoSeuil!==null && memoSeuil>0){
-        pctBarre = Math.max(0, Math.min(100, ev.projection/memoSeuil*90));
+      } else if (ev.valeur!==null && memoSeuil!==null && memoSeuil>0){
+        pctBarre = Math.max(0, Math.min(100, ev.valeur/memoSeuil*90));
         jalons = `<div class="jalon memo" style="left:90%" title="Mémorable : ${fmtStat(cle,memoSeuil)}"></div>`;
       }
       html += `<div class="stat-ligne">
         <div class="sl-tete">
           <span class="nom-stat">${def.nom}${BADGES_NIVEAUX[ev.statut]||''}</span>
           <span class="valeurs">
-            ${ev.reel!==null?fmtStat(cle,ev.reel):'—'}
-            ${def.rythme&&ev.reel!==null&&enCours&&!ETAT.modeY21?` <span class="proj">(proj. ${fmtStat(cle,ev.projection)})</span>`:''}
+            ${ev.valeur!==null?fmtStat(cle,ev.valeur):'—'}
             <span class="att"> / Mémorable </span>
             <input class="att-input" type="number" step="any" data-joueur="${cleJoueur}" data-stat="${cle}"
               value="${memoSeuil!==null?memoSeuil:''}" placeholder="—" title="Seuil Mémorable ${def.nom} — modifiable (à dépasser strictement)">
