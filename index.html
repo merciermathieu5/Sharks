@@ -1227,7 +1227,7 @@ function valeurStat(j, prod, statCle, ctx){
     case 'mg':      return (ok(prod.mp)!==null && prod.gp)       ? prod.mp/prod.gp           : null;
     case 'qggp':    return (ok(prod.qs)!==null && prod.gp)       ? prod.qs/prod.gp           : null;
     case 'psv':     return (ok(prod.svpct)!==null)               ? prod.svpct*1000           : null;
-    case 'pmrang':  return ctx?.pmRangs?.get(normaliserNom(j.nom)) ?? null;
+    case 'pmrang': { const r = ctx?.pmRangs?.get(normaliserNom(j.nom)); return r ? r.prop : null; }
     case 'ming': {
       const lim = ctx?.limites?.get(normaliserNom(j.nom));
       if (!lim || ok(prod.gp)===null) return null;
@@ -1237,13 +1237,17 @@ function valeurStat(j, prod, statCle, ctx){
   }
 }
 
-/* Rang du différentiel dans le club, converti en proportion (1 = meilleur, 0 = dernier).
-   Règle du tableau 20 : «son rang est déterminé puis converti en pourcentage». */
+/* Rang du différentiel dans le club (tableau 20 : «son rang est déterminé puis
+   converti en pourcentage»). Calculé automatiquement dès que la production de la
+   saison fournit les +/- des patineurs du club (GP > 0).
+   Retourne nom → {prop (1 = meilleur, 0 = dernier), rang, total, pm}. */
 function calculerPmRangs(patineurs){
   const ps = (patineurs||[]).filter(p=>p.gp>0 && p.plusminus!==undefined && p.plusminus!==null);
   const tri = [...ps].sort((a,b)=>b.plusminus-a.plusminus);
   const n = tri.length, map = new Map();
-  tri.forEach((p,i)=>{ map.set(normaliserNom(p.nom), n>1 ? (n-1-i)/(n-1) : 1); });
+  tri.forEach((p,i)=>{
+    map.set(normaliserNom(p.nom), {prop: n>1 ? (n-1-i)/(n-1) : 1, rang: i+1, total: n, pm: p.plusminus});
+  });
   return map;
 }
 
@@ -1351,8 +1355,8 @@ function xtraEstArchive(xtra, matchsEq){
 }
 
 function extraireFiche(html){
-  const m = html.match(/SANJOSE\s+(\d+)-(\d+)-(\d+)/);
-  return m ? `SANJOSE ${m[1]}-${m[2]}-${m[3]}` : null;
+  const m = html.match(new RegExp(CONFIG.equipe + '\\s+(\\d+)-(\\d+)-(\\d+)'));
+  return m ? `${CONFIG.equipe} ${m[1]}-${m[2]}-${m[3]}` : null;
 }
 
 async function actualiserTout(){
@@ -1666,11 +1670,16 @@ function rendreProgression(){
         pctBarre = Math.max(0, Math.min(100, ev.valeur/memoSeuil*90));
         jalons = `<div class="jalon memo" style="left:90%" title="Mémorable : ${fmtStat(cle,memoSeuil)}"></div>`;
       }
+      let detailRang = '';
+      if (cle==='pmrang'){
+        const r = ctx.pmRangs.get(normaliserNom(j.nom));
+        if (r) detailRang = ` <span class="att">(${r.rang}ᵉ/${r.total} · ${r.pm>0?'+':''}${r.pm})</span>`;
+      }
       html += `<div class="stat-ligne">
         <div class="sl-tete">
           <span class="nom-stat">${def.nom}${BADGES_NIVEAUX[ev.statut]||''}</span>
           <span class="valeurs">
-            ${ev.valeur!==null?fmtStat(cle,ev.valeur):'—'}
+            ${ev.valeur!==null?fmtStat(cle,ev.valeur):'—'}${detailRang}
             <span class="att"> / Mémorable </span>
             <input class="att-input" type="number" step="any" data-joueur="${cleJoueur}" data-stat="${cle}"
               value="${memoSeuil!==null?memoSeuil:''}" placeholder="—" title="Seuil Mémorable ${def.nom} — modifiable (à dépasser strictement)">

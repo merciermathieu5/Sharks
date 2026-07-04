@@ -120,10 +120,51 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
     {nom:'Cc', gp:5, plusminus:-3},
     {nom:'Dd', gp:0, plusminus:9}   // exclu : aucun match
   ]);
-  proche(rangs.get(S.normaliserNom('Aa')), 1, 1e-9, 'Meilleur +/- → 1,00');
-  proche(rangs.get(S.normaliserNom('Bb')), 0.5, 1e-9, 'Milieu → 0,50');
-  proche(rangs.get(S.normaliserNom('Cc')), 0, 1e-9, 'Dernier → 0,00');
+  proche(rangs.get(S.normaliserNom('Aa'))?.prop, 1, 1e-9, 'Meilleur +/- → proportion 1,00');
+  egal(rangs.get(S.normaliserNom('Aa'))?.rang, 1, 'Meilleur +/- → 1er rang');
+  proche(rangs.get(S.normaliserNom('Bb'))?.prop, 0.5, 1e-9, 'Milieu → 0,50');
+  egal(rangs.get(S.normaliserNom('Bb'))?.rang, 2, 'Milieu → 2e rang');
+  proche(rangs.get(S.normaliserNom('Cc'))?.prop, 0, 1e-9, 'Dernier → 0,00');
+  egal(rangs.get(S.normaliserNom('Cc'))?.total, 3, 'Classement sur 3 patineurs qualifiés');
   ok(!rangs.has(S.normaliserNom('Dd')), 'Joueur sans match exclu du classement');
+
+
+  console.log('— Automatisation du rang +/- à l\'arrivée des statistiques (bout en bout)');
+  {
+    const ETAT2 = S.ETAT;
+    const avantScoring2 = ETAT2.scoring, avantY212 = ETAT2.xtraEstY21;
+    // dès que TeamScoring fournit des patineurs avec un différentiel, le rang se calcule seul
+    const patineursRoster = S.SECOURS_ROSTER.filter(x9=>x9.po!=='G' && !x9.backup);
+    const scoringFictif = patineursRoster.map((x9,i9)=>({
+      nom:x9.nom, gp:10, goals:i9%4, assists:i9%5, pts:(i9%4)+(i9%5), shots:20+i9,
+      pim:2, plusminus:(patineursRoster.length-1)/2 - i9, ppg:1, gwg:1
+    }));
+    ETAT2.scoring = {patineurs:scoringFictif, gardiens:[]};
+    ETAT2.xtraEstY21 = true;
+    const rangsAuto = S.calculerPmRangs(ETAT2.scoring.patineurs);
+    egal(rangsAuto.size, patineursRoster.length, 'Tous les patineurs qualifiés sont classés automatiquement');
+    const meilleur = patineursRoster[0];
+    const rMeilleur = rangsAuto.get(S.normaliserNom(meilleur.nom));
+    egal(rMeilleur?.rang, 1, 'Le meilleur différentiel du club obtient le 1er rang');
+    proche(S.valeurStat(meilleur, {gp:10}, 'pmrang', {pmRangs:rangsAuto}), 1, 1e-9,
+      'valeurStat lit la proportion de rang sans intervention');
+    // un joueur évalué sur le rang +/- reçoit un statut réel dans l'interface re-rendue
+    const jPm = ETAT2.roster.find(x9=>x9._profil?.stats?.includes('pmrang') && !x9.backup);
+    ok(!!jPm, 'Au moins un joueur du club est évalué sur le rang +/-');
+    if (jPm){
+      W.document.querySelector('#progFiltres button[data-f="tous"]').click(); // force le re-rendu
+      const carte = [...W.document.querySelectorAll('#progGrille .joueur-carte')]
+        .find(c=>c.querySelector('.jc-nom').textContent===jPm.nom);
+      ok(!!carte, 'Carte du joueur rendue avec la production fictive');
+      const lignePm = [...(carte?.querySelectorAll('.stat-ligne')||[])]
+        .find(l=>l.querySelector('.nom-stat').textContent.includes('Rang +/-'));
+      ok(!!lignePm, 'Ligne «Rang +/- au club» présente');
+      ok(lignePm && !lignePm.querySelector('.badge-etat.indef'), 'Le rang +/- reçoit un statut (plus «à définir»)');
+      ok(lignePm && /ᵉ\/\d+/.test(lignePm.textContent), 'Rang ordinal affiché (ex. 4ᵉ/18)');
+    }
+    ETAT2.scoring = avantScoring2; ETAT2.xtraEstY21 = avantY212;
+    W.document.querySelector('#progFiltres button[data-f="tous"]').click(); // retour à l'état initial
+  }
 
   console.log('— Modificateurs (tableaux 17 et 19) et fourchette de recote');
   egal(S.modA({po:'C', age:25}), 5, 'Patineur 25 ans → ModA +5');
