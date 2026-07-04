@@ -1313,15 +1313,33 @@ async function chercherViaProxy(url, {timeout=15000}={}){
   throw derniereErreur || new Error('aucun relais disponible');
 }
 
-async function chercherSource(cle){
+/* Le serveur de la ligue conserve une session par visiteur : la première
+   requête vers une page d'équipe retombe parfois sur la DERNIÈRE équipe
+   consultée (par soi ou par un autre usager du même relais anti-CORS).
+   Chaque page reçue est donc validée : la fiche du club («ÉQUIPE W-L-T»)
+   doit s'y trouver. Page d'une autre équipe → réessai (la session s'aligne
+   dès la requête suivante), jamais de mise en cache d'une page invalide,
+   et purge du cache s'il a déjà été pollué. */
+function validerPageEquipe(texte){ return extraireFiche(texte) !== null; }
+
+async function chercherSource(cle, valider){
   const cache = litCache();
   const maintenant = Date.now();
   const c = cache[cle];
-  if (c && (maintenant - c.t) < CONFIG.ttl[cle]) return {texte:c.v, duCache:true};
-  const texte = await chercherViaProxy(CONFIG.urls[cle]);
+  if (c && (maintenant - c.t) < CONFIG.ttl[cle]){
+    if (!valider || valider(c.v)) return {texte:c.v, duCache:true};
+    delete cache[cle]; ecritCache(cache); // cache pollué par une autre équipe
+  }
+  let texte = null, essais = 0;
+  for (essais = 1; essais <= 3; essais++){
+    const t = await chercherViaProxy(CONFIG.urls[cle]);
+    if (!valider || valider(t)){ texte = t; break; }
+    await new Promise(r=>setTimeout(r, 600)); // la session du serveur s'aligne au 2e essai
+  }
+  if (texte === null) throw new Error('le serveur de la ligue sert une autre équipe (session des relais) — réessaie dans un instant');
   cache[cle] = {t:maintenant, v:texte};
   ecritCache(cache);
-  return {texte, duCache:false};
+  return {texte, duCache:false, essais};
 }
 
 /* Limites d'utilisation des gardiens : JSON public du projet gestiongardiens
@@ -1367,20 +1385,21 @@ async function actualiserTout(){
   // 1) Formation
   etat.textContent = 'formation…';
   try{
-    const {texte} = await chercherSource('roster');
+    const {texte, essais} = await chercherSource('roster', validerPageEquipe);
     const joueurs = parseRoster(texte);
     if (joueurs.length >= 10){
       ETAT.roster = joueurs; preparerRoster();
       const f = extraireFiche(texte); if (f) ETAT.fiche = f;
       ETAT.source = 'ushl.ca — ' + new Date().toLocaleString('fr-CA');
-      rapport.push('formation ✓ ('+joueurs.length+' joueurs)');
+      rapport.push('formation ✓ ('+joueurs.length+' joueurs'+((essais||1)>1?', bonne équipe obtenue après réessai':'')+')');
     } else rapport.push('formation : table introuvable, données locales conservées');
   }catch(e){ rapport.push('formation ✗ ('+e.message+')'); }
   // 2) Pointage
   etat.textContent = 'production…';
   try{
-    const {texte} = await chercherSource('scoring');
+    const {texte, essais} = await chercherSource('scoring', validerPageEquipe);
     const s = parseScoring(texte);
+    if ((essais||1) > 1) rapport.push('production : bonne équipe obtenue après réessai');
     if (s.patineurs.length || s.gardiens.length){
       ETAT.scoring = s;
       rapport.push('production ✓ ('+s.patineurs.length+' patineurs)');
@@ -1431,8 +1450,10 @@ function indexParNom(liste){
 function productionDe(j){
   const cle = normaliserNom(j.nom);
   if (ETAT.modeY21){
-    // Mode vérification : totaux complets de la Y21 (données intégrées), aucune projection.
-    const y = indexParNom(SECOURS_Y21).get(cle) || null;
+    // Mode vérification : totaux complets de la Y21, aucune projection.
+    // Source : données intégrées, sinon l'archive XtraStats téléchargée à l'actualisation.
+    const sourceY21 = SECOURS_Y21.length ? SECOURS_Y21 : (ETAT.xtraEstY21 ? ETAT.xtra : []);
+    const y = indexParNom(sourceY21).get(cle) || null;
     if (!y) return null;
     const out = {
       gp: y.gp ?? null, goals: y.goals ?? null, assists: y.assists ?? null, pts: y.pts ?? null,
@@ -1859,6 +1880,7 @@ if (typeof window !== 'undefined'){
   window.__SJS__ = {parseRoster, parseScoring, parseXtra, determinerProfil, evaluerStat,
     normaliserNom, seuilsPour, seuilsMatrice, statutSelonSeuils, valeurStat, calculerPmRangs,
     modA, convertirJet, fourchetteRecote, modsEstime, matchsEquipe, xtraEstArchive, productionDe, ETAT,
+    extraireFiche, validerPageEquipe, CONFIG,
     MATRICES, STATS_PAR_MATRICE, NIVEAUX, SECOURS_ROSTER, SECOURS_Y21, PROFILS, STATS_DEF};
 }
 </script>

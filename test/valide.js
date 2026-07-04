@@ -166,6 +166,16 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
     W.document.querySelector('#progFiltres button[data-f="tous"]').click(); // retour à l'état initial
   }
 
+
+  console.log('— Validation de l\'équipe des pages téléchargées (session des relais)');
+  {
+    const bonne = 'menu de la ligue… ' + S.CONFIG.equipe + ' 3-2-0 … table des joueurs';
+    ok(S.validerPageEquipe(bonne), 'Page de la bonne équipe acceptée (sa fiche s\'y trouve)');
+    ok(!S.validerPageEquipe('menu de la ligue… ZZAUTRE 11-8-0 … table des joueurs'),
+       'Page d\'une autre équipe rejetée (fiche du club absente) — sera réessayée, jamais mise en cache');
+    egal(S.extraireFiche(bonne), S.CONFIG.equipe + ' 3-2-0', 'Fiche extraite de la page validée');
+  }
+
   console.log('— Modificateurs (tableaux 17 et 19) et fourchette de recote');
   egal(S.modA({po:'C', age:25}), 5, 'Patineur 25 ans → ModA +5');
   egal(S.modA({po:'C', age:35}), -25, 'Patineur 35 ans → ModA -25');
