@@ -253,6 +253,27 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
     ETAT.xtraEstY21 = avantY21; ETAT.scoring = avantScoring;
   }
 
+  console.log('— Mode vérification Y21');
+  const btnY21 = doc.querySelector('#btnModeY21');
+  ok(!!btnY21, 'Bouton de bascule présent');
+  egal(S.ETAT.modeY21, false, 'Saison en cours par défaut à l\'ouverture');
+  btnY21.click();
+  egal(S.ETAT.modeY21, true, 'Bascule activée');
+  ok(doc.querySelector('#bandeauY21').style.display !== 'none', 'Bandeau de vérification affiché');
+  const prodY21 = S.productionDe(S.SECOURS_ROSTER.find(x2=>x2.nom==='Jaden Schwartz'));
+  egal(prodY21?._modeY21, true, 'Production servie par les données Y21 intégrées');
+  egal(prodY21?.pts, 94, 'Points Y21 de Schwartz');
+  const carteSchwartz = [...doc.querySelectorAll('#progGrille .joueur-carte')]
+    .find(c=>c.querySelector('.jc-nom').textContent==='Jaden Schwartz');
+  ok(!!carteSchwartz, 'Carte de Schwartz rendue en mode Y21');
+  ok(carteSchwartz.textContent.includes('Mode vérification Y21'), 'Note du mode Y21 sur la carte');
+  ok(carteSchwartz.querySelectorAll('.badge-etat.memorable').length >= 2,
+     'Schwartz Mémorable en passes et en points (69 A > 46 ; 94 PTS > 73)');
+  ok(!carteSchwartz.textContent.includes('proj.'), 'Aucune projection affichée (saison complète)');
+  btnY21.click();
+  egal(S.ETAT.modeY21, false, 'Retour à la saison en cours');
+  ok(doc.querySelector('#bandeauY21').style.display === 'none', 'Bandeau retiré');
+
   console.log(`\n${total - echecs}/${total} vérifications réussies`);
   process.exit(echecs ? 1 : 0);
 })().catch(e => { console.error('ERREUR FATALE', e); process.exit(1); });
