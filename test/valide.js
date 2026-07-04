@@ -253,8 +253,17 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
     ETAT.xtraEstY21 = avantY21; ETAT.scoring = avantScoring;
   }
 
-  console.log('— Mode vérification Y21');
-  const btnY21 = doc.querySelector('#btnModeY21');
+  console.log('— Bouton Effacer la cache');
+  const btnCache = doc.querySelector('#btnEffacerCache');
+  ok(!!btnCache, 'Bouton présent dans l\'en-tête');
+  W.localStorage.setItem('sjs_cache_v1', '{"roster":{"t":1,"v":"x"}}');
+  W.localStorage.setItem('sjs_proxy_prefere_v1', '2');
+  btnCache.click();
+  egal(W.localStorage.getItem('sjs_cache_v1'), null, 'Cache de données effacée');
+  egal(W.localStorage.getItem('sjs_proxy_prefere_v1'), null, 'Relais préféré réinitialisé');
+  await new Promise(r=>setTimeout(r,100)); // laisser l'actualisation (hors ligne) se terminer proprement
+
+  console.log('— Mode vérification Y21');  const btnY21 = doc.querySelector('#btnModeY21');
   ok(!!btnY21, 'Bouton de bascule présent');
   egal(S.ETAT.modeY21, false, 'Saison en cours par défaut à l\'ouverture');
   btnY21.click();
