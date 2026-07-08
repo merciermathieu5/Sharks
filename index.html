@@ -107,6 +107,17 @@
   .profil-tag{display:inline-block; font-size:.62rem; letter-spacing:.5px; padding:2px 7px; border:1px solid var(--teal); border-radius:10px; color:var(--teal-bright); text-transform:uppercase;}
   .profil-tag.d-tag{border-color:#3a6d92; color:#6db3e8;}
   .profil-tag.g-tag{border-color:var(--orange); color:var(--orange-bright);}
+  td.col-resign, th.col-resign{text-align:center; min-width:120px;}
+  .resign-case{display:inline-flex; align-items:center; gap:5px; font-size:.68rem; color:var(--txt-dim); cursor:pointer; white-space:nowrap;}
+  .resign-case input{cursor:pointer; accent-color:var(--orange);}
+  .resign-detail{margin-top:5px; display:flex; flex-direction:column; gap:3px; align-items:stretch;}
+  .resign-detail select, .resign-detail input{font-family:var(--font-data); font-size:.7rem; background:var(--panel); color:var(--txt);
+    border:1px solid var(--line); border-radius:3px; padding:3px 5px; text-align:center;}
+  .resign-detail select:focus, .resign-detail input:focus{outline:none; border-color:var(--orange);}
+  .resign-detail .resign-min{font-size:.6rem; color:var(--txt-faint);}
+  .resign-tag{display:inline-block; font-size:.55rem; letter-spacing:.5px; padding:1px 5px; border-radius:8px;
+    background:var(--orange-dark,#3a2506); color:var(--orange-bright); text-transform:uppercase; margin-left:4px;}
+  tbody tr.resigne{background:rgba(234,114,0,.06);}
 
   /* ---------- Progression ---------- */
   .filtres{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px;}
@@ -331,7 +342,8 @@ const CLES_LS = {
   matrices: 'sjs_matrices_v1',
   overrides: 'sjs_attentes_joueurs_v1',
   proxy: 'sjs_proxy_prefere_v1',
-  cache: 'sjs_cache_v1'
+  cache: 'sjs_cache_v1',
+  resign: 'sjs_resignatures_v1'
 };
 
 /* ------------------ DÉFINITION DES STATS ------------------ */
@@ -1001,6 +1013,26 @@ function fmtArgent(n){
   if (n===null || n===undefined) return '—';
   return n.toLocaleString('fr-CA').replace(/,/g,' ') + ' $';
 }
+/* Format compact pour les champs de re-signature : 8 500 000 → «8,5 M», 900 000 → «900 k». */
+function fmtArgentCourt(n){
+  if (n===null || n===undefined) return '—';
+  if (n >= 1000000){
+    const m = n/1000000;
+    return (Math.abs(m%1)<1e-9 ? String(m) : m.toFixed(1).replace('.',',')) + ' M';
+  }
+  return Math.round(n/1000) + ' k';
+}
+/* Interprète un montant saisi : «8,5 M», «8.5M», «900 k», «900000», «8 500 000». */
+function parseArgent(txt){
+  if (typeof txt !== 'string') return null;
+  let s = txt.trim().toLowerCase().replace(/\$/g,'').replace(/\u00a0/g,' ');
+  const mMatch = s.match(/^([\d.,\s]+)\s*m$/);
+  const kMatch = s.match(/^([\d.,\s]+)\s*k$/);
+  if (mMatch){ const v = parseFloat(mMatch[1].replace(/\s/g,'').replace(',','.')); return isFinite(v)?Math.round(v*1000000):null; }
+  if (kMatch){ const v = parseFloat(kMatch[1].replace(/\s/g,'').replace(',','.')); return isFinite(v)?Math.round(v*1000):null; }
+  const brut = parseFloat(s.replace(/\s/g,'').replace(',','.'));
+  return isFinite(brut) ? Math.round(brut) : null;
+}
 function fmtStat(cle, v){
   if (v===null || v===undefined || !isFinite(v)) return '—';
   const def = STATS_DEF[cle] || {};
@@ -1499,22 +1531,96 @@ function flash(msg){
   setTimeout(()=>f.classList.remove('visible'), 2600);
 }
 
+/* ---------- Charte salariale des re-signatures (CHARTE OFFICIELLE Y22, cap 104 M) ----------
+   Salaires MINIMUMS en dollars, indexés sur l'OV (74- à 87+). Quatre chartes selon
+   le statut, avec sous-colonnes d'âge pour les UFA. Valeurs transcrites de la charte
+   fournie (exprimées en milliers dans le document : 700 $ = 700 000 $).
+   - RFA (6.4.1)          : 28 ans et -, durée 1 à 7 ans, une seule colonne
+   - UFA (6.4.2)          : durée 1 à 4 ans, colonnes «34-» et «35+»
+   - UFA Ronde 2 (6.4.3)  : durée 1 à 2 ans, colonnes «34-» et «35+»
+   - Sans contrat (6.4.4) : durée 1 an, colonnes «34-» et «35+»
+   Index de ligne : 0→OV 74 et moins, 1→75, … 12→OV 87 et plus (clamp aux bornes). */
+const CHARTE_OV_MIN = 74, CHARTE_OV_MAX = 87;
+const CHARTE_SALAIRE = {
+  //                 OV:  74-    75     76     77     78     79     80     81     82      83      84      85      86      87+
+  RFA:              [  700,  775,  825,  950, 2250, 3750, 5750, 7500, 8750, 10500, 12250, 13750, 15500, 17500],
+  UFA_34:           [  900,  950, 1150, 1500, 2250, 3500, 5000, 6250, 7500,  8750, 10250, 12000, 13500, 15500],
+  UFA_35:           [  900,  900, 1000, 1100, 1750, 2250, 3250, 4250, 5000,  6000,  7250,  8750, 10000, 11500],
+  UFAR2_34:         [  900,  900,  950, 1150, 1500, 2500, 3500, 5000, 6250,  7500,  8750, 10250, 12000, 13500],
+  UFAR2_35:         [  900,  900,  900, 1000, 1100, 1750, 2250, 3250, 4250,  5000,  6000,  7250,  8750, 10000],
+  SANS_34:          [  900,  900,  900,  950, 1150, 1500, 2500, 3500, 5000,  6250,  7500,  8750, 10250, 12000],
+  SANS_35:          [  900,  900,  900, 1000, 1000, 1100, 1750, 2250, 3250,  4250,  5000,  6000,  7250,  9000]
+};
+
+/* Statut de re-signature déduit de l'âge (règle simple retenue) :
+   28 ans et moins → RFA ; 29 ans et plus → UFA. Les variantes Ronde 2 et Sans
+   contrat existent dans la charte et peuvent être choisies manuellement. */
+function statutResignature(j){ return j.age <= 28 ? 'RFA' : 'UFA'; }
+
+/* Clé de charte à partir du statut et de l'âge (tranche 34- / 35+ pour les UFA). */
+function cleCharte(statut, age){
+  if (statut === 'RFA') return 'RFA';
+  const tranche = age >= 35 ? '35' : '34';
+  if (statut === 'UFA')   return 'UFA_' + tranche;
+  if (statut === 'UFAR2') return 'UFAR2_' + tranche;
+  if (statut === 'SANS')  return 'SANS_' + tranche;
+  return 'UFA_' + tranche;
+}
+
+/* Salaire minimum de la charte pour un OV, un statut et un âge (en dollars). */
+function salaireMinimum(ov, statut, age){
+  const cle = cleCharte(statut, age);
+  const table = CHARTE_SALAIRE[cle];
+  if (!table) return null;
+  const i = Math.max(0, Math.min(CHARTE_OV_MAX - CHARTE_OV_MIN, Math.round(ov) - CHARTE_OV_MIN));
+  return table[i] * 1000;
+}
+
+/* Durée maximale permise par la charte selon le statut. */
+function dureeMaxCharte(statut){
+  return statut==='RFA' ? 7 : statut==='UFA' ? 4 : statut==='UFAR2' ? 2 : 1;
+}
+
+/* État des re-signatures (persisté). Clé = nom normalisé du joueur →
+   {statut, salaire}. Le joueur re-signé est réintégré au calcul de la masse. */
+function litResignatures(){
+  try { return JSON.parse(localStorage.getItem(CLES_LS.resign) || '{}'); }
+  catch { return {}; }
+}
+function ecritResignatures(o){ localStorage.setItem(CLES_LS.resign, JSON.stringify(o)); }
+
 /* ---------- Alignement ---------- */
 let triAlign = {col:'ov', desc:true};
 function rendreAlignement(){
   $('#ficheEquipe').textContent = ETAT.fiche;
   $('#sourceInfo').textContent = ETAT.source;
   const actifs = ETAT.roster.filter(j=>!j.backup);
-  const masse = actifs.reduce((s,j)=>s+(j.salaire||0),0);
-  const cap = 81500000;
+  const resign = litResignatures();
+  // Salaire effectif : si le joueur est re-signé, son salaire de re-signature
+  // remplace le salaire courant et il redevient sous contrat (compte au plafond).
+  const salaireEffectif = j => {
+    const r = resign[normaliserNom(j.nom)];
+    return r ? r.salaire : (j.salaire || 0);
+  };
+  const sousContrat = j => {
+    const r = resign[normaliserNom(j.nom)];
+    return r ? true : (j.ct > 0);
+  };
+  // Masse salariale : exclut les backups ET les joueurs sans contrat actif (0 an)
+  // NON re-signés. Un joueur re-signé selon la charte compte à nouveau au plafond.
+  const comptabilises = actifs.filter(sousContrat);
+  const masse = comptabilises.reduce((s,j)=>s+salaireEffectif(j),0);
+  const cap = 104000000;
+  const nbResignes = actifs.filter(j=>resign[normaliserNom(j.nom)]).length;
   const moyOV = actifs.length ? (actifs.reduce((s,j)=>s+j.ov,0)/actifs.length) : 0;
   const vedettes = actifs.filter(j=>j.ov>=80).length;
   const expirants = actifs.filter(j=>j.ct===1).length;
+  const sansContrat = actifs.filter(j=>j.ct===0 && !resign[normaliserNom(j.nom)]).length;
   $('#alignSommaire').innerHTML = `
     <div class="stat-carte ${masse>cap?'alerte':''}">
       <div class="lbl">Masse salariale</div>
       <div class="val">${fmtArgent(masse)}</div>
-      <div class="det">plafond ${fmtArgent(cap)} · marge ${fmtArgent(cap-masse)}</div>
+      <div class="det">plafond ${fmtArgent(cap)} · marge ${fmtArgent(cap-masse)}${sansContrat?` · ${sansContrat} contrat${sansContrat>1?'s':''} à 0 an exclu${sansContrat>1?'s':''}`:''}${nbResignes?` · ${nbResignes} re-signé${nbResignes>1?'s':''}`:''}</div>
     </div>
     <div class="stat-carte"><div class="lbl">Joueurs actifs</div><div class="val">${actifs.length}</div>
       <div class="det">${actifs.filter(j=>j.po!=='G'&&j.po!=='D').length} av · ${actifs.filter(j=>j.po==='D').length} déf · ${actifs.filter(j=>j.po==='G').length} gar</div></div>
@@ -1526,7 +1632,8 @@ function rendreAlignement(){
   const cols = [
     ['nom','Nom'],['po','PO'],['age','Âge'],['it','IT'],['sp','SP'],['st','ST'],['en','EN'],
     ['du','DU'],['di','DI'],['sk','SK'],['pa','PA'],['pc','PC'],['df','DF'],['sc','SC'],
-    ['ex','EX'],['ld','LD'],['ov','OV'],['profil','Profil'],['salaire','Salaire'],['ct','CT']
+    ['ex','EX'],['ld','LD'],['ov','OV'],['profil','Profil'],['salaire','Salaire'],['ct','CT'],
+    ['resign','Re-signer']
   ];
   const liste = [...ETAT.roster].sort((a,b)=>{
     const c = triAlign.col;
@@ -1539,12 +1646,14 @@ function rendreAlignement(){
     return triAlign.desc ? -r : r;
   });
   let html = '<thead><tr>' + cols.map(([c,l])=>
-    `<th data-col="${c}" class="${triAlign.col===c?'tri-actif':''}">${l}${triAlign.col===c?(triAlign.desc?' ▾':' ▴'):''}</th>`).join('') + '</tr></thead><tbody>';
+    c==='resign'
+      ? `<th class="col-resign">${l}</th>`
+      : `<th data-col="${c}" class="${triAlign.col===c?'tri-actif':''}">${l}${triAlign.col===c?(triAlign.desc?' ▾':' ▴'):''}</th>`).join('') + '</tr></thead><tbody>';
   for (const j of liste){
     const p = j._profil;
     const badge = j.po==='G' ? 'g' : (j.po==='D' ? 'd' : '');
     const tag = j.po==='G' ? 'g-tag' : (j.po==='D' ? 'd-tag' : '');
-    html += `<tr class="${j.backup?'backup':''}">`;
+    html += `<tr class="${j.backup?'backup':''}${resign[normaliserNom(j.nom)]?' resigne':''}">`;
     html += `<td><span class="pos-badge ${badge}">${j.po}</span>${j.nom}</td>`;
     html += `<td>${j.po}</td><td>${j.age}</td>`;
     for (const c of ['it','sp','st','en','du','di','sk','pa','pc','df','sc','ex','ld']){
@@ -1554,18 +1663,105 @@ function rendreAlignement(){
     }
     html += `<td class="${j.ov>=82?'cote-elite':(j.ov>=78?'cote-forte':'')}"><strong>${j.ov}</strong></td>`;
     html += `<td style="text-align:left"><span class="profil-tag ${tag}">${p.profil}</span></td>`;
-    html += `<td>${fmtArgent(j.salaire)}</td><td>${j.ct??'—'}</td></tr>`;
+    const rSig = resign[normaliserNom(j.nom)];
+    const salAff = rSig ? rSig.salaire : j.salaire;
+    html += `<td>${fmtArgent(salAff)}${rSig?' <span class="resign-tag">re-signé</span>':''}</td>`;
+    html += `<td>${rSig?dureeMaxCharte(rSig.statut)+' an'+(dureeMaxCharte(rSig.statut)>1?'s max':''):(j.ct??'—')}</td>`;
+    // Colonne Re-signer : case à cocher + statut + salaire éditable (≥ minimum de la charte)
+    if (j.backup){
+      html += `<td class="col-resign">—</td>`;
+    } else {
+      const statutDef = rSig ? rSig.statut : statutResignature(j);
+      const minSal = salaireMinimum(j.ov, statutDef, j.age);
+      const salActuel = rSig ? rSig.salaire : minSal;
+      const coche = rSig ? 'checked' : '';
+      const opts = [['RFA','RFA'],['UFA','UFA'],['UFAR2','UFA R2'],['SANS','Sans contrat']]
+        .map(([v,l])=>`<option value="${v}" ${statutDef===v?'selected':''}>${l}</option>`).join('');
+      html += `<td class="col-resign" data-nom="${j.nom.replace(/"/g,'&quot;')}" data-ov="${j.ov}" data-age="${j.age}">`
+        + `<label class="resign-case"><input type="checkbox" class="resign-check" ${coche}> re-signer</label>`
+        + `<div class="resign-detail" ${rSig?'':'style="display:none"'}>`
+        + `<select class="resign-statut">${opts}</select>`
+        + `<input type="text" class="resign-salaire" value="${fmtArgent(salActuel)}" title="minimum ${fmtArgent(minSal)}">`
+        + `<div class="resign-min">min ${fmtArgentCourt(minSal)}</div>`
+        + `</div></td>`;
+    }
+    html += `</tr>`;
   }
   html += '</tbody>';
   const table = $('#tableAlignement');
   table.innerHTML = html;
-  table.querySelectorAll('th').forEach(th=>{
+  table.querySelectorAll('th[data-col]').forEach(th=>{
     th.addEventListener('click', ()=>{
       const c = th.dataset.col;
       if (triAlign.col===c) triAlign.desc = !triAlign.desc;
       else { triAlign.col = c; triAlign.desc = true; }
       rendreAlignement();
     });
+  });
+  attacherResignatures(table);
+}
+
+/* Gestionnaires de la colonne Re-signer : cocher applique le minimum de la charte,
+   changer le statut recalcule le minimum, le champ salaire ne descend jamais sous
+   le minimum. Chaque changement persiste et rafraîchit la masse salariale. */
+function attacherResignatures(table){
+  table.querySelectorAll('td.col-resign[data-nom]').forEach(td=>{
+    const nom = td.dataset.nom;
+    const ov = +td.dataset.ov, age = +td.dataset.age;
+    const check = td.querySelector('.resign-check');
+    const detail = td.querySelector('.resign-detail');
+    const selStatut = td.querySelector('.resign-statut');
+    const inSal = td.querySelector('.resign-salaire');
+    const divMin = td.querySelector('.resign-min');
+    if (!check) return;
+    const cle = normaliserNom(nom);
+
+    const majMin = ()=>{
+      const min = salaireMinimum(ov, selStatut.value, age);
+      divMin.textContent = 'min ' + fmtArgentCourt(min);
+      inSal.title = 'minimum ' + fmtArgent(min);
+      return min;
+    };
+    // Applique une valeur exacte (sans passer par le champ arrondi), persiste, rafraîchit.
+    const appliquer = (sal)=>{
+      const min = salaireMinimum(ov, selStatut.value, age);
+      if (sal===null || sal < min) sal = min;         // jamais sous le minimum
+      inSal.value = fmtArgent(sal);                    // dollars exacts, sans perte
+      const r = litResignatures();
+      r[cle] = {statut: selStatut.value, salaire: sal};
+      ecritResignatures(r);
+      rendreAlignement();                              // rafraîchit la masse
+    };
+    // Depuis le champ : parse ce que le DG a tapé (accepte «8,5 M», «900 k», dollars).
+    const sauver = ()=> appliquer(parseArgent(inSal.value));
+    const retirer = ()=>{
+      const r = litResignatures();
+      delete r[cle];
+      ecritResignatures(r);
+      rendreAlignement();
+    };
+
+    check.addEventListener('change', ()=>{
+      if (check.checked){
+        detail.style.display='';
+        majMin();
+        // à la coche : minimum exact de la charte (ou salaire courant s'il est plus élevé)
+        const min = salaireMinimum(ov, selStatut.value, age);
+        const courant = litResignatures()[cle]?.salaire ?? null;
+        appliquer(courant !== null ? courant : min);
+      } else {
+        detail.style.display='none';
+        retirer();
+      }
+    });
+    selStatut.addEventListener('change', ()=>{
+      majMin();
+      // conserver le salaire déjà négocié s'il dépasse le nouveau minimum
+      const courant = litResignatures()[cle]?.salaire ?? null;
+      appliquer(courant);
+    });
+    inSal.addEventListener('change', sauver);
+    inSal.addEventListener('blur', sauver);
   });
 }
 
@@ -1881,6 +2077,8 @@ if (typeof window !== 'undefined'){
     normaliserNom, seuilsPour, seuilsMatrice, statutSelonSeuils, valeurStat, calculerPmRangs,
     modA, convertirJet, fourchetteRecote, modsEstime, matchsEquipe, xtraEstArchive, productionDe, ETAT,
     extraireFiche, validerPageEquipe, CONFIG,
+    CHARTE_SALAIRE, salaireMinimum, statutResignature, cleCharte, dureeMaxCharte,
+    fmtArgentCourt, parseArgent, litResignatures, ecritResignatures,
     MATRICES, STATS_PAR_MATRICE, NIVEAUX, SECOURS_ROSTER, SECOURS_Y21, PROFILS, STATS_DEF};
 }
 </script>

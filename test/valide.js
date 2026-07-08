@@ -275,9 +275,77 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
 
   console.log('— Masse salariale (cohérence)');
   const actifs = S.SECOURS_ROSTER.filter(x2 => !x2.backup);
-  const masse = actifs.reduce((s2, x2) => s2 + x2.salaire, 0);
-  egal(masse, 84250000, 'Masse salariale des 23 actifs = 84 250 000 $');
-  ok(doc.querySelector('#alignSommaire .stat-carte').classList.contains('alerte'), 'Dépassement du plafond signalé en alerte');
+  const comptabilises = actifs.filter(x2 => x2.ct > 0);
+  const masse = comptabilises.reduce((s2, x2) => s2 + x2.salaire, 0);
+  egal(masse, 84250000, 'Masse salariale des 23 actifs sous contrat = 84 250 000 $');
+  ok(!doc.querySelector('#alignSommaire .stat-carte').classList.contains('alerte'), 'Sous le plafond de 104 M$ : aucune alerte');
+  ok(doc.querySelector('#alignSommaire .stat-carte .det').textContent.replace(/\s/g,'').includes('104000000'), 'Plafond affiché = 104 000 000 $');
+
+  console.log('— Charte salariale des re-signatures (Y22, cap 104 M)');
+  // Salaires minimums transcrits de la charte (en dollars)
+  egal(S.salaireMinimum(74, 'RFA', 25), 700000, 'RFA OV74- = 700 000 $');
+  egal(S.salaireMinimum(82, 'RFA', 25), 8750000, 'RFA OV82 = 8 750 000 $');
+  egal(S.salaireMinimum(90, 'RFA', 22), 17500000, 'RFA OV87+ = 17 500 000 $ (clamp haut)');
+  egal(S.salaireMinimum(80, 'UFA', 30), 5000000, 'UFA OV80 34- = 5 000 000 $');
+  egal(S.salaireMinimum(80, 'UFA', 36), 3250000, 'UFA OV80 35+ = 3 250 000 $ (tranche d\'âge)');
+  egal(S.salaireMinimum(83, 'UFAR2', 32), 7500000, 'UFA Ronde 2 OV83 34- = 7 500 000 $');
+  egal(S.salaireMinimum(85, 'SANS', 37), 6000000, 'Sans contrat OV85 35+ = 6 000 000 $');
+  egal(S.salaireMinimum(70, 'RFA', 25), 700000, 'OV sous 74 → clamp au plancher (700 000 $)');
+  // Statut déduit de l'âge (règle retenue : 28- = RFA, sinon UFA)
+  egal(S.statutResignature({age:28}), 'RFA', '28 ans → RFA');
+  egal(S.statutResignature({age:29}), 'UFA', '29 ans → UFA');
+  egal(S.statutResignature({age:22}), 'RFA', '22 ans → RFA');
+  // Durées maximales par statut (charte)
+  egal(S.dureeMaxCharte('RFA'), 7, 'RFA : durée max 7 ans');
+  egal(S.dureeMaxCharte('UFA'), 4, 'UFA : durée max 4 ans');
+  egal(S.dureeMaxCharte('UFAR2'), 2, 'UFA Ronde 2 : durée max 2 ans');
+  egal(S.dureeMaxCharte('SANS'), 1, 'Sans contrat : durée 1 an');
+  // Clé de charte avec tranche d'âge
+  egal(S.cleCharte('UFA', 34), 'UFA_34', 'UFA 34 ans → colonne 34-');
+  egal(S.cleCharte('UFA', 35), 'UFA_35', 'UFA 35 ans → colonne 35+');
+  // Format et parsing des montants
+  egal(S.parseArgent('8,5 M'), 8500000, 'parseArgent «8,5 M» = 8 500 000');
+  egal(S.parseArgent('900 k'), 900000, 'parseArgent «900 k» = 900 000');
+  egal(S.parseArgent('7500000'), 7500000, 'parseArgent «7500000» = 7 500 000');
+  egal(S.fmtArgentCourt(8500000), '8,5 M', 'fmtArgentCourt 8,5 M');
+  egal(S.fmtArgentCourt(900000), '900 k', 'fmtArgentCourt 900 k');
+
+  console.log('— Re-signature : interaction, persistance et impact sur la masse');
+  W.localStorage.removeItem('sjs_resignatures_v1');
+  doc.querySelector('[data-vue="alignement"]')?.click();
+  const tdR = doc.querySelector('td.col-resign[data-nom]');
+  ok(!!tdR, 'Colonne Re-signer présente dans la table d\'alignement');
+  ok(!!tdR.querySelector('.resign-check'), 'Case à cocher présente');
+  const nomR = tdR.dataset.nom, ovR = +tdR.dataset.ov, ageR = +tdR.dataset.age;
+  const minAttendu = S.salaireMinimum(ovR, S.statutResignature({age:ageR}), ageR);
+  const checkR = tdR.querySelector('.resign-check');
+  checkR.checked = true;
+  checkR.dispatchEvent(new W.Event('change'));
+  const rSig = S.litResignatures();
+  const cleR = S.normaliserNom ? S.normaliserNom(nomR) : nomR.toLowerCase();
+  ok(!!rSig[cleR], 'Re-signature persistée après cochage');
+  egal(rSig[cleR].salaire, minAttendu, 'Salaire de re-signature = minimum de la charte');
+  ok(doc.querySelector('#alignSommaire .det').textContent.includes('re-signé'), 'Mention «re-signé» dans le sommaire de masse');
+  // un salaire sous le minimum est ramené au minimum
+  let tdR2 = [...doc.querySelectorAll('td.col-resign[data-nom]')].find(x=>x.dataset.nom===nomR);
+  const inSalR = tdR2.querySelector('.resign-salaire');
+  inSalR.value = '1 M';
+  inSalR.dispatchEvent(new W.Event('change'));
+  ok(S.litResignatures()[cleR].salaire >= minAttendu, 'Salaire sous le minimum ramené au minimum');
+  // une hausse valide est conservée
+  let tdR3 = [...doc.querySelectorAll('td.col-resign[data-nom]')].find(x=>x.dataset.nom===nomR);
+  const inSalR3 = tdR3.querySelector('.resign-salaire');
+  const hausse = minAttendu + 3000000;
+  inSalR3.value = String(hausse);
+  inSalR3.dispatchEvent(new W.Event('change'));
+  egal(S.litResignatures()[cleR].salaire, hausse, 'Hausse volontaire au-dessus du minimum conservée');
+  // décocher retire la re-signature
+  let tdR4 = [...doc.querySelectorAll('td.col-resign[data-nom]')].find(x=>x.dataset.nom===nomR);
+  const checkR4 = tdR4.querySelector('.resign-check');
+  checkR4.checked = false;
+  checkR4.dispatchEvent(new W.Event('change'));
+  ok(!S.litResignatures()[cleR], 'Décocher retire la re-signature');
+  W.localStorage.removeItem('sjs_resignatures_v1');
 
   console.log('— Divers');
   egal(S.matchsEquipe(), 0, 'Fiche 0-0-0 → 0 match d\'équipe');
