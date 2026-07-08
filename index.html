@@ -107,16 +107,25 @@
   .profil-tag{display:inline-block; font-size:.62rem; letter-spacing:.5px; padding:2px 7px; border:1px solid var(--teal); border-radius:10px; color:var(--teal-bright); text-transform:uppercase;}
   .profil-tag.d-tag{border-color:#3a6d92; color:#6db3e8;}
   .profil-tag.g-tag{border-color:var(--orange); color:var(--orange-bright);}
-  td.col-resign, th.col-resign{text-align:center; min-width:120px;}
-  .resign-case{display:inline-flex; align-items:center; gap:5px; font-size:.68rem; color:var(--txt-dim); cursor:pointer; white-space:nowrap;}
-  .resign-case input{cursor:pointer; accent-color:var(--orange);}
-  .resign-detail{margin-top:5px; display:flex; flex-direction:column; gap:3px; align-items:stretch;}
-  .resign-detail select, .resign-detail input{font-family:var(--font-data); font-size:.7rem; background:var(--panel); color:var(--txt);
-    border:1px solid var(--line); border-radius:3px; padding:3px 5px; text-align:center;}
+  /* Colonne Re-signer : collée à droite pour rester visible malgré le défilement horizontal */
+  th.col-resign, td.col-resign{
+    position:sticky; right:0; z-index:2; text-align:center; width:210px; min-width:210px;
+    background:var(--panel); box-shadow:inset 1px 0 0 var(--line);
+  }
+  thead th.col-resign{background:var(--teal-deep); z-index:4; cursor:default;}
+  tbody tr:hover td.col-resign{background:var(--panel2);}
+  tbody tr.resigne td.col-resign{background:#1a1206;}
+  .resign-case{display:inline-flex; align-items:center; gap:5px; font-size:.66rem; color:var(--txt-dim); cursor:pointer; white-space:nowrap;}
+  .resign-case input{cursor:pointer; accent-color:var(--orange); margin:0;}
+  .resign-detail{margin-top:4px; display:flex; flex-wrap:wrap; gap:4px; justify-content:center; align-items:center;}
+  .resign-detail select, .resign-detail input{font-family:var(--font-data); font-size:.68rem; background:var(--ink); color:var(--txt);
+    border:1px solid var(--line); border-radius:3px; padding:3px 4px; text-align:center;}
+  .resign-detail select{width:82px;}
+  .resign-detail input{width:104px;}
   .resign-detail select:focus, .resign-detail input:focus{outline:none; border-color:var(--orange);}
-  .resign-detail .resign-min{font-size:.6rem; color:var(--txt-faint);}
+  .resign-detail .resign-min{flex-basis:100%; font-size:.58rem; color:var(--txt-faint); line-height:1.1;}
   .resign-tag{display:inline-block; font-size:.55rem; letter-spacing:.5px; padding:1px 5px; border-radius:8px;
-    background:var(--orange-dark,#3a2506); color:var(--orange-bright); text-transform:uppercase; margin-left:4px;}
+    background:#3a2506; color:var(--orange-bright); text-transform:uppercase; margin-left:4px;}
   tbody tr.resigne{background:rgba(234,114,0,.06);}
 
   /* ---------- Progression ---------- */
@@ -1682,7 +1691,7 @@ function rendreAlignement(){
         + `<div class="resign-detail" ${rSig?'':'style="display:none"'}>`
         + `<select class="resign-statut">${opts}</select>`
         + `<input type="text" class="resign-salaire" value="${fmtArgent(salActuel)}" title="minimum ${fmtArgent(minSal)}">`
-        + `<div class="resign-min">min ${fmtArgentCourt(minSal)}</div>`
+        + `<div class="resign-min">min ${fmtArgent(minSal)}</div>`
         + `</div></td>`;
     }
     html += `</tr>`;
@@ -1718,7 +1727,7 @@ function attacherResignatures(table){
 
     const majMin = ()=>{
       const min = salaireMinimum(ov, selStatut.value, age);
-      divMin.textContent = 'min ' + fmtArgentCourt(min);
+      divMin.textContent = 'min ' + fmtArgent(min);
       inSal.title = 'minimum ' + fmtArgent(min);
       return min;
     };
