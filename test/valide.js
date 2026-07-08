@@ -303,6 +303,17 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
   // Clé de charte avec tranche d'âge
   egal(S.cleCharte('UFA', 34), 'UFA_34', 'UFA 34 ans → colonne 34-');
   egal(S.cleCharte('UFA', 35), 'UFA_35', 'UFA 35 ans → colonne 35+');
+  // Règle RFA : 1 à 7 saisons à la discrétion du DG, +1 échelon par année après 3
+  egal(S.echelonEffectif(80, 'RFA', 3), 80, 'RFA 3 ans → échelon de base (OV 80)');
+  egal(S.echelonEffectif(80, 'RFA', 4), 81, 'RFA 4 ans → échelon +1 (OV 81)');
+  egal(S.echelonEffectif(80, 'RFA', 7), 84, 'RFA 7 ans → échelon +4 (OV 84)');
+  egal(S.echelonEffectif(80, 'UFA', 4), 80, 'La règle d\'échelon ne touche pas les UFA');
+  egal(S.salaireMinimum(80, 'RFA', 25, 1), 5750000, 'RFA OV80, 1 an = 5 750 000 $');
+  egal(S.salaireMinimum(80, 'RFA', 25, 3), 5750000, 'RFA OV80, 3 ans = même minimum (5 750 000 $)');
+  egal(S.salaireMinimum(80, 'RFA', 25, 4), 7500000, 'RFA OV80, 4 ans = échelon 81 (7 500 000 $)');
+  egal(S.salaireMinimum(80, 'RFA', 25, 7), 12250000, 'RFA OV80, 7 ans = échelon 84 (12 250 000 $)');
+  egal(S.salaireMinimum(86, 'RFA', 24, 7), 17500000, 'RFA OV86, 7 ans → échelon 90, clampé à 87+ (17 500 000 $)');
+  egal(S.salaireMinimum(80, 'UFA', 30, 4), 5000000, 'UFA OV80, 4 ans = minimum inchangé (5 000 000 $)');
   // Format et parsing des montants
   egal(S.parseArgent('8,5 M'), 8500000, 'parseArgent «8,5 M» = 8 500 000');
   egal(S.parseArgent('900 k'), 900000, 'parseArgent «900 k» = 900 000');
@@ -310,41 +321,76 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
   egal(S.fmtArgentCourt(8500000), '8,5 M', 'fmtArgentCourt 8,5 M');
   egal(S.fmtArgentCourt(900000), '900 k', 'fmtArgentCourt 900 k');
 
-  console.log('— Re-signature : interaction, persistance et impact sur la masse');
+  console.log('— Fenêtre «Prolongation de contrat» : ouverture, bornage, impact, retrait');
   W.localStorage.removeItem('sjs_resignatures_v1');
   doc.querySelector('[data-vue="alignement"]')?.click();
-  const tdR = doc.querySelector('td.col-resign[data-nom]');
-  ok(!!tdR, 'Colonne Re-signer présente dans la table d\'alignement');
-  ok(!!tdR.querySelector('.resign-check'), 'Case à cocher présente');
-  const nomR = tdR.dataset.nom, ovR = +tdR.dataset.ov, ageR = +tdR.dataset.age;
-  const minAttendu = S.salaireMinimum(ovR, S.statutResignature({age:ageR}), ageR);
-  const checkR = tdR.querySelector('.resign-check');
-  checkR.checked = true;
-  checkR.dispatchEvent(new W.Event('change'));
-  const rSig = S.litResignatures();
-  const cleR = S.normaliserNom ? S.normaliserNom(nomR) : nomR.toLowerCase();
-  ok(!!rSig[cleR], 'Re-signature persistée après cochage');
-  egal(rSig[cleR].salaire, minAttendu, 'Salaire de re-signature = minimum de la charte');
-  ok(doc.querySelector('#alignSommaire .det').textContent.includes('re-signé'), 'Mention «re-signé» dans le sommaire de masse');
-  // un salaire sous le minimum est ramené au minimum
-  let tdR2 = [...doc.querySelectorAll('td.col-resign[data-nom]')].find(x=>x.dataset.nom===nomR);
-  const inSalR = tdR2.querySelector('.resign-salaire');
-  inSalR.value = '1 M';
-  inSalR.dispatchEvent(new W.Event('change'));
-  ok(S.litResignatures()[cleR].salaire >= minAttendu, 'Salaire sous le minimum ramené au minimum');
-  // une hausse valide est conservée
-  let tdR3 = [...doc.querySelectorAll('td.col-resign[data-nom]')].find(x=>x.dataset.nom===nomR);
-  const inSalR3 = tdR3.querySelector('.resign-salaire');
-  const hausse = minAttendu + 3000000;
-  inSalR3.value = String(hausse);
-  inSalR3.dispatchEvent(new W.Event('change'));
-  egal(S.litResignatures()[cleR].salaire, hausse, 'Hausse volontaire au-dessus du minimum conservée');
-  // décocher retire la re-signature
-  let tdR4 = [...doc.querySelectorAll('td.col-resign[data-nom]')].find(x=>x.dataset.nom===nomR);
-  const checkR4 = tdR4.querySelector('.resign-check');
-  checkR4.checked = false;
-  checkR4.dispatchEvent(new W.Event('change'));
-  ok(!S.litResignatures()[cleR], 'Décocher retire la re-signature');
+  const btnP = doc.querySelector('button.btn-prolong[data-nom]');
+  ok(!!btnP, 'Bouton «Prolonger» présent dans la colonne Contrat');
+  egal(btnP.textContent.trim(), 'Prolonger', 'Libellé initial du bouton');
+  const nomP = btnP.dataset.nom;
+  const jP = S.ETAT.roster.find(x=>x.nom===nomP);
+  const cleP = S.normaliserNom(nomP);
+  const statutP = S.statutResignature(jP);
+  const minP = S.salaireMinimum(jP.ov, statutP, jP.age);
+
+  btnP.click();                                   // ouvre la fenêtre
+  const modal = doc.getElementById('modalProlong');
+  ok(!!modal && !modal.hidden, 'La fenêtre de prolongation s\'ouvre au clic');
+  egal(doc.getElementById('mpNom').textContent, nomP, 'Nom du joueur affiché dans la fenêtre');
+  egal(doc.getElementById('mpStatut').value, statutP, 'Statut proposé = statut déduit de l\'âge');
+  const dureeInitP = statutP === 'RFA' ? 3 : S.dureeMaxCharte(statutP);
+  const minPD = S.salaireMinimum(jP.ov, statutP, jP.age, dureeInitP);
+  egal(+doc.getElementById('mpDuree').value, dureeInitP, 'Durée proposée : 3 ans pour un RFA (dernier palier sans hausse), durée max sinon');
+  egal(S.parseArgent(doc.getElementById('mpSalaire').value), minPD, 'Salaire pré-rempli au minimum de la charte pour cette durée');
+  egal(doc.getElementById('mpDuree').options.length, S.dureeMaxCharte(statutP),
+    'Durées offertes = 1 à la durée max du statut');
+  ok(doc.getElementById('mpImpact').textContent.includes('Masse projetée'), 'Aperçu d\'impact sur la masse affiché');
+  ok(doc.getElementById('mpRetirer').style.display === 'none', 'Bouton «Retirer» masqué pour un joueur non prolongé');
+
+  // un salaire sous le minimum est ramené au minimum à la confirmation
+  doc.getElementById('mpSalaire').value = '1 M';
+  doc.getElementById('mpOk').click();
+  ok(modal.hidden, 'La fenêtre se ferme après confirmation');
+  const rP = S.litResignatures();
+  ok(!!rP[cleP], 'Prolongation persistée');
+  egal(rP[cleP].salaire, minPD, 'Salaire sous le minimum ramené au minimum de la charte');
+  egal(rP[cleP].statut, statutP, 'Statut enregistré');
+  ok(rP[cleP].duree >= 1 && rP[cleP].duree <= S.dureeMaxCharte(statutP), 'Durée enregistrée dans les bornes de la charte');
+  ok(doc.querySelector('#alignSommaire .det').textContent.includes('prolongé'), 'Mention «prolongé» dans le sommaire de masse');
+  const btnP2 = [...doc.querySelectorAll('button.btn-prolong[data-nom]')].find(b=>b.dataset.nom===nomP);
+  ok(btnP2.classList.contains('actif') && btnP2.textContent.includes('Prolongé'), 'Bouton passe à l\'état «Prolongé»');
+
+  // la masse inclut le salaire de prolongation
+  const masseAvecP = S.calculerMasse(S.litResignatures()).masse;
+  const masseSansP = S.calculerMasse({}).masse;
+  egal(masseAvecP - masseSansP, minPD - (jP.ct>0 ? jP.salaire : 0),
+    'La masse remplace le salaire courant par celui de la prolongation');
+
+  // hausse volontaire au-dessus du minimum
+  btnP2.click();
+  ok(doc.getElementById('mpRetirer').style.display !== 'none', 'Bouton «Retirer» visible pour un joueur prolongé');
+  egal(doc.getElementById('mpOk').textContent, 'Mettre à jour', 'Bouton de confirmation devient «Mettre à jour»');
+  const hausseP = minPD + 3000000;
+  doc.getElementById('mpSalaire').value = String(hausseP);
+  doc.getElementById('mpOk').click();
+  egal(S.litResignatures()[cleP].salaire, hausseP, 'Hausse volontaire au-dessus du minimum conservée');
+
+  // changement de statut : les durées se recalculent
+  const btnP3 = [...doc.querySelectorAll('button.btn-prolong[data-nom]')].find(b=>b.dataset.nom===nomP);
+  btnP3.click();
+  const selSt = doc.getElementById('mpStatut');
+  selSt.value = 'SANS';
+  selSt.dispatchEvent(new W.Event('change'));
+  egal(doc.getElementById('mpDuree').options.length, 1, 'Statut «Sans contrat» → une seule durée offerte (1 an)');
+  doc.getElementById('mpAnnuler').click();
+  ok(doc.getElementById('modalProlong').hidden, 'Annuler ferme la fenêtre');
+  egal(S.litResignatures()[cleP].salaire, hausseP, 'Annuler ne modifie pas la prolongation enregistrée');
+
+  // retrait
+  const btnP4 = [...doc.querySelectorAll('button.btn-prolong[data-nom]')].find(b=>b.dataset.nom===nomP);
+  btnP4.click();
+  doc.getElementById('mpRetirer').click();
+  ok(!S.litResignatures()[cleP], '«Retirer la prolongation» supprime l\'entrée');
   W.localStorage.removeItem('sjs_resignatures_v1');
 
   console.log('— Divers');

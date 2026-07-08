@@ -107,26 +107,55 @@
   .profil-tag{display:inline-block; font-size:.62rem; letter-spacing:.5px; padding:2px 7px; border:1px solid var(--teal); border-radius:10px; color:var(--teal-bright); text-transform:uppercase;}
   .profil-tag.d-tag{border-color:#3a6d92; color:#6db3e8;}
   .profil-tag.g-tag{border-color:var(--orange); color:var(--orange-bright);}
-  /* Colonne Re-signer : collée à droite pour rester visible malgré le défilement horizontal */
+  /* Colonne Contrat : étroite et collée à droite, toujours visible sans défiler */
   th.col-resign, td.col-resign{
-    position:sticky; right:0; z-index:2; text-align:center; width:210px; min-width:210px;
-    background:var(--panel); box-shadow:inset 1px 0 0 var(--line);
+    position:sticky; right:0; z-index:2; text-align:center; width:104px; min-width:104px;
+    background:var(--panel); box-shadow:inset 1px 0 0 var(--line); padding:5px 8px;
   }
   thead th.col-resign{background:var(--teal-deep); z-index:4; cursor:default;}
   tbody tr:hover td.col-resign{background:var(--panel2);}
   tbody tr.resigne td.col-resign{background:#1a1206;}
-  .resign-case{display:inline-flex; align-items:center; gap:5px; font-size:.66rem; color:var(--txt-dim); cursor:pointer; white-space:nowrap;}
-  .resign-case input{cursor:pointer; accent-color:var(--orange); margin:0;}
-  .resign-detail{margin-top:4px; display:flex; flex-wrap:wrap; gap:4px; justify-content:center; align-items:center;}
-  .resign-detail select, .resign-detail input{font-family:var(--font-data); font-size:.68rem; background:var(--ink); color:var(--txt);
-    border:1px solid var(--line); border-radius:3px; padding:3px 4px; text-align:center;}
-  .resign-detail select{width:82px;}
-  .resign-detail input{width:104px;}
-  .resign-detail select:focus, .resign-detail input:focus{outline:none; border-color:var(--orange);}
-  .resign-detail .resign-min{flex-basis:100%; font-size:.58rem; color:var(--txt-faint); line-height:1.1;}
+  .btn-prolong{font-family:var(--font-data); font-size:.65rem; letter-spacing:.4px; padding:5px 9px; cursor:pointer;
+    background:transparent; color:var(--teal-bright); border:1px solid var(--teal); border-radius:3px; white-space:nowrap;}
+  .btn-prolong:hover{background:var(--teal-dark); color:var(--txt);}
+  .btn-prolong.actif{border-color:var(--orange); color:var(--orange-bright); background:#2a1a04;}
   .resign-tag{display:inline-block; font-size:.55rem; letter-spacing:.5px; padding:1px 5px; border-radius:8px;
     background:#3a2506; color:var(--orange-bright); text-transform:uppercase; margin-left:4px;}
   tbody tr.resigne{background:rgba(234,114,0,.06);}
+
+  /* ---------- Fenêtre Prolongation de contrat ---------- */
+  .modal-fond{position:fixed; inset:0; background:rgba(0,0,0,.72); display:flex; align-items:center; justify-content:center;
+    z-index:100; padding:20px;}
+  .modal-fond[hidden]{display:none;}
+  .modal{background:var(--panel); border:1px solid var(--line); border-top:3px solid var(--orange);
+    width:100%; max-width:440px; max-height:90vh; overflow-y:auto;}
+  .modal-tete{display:flex; align-items:center; justify-content:space-between; padding:16px 20px 12px; border-bottom:1px solid var(--line);}
+  .modal-tete h3{margin:0; font-size:.85rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--orange-bright);}
+  .modal-x{background:none; border:none; color:var(--txt-faint); font-size:1.5rem; line-height:1; cursor:pointer; padding:0 4px;}
+  .modal-x:hover{color:var(--txt);}
+  .modal-joueur{padding:14px 20px; border-bottom:1px solid var(--line);}
+  .mj-nom{display:block; font-size:1.1rem; font-weight:600; color:var(--txt);}
+  .mj-meta{display:block; font-family:var(--font-data); font-size:.72rem; color:var(--txt-dim); margin-top:3px;}
+  .modal-grille{padding:16px 20px; display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .modal-grille label{display:flex; flex-direction:column; gap:5px; font-size:.65rem; text-transform:uppercase;
+    letter-spacing:1px; color:var(--txt-faint);}
+  .modal-grille label.large{grid-column:1 / -1;}
+  .modal-grille select, .modal-grille input{font-family:var(--font-data); font-size:.85rem; background:var(--ink); color:var(--txt);
+    border:1px solid var(--line); border-radius:3px; padding:8px 9px;}
+  .modal-grille select:focus, .modal-grille input:focus{outline:none; border-color:var(--orange);}
+  .modal-min{padding:0 20px 14px; font-family:var(--font-data); font-size:.72rem; color:var(--txt-dim);}
+  .modal-min b{color:var(--teal-bright);}
+  .modal-impact{margin:0 20px 16px; padding:12px 14px; background:var(--panel2); border-left:3px solid var(--teal);
+    font-family:var(--font-data); font-size:.72rem; color:var(--txt-dim); line-height:1.6;}
+  .modal-impact.alerte{border-left-color:var(--bad);}
+  .modal-impact b{color:var(--txt);}
+  .modal-actions{display:flex; gap:8px; justify-content:flex-end; padding:0 20px 18px; flex-wrap:wrap;}
+  .modal-actions button{font-family:var(--font-data); font-size:.72rem; letter-spacing:.5px; padding:9px 16px; cursor:pointer;
+    border-radius:3px; border:1px solid var(--teal); background:var(--teal); color:#fff;}
+  .modal-actions button.secondaire{background:transparent; color:var(--txt-dim); border-color:var(--line);}
+  .modal-actions button.secondaire:hover{color:var(--txt); border-color:var(--txt-faint);}
+  .modal-actions button.danger{background:transparent; color:var(--bad); border-color:var(--bad); margin-right:auto;}
+  .modal-actions button.danger:hover{background:var(--bad); color:#fff;}
 
   /* ---------- Progression ---------- */
   .filtres{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px;}
@@ -1576,12 +1605,21 @@ function cleCharte(statut, age){
   return 'UFA_' + tranche;
 }
 
-/* Salaire minimum de la charte pour un OV, un statut et un âge (en dollars). */
-function salaireMinimum(ov, statut, age){
+/* Échelon OV effectif : règle RFA — le DG peut donner 1 à 7 saisons, mais chaque
+   année au-delà de 3 monte l'échelon de 1 (4 ans → OV+1, … 7 ans → OV+4). */
+function echelonEffectif(ov, statut, duree){
+  const bonus = (statut === 'RFA' && (duree || 1) > 3) ? (duree - 3) : 0;
+  return Math.round(ov) + bonus;
+}
+
+/* Salaire minimum de la charte pour un OV, un statut, un âge et une durée (en dollars).
+   La durée n'influence que les RFA (échelon dynamique ci-dessus). */
+function salaireMinimum(ov, statut, age, duree){
   const cle = cleCharte(statut, age);
   const table = CHARTE_SALAIRE[cle];
   if (!table) return null;
-  const i = Math.max(0, Math.min(CHARTE_OV_MAX - CHARTE_OV_MIN, Math.round(ov) - CHARTE_OV_MIN));
+  const ovEff = echelonEffectif(ov, statut, duree);
+  const i = Math.max(0, Math.min(CHARTE_OV_MAX - CHARTE_OV_MIN, ovEff - CHARTE_OV_MIN));
   return table[i] * 1000;
 }
 
@@ -1598,6 +1636,24 @@ function litResignatures(){
 }
 function ecritResignatures(o){ localStorage.setItem(CLES_LS.resign, JSON.stringify(o)); }
 
+/* Plafond salarial de la ligue (Y22). */
+const PLAFOND = 104000000;
+
+/* Masse salariale pour un état de prolongations donné.
+   Exclut les backups et les joueurs sans contrat actif (0 an) NON prolongés.
+   Un joueur prolongé compte au plafond avec son salaire de prolongation. */
+function calculerMasse(resignMap){
+  const r = resignMap || litResignatures();
+  const actifs = ETAT.roster.filter(j=>!j.backup);
+  let masse = 0;
+  for (const j of actifs){
+    const sig = r[normaliserNom(j.nom)];
+    if (sig) masse += sig.salaire;
+    else if (j.ct > 0) masse += (j.salaire || 0);
+  }
+  return {masse, cap: PLAFOND};
+}
+
 /* ---------- Alignement ---------- */
 let triAlign = {col:'ov', desc:true};
 function rendreAlignement(){
@@ -1605,21 +1661,7 @@ function rendreAlignement(){
   $('#sourceInfo').textContent = ETAT.source;
   const actifs = ETAT.roster.filter(j=>!j.backup);
   const resign = litResignatures();
-  // Salaire effectif : si le joueur est re-signé, son salaire de re-signature
-  // remplace le salaire courant et il redevient sous contrat (compte au plafond).
-  const salaireEffectif = j => {
-    const r = resign[normaliserNom(j.nom)];
-    return r ? r.salaire : (j.salaire || 0);
-  };
-  const sousContrat = j => {
-    const r = resign[normaliserNom(j.nom)];
-    return r ? true : (j.ct > 0);
-  };
-  // Masse salariale : exclut les backups ET les joueurs sans contrat actif (0 an)
-  // NON re-signés. Un joueur re-signé selon la charte compte à nouveau au plafond.
-  const comptabilises = actifs.filter(sousContrat);
-  const masse = comptabilises.reduce((s,j)=>s+salaireEffectif(j),0);
-  const cap = 104000000;
+  const {masse, cap} = calculerMasse(resign);
   const nbResignes = actifs.filter(j=>resign[normaliserNom(j.nom)]).length;
   const moyOV = actifs.length ? (actifs.reduce((s,j)=>s+j.ov,0)/actifs.length) : 0;
   const vedettes = actifs.filter(j=>j.ov>=80).length;
@@ -1629,7 +1671,7 @@ function rendreAlignement(){
     <div class="stat-carte ${masse>cap?'alerte':''}">
       <div class="lbl">Masse salariale</div>
       <div class="val">${fmtArgent(masse)}</div>
-      <div class="det">plafond ${fmtArgent(cap)} · marge ${fmtArgent(cap-masse)}${sansContrat?` · ${sansContrat} contrat${sansContrat>1?'s':''} à 0 an exclu${sansContrat>1?'s':''}`:''}${nbResignes?` · ${nbResignes} re-signé${nbResignes>1?'s':''}`:''}</div>
+      <div class="det">plafond ${fmtArgent(cap)} · marge ${fmtArgent(cap-masse)}${sansContrat?` · ${sansContrat} contrat${sansContrat>1?'s':''} à 0 an exclu${sansContrat>1?'s':''}`:''}${nbResignes?` · ${nbResignes} prolongé${nbResignes>1?'s':''}`:''}</div>
     </div>
     <div class="stat-carte"><div class="lbl">Joueurs actifs</div><div class="val">${actifs.length}</div>
       <div class="det">${actifs.filter(j=>j.po!=='G'&&j.po!=='D').length} av · ${actifs.filter(j=>j.po==='D').length} déf · ${actifs.filter(j=>j.po==='G').length} gar</div></div>
@@ -1674,25 +1716,16 @@ function rendreAlignement(){
     html += `<td style="text-align:left"><span class="profil-tag ${tag}">${p.profil}</span></td>`;
     const rSig = resign[normaliserNom(j.nom)];
     const salAff = rSig ? rSig.salaire : j.salaire;
-    html += `<td>${fmtArgent(salAff)}${rSig?' <span class="resign-tag">re-signé</span>':''}</td>`;
-    html += `<td>${rSig?dureeMaxCharte(rSig.statut)+' an'+(dureeMaxCharte(rSig.statut)>1?'s max':''):(j.ct??'—')}</td>`;
-    // Colonne Re-signer : case à cocher + statut + salaire éditable (≥ minimum de la charte)
+    html += `<td>${fmtArgent(salAff)}${rSig?' <span class="resign-tag">prolongé</span>':''}</td>`;
+    const dSig = rSig ? (rSig.duree || dureeMaxCharte(rSig.statut)) : null;
+    html += `<td>${rSig ? dSig + ' an' + (dSig>1?'s':'') : (j.ct??'—')}</td>`;
+    // Colonne Contrat : bouton qui ouvre la fenêtre «Prolongation de contrat»
     if (j.backup){
       html += `<td class="col-resign">—</td>`;
     } else {
-      const statutDef = rSig ? rSig.statut : statutResignature(j);
-      const minSal = salaireMinimum(j.ov, statutDef, j.age);
-      const salActuel = rSig ? rSig.salaire : minSal;
-      const coche = rSig ? 'checked' : '';
-      const opts = [['RFA','RFA'],['UFA','UFA'],['UFAR2','UFA R2'],['SANS','Sans contrat']]
-        .map(([v,l])=>`<option value="${v}" ${statutDef===v?'selected':''}>${l}</option>`).join('');
-      html += `<td class="col-resign" data-nom="${j.nom.replace(/"/g,'&quot;')}" data-ov="${j.ov}" data-age="${j.age}">`
-        + `<label class="resign-case"><input type="checkbox" class="resign-check" ${coche}> re-signer</label>`
-        + `<div class="resign-detail" ${rSig?'':'style="display:none"'}>`
-        + `<select class="resign-statut">${opts}</select>`
-        + `<input type="text" class="resign-salaire" value="${fmtArgent(salActuel)}" title="minimum ${fmtArgent(minSal)}">`
-        + `<div class="resign-min">min ${fmtArgent(minSal)}</div>`
-        + `</div></td>`;
+      html += `<td class="col-resign">`
+        + `<button class="btn-prolong ${rSig?'actif':''}" data-nom="${j.nom.replace(/"/g,'&quot;')}">`
+        + `${rSig?'✓ Prolongé':'Prolonger'}</button></td>`;
     }
     html += `</tr>`;
   }
@@ -1707,71 +1740,169 @@ function rendreAlignement(){
       rendreAlignement();
     });
   });
-  attacherResignatures(table);
+  attacherProlongations(table);
 }
 
-/* Gestionnaires de la colonne Re-signer : cocher applique le minimum de la charte,
-   changer le statut recalcule le minimum, le champ salaire ne descend jamais sous
-   le minimum. Chaque changement persiste et rafraîchit la masse salariale. */
-function attacherResignatures(table){
-  table.querySelectorAll('td.col-resign[data-nom]').forEach(td=>{
-    const nom = td.dataset.nom;
-    const ov = +td.dataset.ov, age = +td.dataset.age;
-    const check = td.querySelector('.resign-check');
-    const detail = td.querySelector('.resign-detail');
-    const selStatut = td.querySelector('.resign-statut');
-    const inSal = td.querySelector('.resign-salaire');
-    const divMin = td.querySelector('.resign-min');
-    if (!check) return;
-    const cle = normaliserNom(nom);
-
-    const majMin = ()=>{
-      const min = salaireMinimum(ov, selStatut.value, age);
-      divMin.textContent = 'min ' + fmtArgent(min);
-      inSal.title = 'minimum ' + fmtArgent(min);
-      return min;
-    };
-    // Applique une valeur exacte (sans passer par le champ arrondi), persiste, rafraîchit.
-    const appliquer = (sal)=>{
-      const min = salaireMinimum(ov, selStatut.value, age);
-      if (sal===null || sal < min) sal = min;         // jamais sous le minimum
-      inSal.value = fmtArgent(sal);                    // dollars exacts, sans perte
-      const r = litResignatures();
-      r[cle] = {statut: selStatut.value, salaire: sal};
-      ecritResignatures(r);
-      rendreAlignement();                              // rafraîchit la masse
-    };
-    // Depuis le champ : parse ce que le DG a tapé (accepte «8,5 M», «900 k», dollars).
-    const sauver = ()=> appliquer(parseArgent(inSal.value));
-    const retirer = ()=>{
-      const r = litResignatures();
-      delete r[cle];
-      ecritResignatures(r);
-      rendreAlignement();
-    };
-
-    check.addEventListener('change', ()=>{
-      if (check.checked){
-        detail.style.display='';
-        majMin();
-        // à la coche : minimum exact de la charte (ou salaire courant s'il est plus élevé)
-        const min = salaireMinimum(ov, selStatut.value, age);
-        const courant = litResignatures()[cle]?.salaire ?? null;
-        appliquer(courant !== null ? courant : min);
-      } else {
-        detail.style.display='none';
-        retirer();
-      }
-    });
-    selStatut.addEventListener('change', ()=>{
-      majMin();
-      // conserver le salaire déjà négocié s'il dépasse le nouveau minimum
-      const courant = litResignatures()[cle]?.salaire ?? null;
-      appliquer(courant);
-    });
-    inSal.addEventListener('change', sauver);
-    inSal.addEventListener('blur', sauver);
+/* Le bouton de la colonne Contrat ouvre la fenêtre «Prolongation de contrat». */
+function attacherProlongations(table){
+  table.querySelectorAll('button.btn-prolong[data-nom]').forEach(b=>{
+    b.addEventListener('click', ()=> ouvrirProlongation(b.dataset.nom));
   });
+}
+
+/* ---------- Fenêtre «Prolongation de contrat» ---------- */
+const LIBELLES_STATUT = {RFA:'RFA (28 ans et -)', UFA:'UFA', UFAR2:'UFA Ronde 2', SANS:'Joueur sans contrat'};
+
+function modalProlongation(){
+  let el = document.getElementById('modalProlong');
+  if (el) return el;
+  el = document.createElement('div');
+  el.id = 'modalProlong';
+  el.className = 'modal-fond';
+  el.hidden = true;
+  el.innerHTML = `
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mpTitre">
+      <div class="modal-tete">
+        <h3 id="mpTitre">Prolongation de contrat</h3>
+        <button class="modal-x" id="mpX" aria-label="Fermer">&times;</button>
+      </div>
+      <div class="modal-joueur">
+        <span class="mj-nom" id="mpNom"></span>
+        <span class="mj-meta" id="mpMeta"></span>
+      </div>
+      <div class="modal-grille">
+        <label>Statut
+          <select id="mpStatut">
+            <option value="RFA">RFA</option>
+            <option value="UFA">UFA</option>
+            <option value="UFAR2">UFA Ronde 2</option>
+            <option value="SANS">Sans contrat</option>
+          </select>
+        </label>
+        <label>Durée
+          <select id="mpDuree"></select>
+        </label>
+        <label class="large">Salaire annuel
+          <input type="text" id="mpSalaire" inputmode="numeric">
+        </label>
+      </div>
+      <div class="modal-min" id="mpMin"></div>
+      <div class="modal-impact" id="mpImpact"></div>
+      <div class="modal-actions">
+        <button class="danger" id="mpRetirer">Retirer la prolongation</button>
+        <button class="secondaire" id="mpAnnuler">Annuler</button>
+        <button id="mpOk">Prolonger</button>
+      </div>
+    </div>`;
+  document.body.appendChild(el);
+  el.addEventListener('click', e=>{ if (e.target === el) fermerProlongation(); });
+  el.querySelector('#mpX').addEventListener('click', fermerProlongation);
+  el.querySelector('#mpAnnuler').addEventListener('click', fermerProlongation);
+  document.addEventListener('keydown', e=>{ if (e.key === 'Escape' && !el.hidden) fermerProlongation(); });
+  return el;
+}
+
+function fermerProlongation(){
+  const el = document.getElementById('modalProlong');
+  if (el) el.hidden = true;
+}
+
+/* Remplit la liste des durées permises pour un statut (charte : RFA 7, UFA 4, R2 2, sans contrat 1). */
+function remplirDurees(sel, statut, choisie){
+  const max = dureeMaxCharte(statut);
+  sel.innerHTML = '';
+  for (let d = 1; d <= max; d++){
+    const o = document.createElement('option');
+    o.value = String(d);
+    o.textContent = d + (d > 1 ? ' ans' : ' an');
+    sel.appendChild(o);
+  }
+  sel.value = String(Math.min(choisie || 1, max));
+}
+
+function ouvrirProlongation(nom){
+  const j = ETAT.roster.find(x => x.nom === nom);
+  if (!j) return;
+  const el = modalProlongation();
+  const cle = normaliserNom(j.nom);
+  const dejaSigne = litResignatures()[cle] || null;
+
+  const selStatut = el.querySelector('#mpStatut');
+  const selDuree  = el.querySelector('#mpDuree');
+  const inSal     = el.querySelector('#mpSalaire');
+  const divMin    = el.querySelector('#mpMin');
+  const divImpact = el.querySelector('#mpImpact');
+  const btnRetirer= el.querySelector('#mpRetirer');
+  const btnOk     = el.querySelector('#mpOk');
+
+  el.querySelector('#mpNom').textContent = j.nom;
+  el.querySelector('#mpMeta').textContent =
+    `${j.po} · ${j.age} ans · OV ${j.ov} · ${j._profil.profil} · salaire actuel ${fmtArgent(j.salaire)} · CT ${j.ct ?? '—'}`;
+
+  const statutInit = dejaSigne ? dejaSigne.statut : statutResignature(j);
+  selStatut.value = statutInit;
+  // durée proposée : celle déjà signée, sinon 3 ans pour un RFA (dernier palier
+  // sans hausse d'échelon), sinon la durée max du statut
+  const dureeInit = dejaSigne ? dejaSigne.duree : (statutInit === 'RFA' ? 3 : dureeMaxCharte(statutInit));
+  remplirDurees(selDuree, statutInit, dureeInit);
+  const minInit = salaireMinimum(j.ov, statutInit, j.age, +selDuree.value);
+  inSal.value = fmtArgent(dejaSigne ? dejaSigne.salaire : minInit);
+
+  btnRetirer.style.display = dejaSigne ? '' : 'none';
+  btnOk.textContent = dejaSigne ? 'Mettre à jour' : 'Prolonger';
+
+  // Rafraîchit minimum, bornage du salaire et aperçu d'impact sur la masse.
+  const rafraichir = (clamper)=>{
+    const st = selStatut.value;
+    const duree = +selDuree.value;
+    const min = salaireMinimum(j.ov, st, j.age, duree);
+    const ovEff = echelonEffectif(j.ov, st, duree);
+    const noteEch = ovEff !== j.ov
+      ? ` · échelon <b>OV ${Math.min(ovEff, CHARTE_OV_MAX)}${ovEff>CHARTE_OV_MAX?'+':''}</b> (+${ovEff-j.ov} : ${duree} ans de RFA, +1 par année après 3)`
+      : '';
+    divMin.innerHTML = `Minimum de la charte (${LIBELLES_STATUT[st]}, OV ${j.ov}, ${j.age} ans) : <b>${fmtArgent(min)}</b>${noteEch}`;
+    let sal = parseArgent(inSal.value);
+    if (clamper || sal === null || sal < min){
+      if (sal === null || sal < min) sal = min;
+      inSal.value = fmtArgent(sal);
+    }
+    // aperçu : masse recalculée en incluant cette prolongation
+    const simule = {...litResignatures()};
+    simule[cle] = {statut: st, duree: +selDuree.value, salaire: sal};
+    const {masse, cap} = calculerMasse(simule);
+    const depasse = masse > cap;
+    divImpact.classList.toggle('alerte', depasse);
+    divImpact.innerHTML =
+      `Masse projetée : <b>${fmtArgent(masse)}</b><br>`
+      + `Plafond ${fmtArgent(cap)} · ${depasse ? 'dépassement de <b>'+fmtArgent(masse-cap)+'</b>' : 'marge <b>'+fmtArgent(cap-masse)+'</b>'}<br>`
+      + `Contrat : ${selDuree.value} an${+selDuree.value>1?'s':''} × ${fmtArgent(sal)}`;
+    return sal;
+  };
+
+  selStatut.onchange = ()=>{ remplirDurees(selDuree, selStatut.value, +selDuree.value); rafraichir(true); };
+  selDuree.onchange  = ()=> rafraichir(true);   // le minimum dépend de la durée (règle RFA)
+  inSal.onchange     = ()=> rafraichir(true);
+  inSal.onblur       = ()=> rafraichir(true);
+
+  btnOk.onclick = ()=>{
+    const sal = rafraichir(true);
+    const r = litResignatures();
+    r[cle] = {statut: selStatut.value, duree: +selDuree.value, salaire: sal};
+    ecritResignatures(r);
+    fermerProlongation();
+    rendreAlignement();
+  };
+  btnRetirer.onclick = ()=>{
+    const r = litResignatures();
+    delete r[cle];
+    ecritResignatures(r);
+    fermerProlongation();
+    rendreAlignement();
+  };
+
+  rafraichir(false);
+  el.hidden = false;
+  inSal.focus();
 }
 
 /* ---------- Production ---------- */
@@ -2088,6 +2219,7 @@ if (typeof window !== 'undefined'){
     extraireFiche, validerPageEquipe, CONFIG,
     CHARTE_SALAIRE, salaireMinimum, statutResignature, cleCharte, dureeMaxCharte,
     fmtArgentCourt, parseArgent, litResignatures, ecritResignatures,
+    ouvrirProlongation, fermerProlongation, calculerMasse, PLAFOND, echelonEffectif,
     MATRICES, STATS_PAR_MATRICE, NIVEAUX, SECOURS_ROSTER, SECOURS_Y21, PROFILS, STATS_DEF};
 }
 </script>
