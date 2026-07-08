@@ -1605,23 +1605,32 @@ function cleCharte(statut, age){
   return 'UFA_' + tranche;
 }
 
-/* Échelon OV effectif : règle RFA — le DG peut donner 1 à 7 saisons, mais chaque
-   année au-delà de 3 monte l'échelon de 1 (4 ans → OV+1, … 7 ans → OV+4). */
-function echelonEffectif(ov, statut, duree){
-  const bonus = (statut === 'RFA' && (duree || 1) > 3) ? (duree - 3) : 0;
-  return Math.round(ov) + bonus;
+/* Échelon OV effectif :
+   - règle RFA : le DG peut donner 1 à 7 saisons, mais chaque année au-delà de 3
+     monte l'échelon de 1 (4 ans → OV+1, … 7 ans → OV+4);
+   - règle des gardiens : un gardien signe UN ÉCHELON PLUS BAS que son OV (−1),
+     peu importe le statut. Les deux règles se cumulent. */
+function echelonEffectif(ov, statut, duree, po){
+  const bonusRFA = (statut === 'RFA' && (duree || 1) > 3) ? (duree - 3) : 0;
+  const malusGardien = (po === 'G') ? -1 : 0;
+  return Math.round(ov) + bonusRFA + malusGardien;
 }
 
-/* Salaire minimum de la charte pour un OV, un statut, un âge et une durée (en dollars).
-   La durée n'influence que les RFA (échelon dynamique ci-dessus). */
-function salaireMinimum(ov, statut, age, duree){
+/* Salaire minimum de la charte pour un OV, un statut, un âge, une durée et une
+   position (en dollars). La durée n'influence que les RFA; la position ne joue
+   que pour les gardiens (échelon −1). */
+function salaireMinimum(ov, statut, age, duree, po){
   const cle = cleCharte(statut, age);
   const table = CHARTE_SALAIRE[cle];
   if (!table) return null;
-  const ovEff = echelonEffectif(ov, statut, duree);
+  const ovEff = echelonEffectif(ov, statut, duree, po);
   const i = Math.max(0, Math.min(CHARTE_OV_MAX - CHARTE_OV_MIN, ovEff - CHARTE_OV_MIN));
   return table[i] * 1000;
 }
+
+/* Éligibilité : seuls les joueurs dont le contrat est échu (0 an) se prolongent.
+   Les joueurs déjà sous contrat ne sont pas prolongeables. */
+function peutProlonger(j){ return !j.backup && j.ct === 0; }
 
 /* Durée maximale permise par la charte selon le statut. */
 function dureeMaxCharte(statut){
@@ -1647,7 +1656,7 @@ function calculerMasse(resignMap){
   const actifs = ETAT.roster.filter(j=>!j.backup);
   let masse = 0;
   for (const j of actifs){
-    const sig = r[normaliserNom(j.nom)];
+    const sig = (j.ct === 0) ? r[normaliserNom(j.nom)] : null; // prolongation valable pour les contrats échus seulement
     if (sig) masse += sig.salaire;
     else if (j.ct > 0) masse += (j.salaire || 0);
   }
@@ -1662,11 +1671,11 @@ function rendreAlignement(){
   const actifs = ETAT.roster.filter(j=>!j.backup);
   const resign = litResignatures();
   const {masse, cap} = calculerMasse(resign);
-  const nbResignes = actifs.filter(j=>resign[normaliserNom(j.nom)]).length;
+  const nbResignes = actifs.filter(j=>peutProlonger(j) && resign[normaliserNom(j.nom)]).length;
   const moyOV = actifs.length ? (actifs.reduce((s,j)=>s+j.ov,0)/actifs.length) : 0;
   const vedettes = actifs.filter(j=>j.ov>=80).length;
   const expirants = actifs.filter(j=>j.ct===1).length;
-  const sansContrat = actifs.filter(j=>j.ct===0 && !resign[normaliserNom(j.nom)]).length;
+  const sansContrat = actifs.filter(j=>j.ct===0 && !resign[normaliserNom(j.nom)]).length; // ct=0 non prolongés, exclus du plafond
   $('#alignSommaire').innerHTML = `
     <div class="stat-carte ${masse>cap?'alerte':''}">
       <div class="lbl">Masse salariale</div>
@@ -1704,7 +1713,7 @@ function rendreAlignement(){
     const p = j._profil;
     const badge = j.po==='G' ? 'g' : (j.po==='D' ? 'd' : '');
     const tag = j.po==='G' ? 'g-tag' : (j.po==='D' ? 'd-tag' : '');
-    html += `<tr class="${j.backup?'backup':''}${resign[normaliserNom(j.nom)]?' resigne':''}">`;
+    html += `<tr class="${j.backup?'backup':''}${peutProlonger(j) && resign[normaliserNom(j.nom)]?' resigne':''}">`;
     html += `<td><span class="pos-badge ${badge}">${j.po}</span>${j.nom}</td>`;
     html += `<td>${j.po}</td><td>${j.age}</td>`;
     for (const c of ['it','sp','st','en','du','di','sk','pa','pc','df','sc','ex','ld']){
@@ -1714,13 +1723,14 @@ function rendreAlignement(){
     }
     html += `<td class="${j.ov>=82?'cote-elite':(j.ov>=78?'cote-forte':'')}"><strong>${j.ov}</strong></td>`;
     html += `<td style="text-align:left"><span class="profil-tag ${tag}">${p.profil}</span></td>`;
-    const rSig = resign[normaliserNom(j.nom)];
+    const eligible = peutProlonger(j);
+    const rSig = eligible ? resign[normaliserNom(j.nom)] : null; // prolongation valable pour les contrats échus seulement
     const salAff = rSig ? rSig.salaire : j.salaire;
     html += `<td>${fmtArgent(salAff)}${rSig?' <span class="resign-tag">prolongé</span>':''}</td>`;
     const dSig = rSig ? (rSig.duree || dureeMaxCharte(rSig.statut)) : null;
     html += `<td>${rSig ? dSig + ' an' + (dSig>1?'s':'') : (j.ct??'—')}</td>`;
-    // Colonne Contrat : bouton qui ouvre la fenêtre «Prolongation de contrat»
-    if (j.backup){
+    // Colonne Contrat : bouton seulement pour un contrat échu (0 an) — règle de la ligue
+    if (!eligible){
       html += `<td class="col-resign">—</td>`;
     } else {
       html += `<td class="col-resign">`
@@ -1822,7 +1832,7 @@ function remplirDurees(sel, statut, choisie){
 
 function ouvrirProlongation(nom){
   const j = ETAT.roster.find(x => x.nom === nom);
-  if (!j) return;
+  if (!j || !peutProlonger(j)) return; // seuls les contrats échus (0 an) se prolongent
   const el = modalProlongation();
   const cle = normaliserNom(j.nom);
   const dejaSigne = litResignatures()[cle] || null;
@@ -1845,7 +1855,7 @@ function ouvrirProlongation(nom){
   // sans hausse d'échelon), sinon la durée max du statut
   const dureeInit = dejaSigne ? dejaSigne.duree : (statutInit === 'RFA' ? 3 : dureeMaxCharte(statutInit));
   remplirDurees(selDuree, statutInit, dureeInit);
-  const minInit = salaireMinimum(j.ov, statutInit, j.age, +selDuree.value);
+  const minInit = salaireMinimum(j.ov, statutInit, j.age, +selDuree.value, j.po);
   inSal.value = fmtArgent(dejaSigne ? dejaSigne.salaire : minInit);
 
   btnRetirer.style.display = dejaSigne ? '' : 'none';
@@ -1855,11 +1865,15 @@ function ouvrirProlongation(nom){
   const rafraichir = (clamper)=>{
     const st = selStatut.value;
     const duree = +selDuree.value;
-    const min = salaireMinimum(j.ov, st, j.age, duree);
-    const ovEff = echelonEffectif(j.ov, st, duree);
-    const noteEch = ovEff !== j.ov
-      ? ` · échelon <b>OV ${Math.min(ovEff, CHARTE_OV_MAX)}${ovEff>CHARTE_OV_MAX?'+':''}</b> (+${ovEff-j.ov} : ${duree} ans de RFA, +1 par année après 3)`
-      : '';
+    const min = salaireMinimum(j.ov, st, j.age, duree, j.po);
+    const ovEff = echelonEffectif(j.ov, st, duree, j.po);
+    let noteEch = '';
+    if (ovEff !== j.ov){
+      const parts = [];
+      if (st === 'RFA' && duree > 3) parts.push(`+${duree-3} : ${duree} ans de RFA (+1 par année après 3)`);
+      if (j.po === 'G') parts.push('−1 : gardien (un échelon plus bas)');
+      noteEch = ` · échelon <b>OV ${Math.max(CHARTE_OV_MIN, Math.min(ovEff, CHARTE_OV_MAX))}${ovEff>CHARTE_OV_MAX?'+':(ovEff<CHARTE_OV_MIN?'-':'')}</b> (${parts.join(' · ')})`;
+    }
     divMin.innerHTML = `Minimum de la charte (${LIBELLES_STATUT[st]}, OV ${j.ov}, ${j.age} ans) : <b>${fmtArgent(min)}</b>${noteEch}`;
     let sal = parseArgent(inSal.value);
     if (clamper || sal === null || sal < min){
@@ -2219,7 +2233,7 @@ if (typeof window !== 'undefined'){
     extraireFiche, validerPageEquipe, CONFIG,
     CHARTE_SALAIRE, salaireMinimum, statutResignature, cleCharte, dureeMaxCharte,
     fmtArgentCourt, parseArgent, litResignatures, ecritResignatures,
-    ouvrirProlongation, fermerProlongation, calculerMasse, PLAFOND, echelonEffectif,
+    ouvrirProlongation, fermerProlongation, calculerMasse, PLAFOND, echelonEffectif, peutProlonger,
     MATRICES, STATS_PAR_MATRICE, NIVEAUX, SECOURS_ROSTER, SECOURS_Y21, PROFILS, STATS_DEF};
 }
 </script>
