@@ -200,6 +200,25 @@
   .att-input:focus{border-color:var(--orange); outline:none;}
   .jc-note{font-size:.68rem; color:var(--txt-faint); padding:8px 16px 12px; border-top:1px dashed var(--line);}
 
+  /* ---------- OV détaillé ---------- */
+  .ovd-panneau{background:var(--panel); border:1px solid var(--line); padding:18px 20px; margin-bottom:18px;}
+  .ovd-ligne{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end; margin-bottom:16px;}
+  .ovd-ligne label{display:flex; flex-direction:column; gap:5px; font-size:.7rem; text-transform:uppercase; letter-spacing:1px; color:var(--txt-faint);}
+  .ovd-ligne select{background:var(--teal-deep); border:1px solid var(--line); color:var(--txt); font-family:var(--font-data);
+    font-size:.82rem; padding:7px 10px; border-radius:2px; min-width:230px;}
+  .ovd-ligne select:focus{outline:none; border-color:var(--orange);}
+  .ovd-grille{display:grid; grid-template-columns:repeat(auto-fit,minmax(82px,1fr)); gap:10px; margin-bottom:16px;}
+  .ovd-cote{display:flex; flex-direction:column; gap:4px;}
+  .ovd-cote span{font-size:.66rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--txt-faint); text-align:center;}
+  .ovd-cote input{font-family:var(--font-data); font-size:.95rem; text-align:center; background:var(--ink); color:var(--txt);
+    border:1px solid var(--line); border-radius:2px; padding:7px 4px; width:100%;}
+  .ovd-cote input:focus{outline:none; border-color:var(--orange);}
+  .ovd-resultat{display:flex; gap:14px; flex-wrap:wrap; align-items:stretch;}
+  .ovd-badge{background:var(--teal-deep); border:1px solid var(--teal); padding:12px 22px; text-align:center; min-width:150px;}
+  .ovd-badge .val{font-family:var(--font-data); font-size:2rem; color:var(--orange-bright); display:block;}
+  .ovd-badge .lib{font-size:.64rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--txt-faint);}
+  .ovd-note{font-size:.78rem; color:var(--txt-dim); align-self:center; max-width:460px; line-height:1.55;}
+
   /* ---------- Réglages ---------- */
   .regl-bloc{background:var(--panel); border:1px solid var(--line); padding:18px 20px; margin-bottom:18px;}
   .regl-bloc h3{font-family:var(--font-body); font-weight:600; text-transform:uppercase; letter-spacing:1.5px; font-size:.85rem; color:var(--orange-bright); margin-bottom:10px;}
@@ -255,6 +274,7 @@
   <button class="actif" data-vue="alignement">Alignement</button>
   <button data-vue="production">Production</button>
   <button data-vue="progression">Progression</button>
+  <button data-vue="ovdetail">OV détaillé</button>
   <button data-vue="reglages">Réglages</button>
   <div class="maj-zone">
     <button id="btnMaj">Actualiser depuis ushl.ca</button>
@@ -296,6 +316,31 @@
       <button data-f="difficulte">En difficulté</button>
     </div>
     <div class="prog-grille" id="progGrille"></div>
+  </section>
+
+  <!-- ================= OV DÉTAILLÉ ================= -->
+  <section class="vue" id="vue-ovdetail">
+    <h2>Calculateur d'OV détaillé</h2>
+    <div class="h2-sous">Reproduit au centième l'overall du simulateur à partir des 13 cotes, comme la fonction <em>overall()</em> du classeur Excel. Pondérations calibrées sur les rosters complets de la ligue (8 juillet 2026) : validées au centième sur les 17 OV détaillés de référence du classeur et sur l'arrondi des 697 patineurs de la ligue. Gardiens exclus — leur formule est distincte.</div>
+    <div class="ovd-panneau">
+      <div class="ovd-ligne">
+        <label>Joueur de l'alignement
+          <select id="ovdJoueur"><option value="">— saisie manuelle —</option></select>
+        </label>
+        <label>Groupe
+          <select id="ovdGroupe">
+            <option value="F">Attaquant</option>
+            <option value="D">Défenseur</option>
+          </select>
+        </label>
+      </div>
+      <div class="ovd-grille" id="ovdGrille"></div>
+      <div class="ovd-resultat">
+        <div class="ovd-badge"><span class="val" id="ovdValeur">—</span><span class="lib">OV détaillé</span></div>
+        <div class="ovd-badge"><span class="val" id="ovdArrondi">—</span><span class="lib">OV affiché (arrondi)</span></div>
+        <div class="ovd-note" id="ovdNote"></div>
+      </div>
+    </div>
   </section>
 
   <!-- ================= RÉGLAGES ================= -->
@@ -2157,6 +2202,7 @@ document.querySelectorAll('nav button[data-vue]').forEach(b=>{
     b.classList.add('actif');
     document.getElementById('vue-'+b.dataset.vue).classList.add('actif');
     if (b.dataset.vue==='progression') rendreProgression();
+    if (b.dataset.vue==='ovdetail') peuplerJoueursOvd();
     if (b.dataset.vue==='reglages') rendreMatrice();
   });
 });
@@ -2225,6 +2271,92 @@ toutRendre();
 /* limites des gardiens : chargement silencieux au démarrage (cache 1 h) */
 chargerLimites(false).then(()=>rendreProgression()).catch(()=>{});
 
+/* ------------------ CALCULATEUR OV DÉTAILLÉ ------------------
+   Pondérations calibrées par programme linéaire sur les rosters complets de la
+   ligue (26 équipes, recote du 8 juillet 2026) et sur les 17 OV détaillés de
+   référence produits par la fonction overall() du classeur Excel.
+   Validation : 17/17 références au centième (±0,005), 697/697 arrondis de la
+   ligue du 8 juillet, 22/22 sur l'alignement SANJOSE du 25 juin (hors
+   échantillon de calibration). Les défenseurs utilisent deux pondérations :
+   offensive lorsque PA + SC ≥ DF + ST, défensive sinon. Les gardiens ont une
+   formule distincte (50 partout → 48, contre 55 chez les patineurs) qui n'est
+   pas couverte ici. Ordre des cotes : IN SP ST EN DU DI SK PA PC DF OF EX LD. */
+const OV_ORDRE = ['it','sp','st','en','du','di','sk','pa','pc','df','sc','ex','ld'];
+const OV_POIDS = {
+  F:     {w:[0.073423,0.072584,0.102613,0.043094,0.015318,0.014931,0.090409,0.147233,0.116690,0.102606,0.191218,0.014681,0.014822], cst:4.530845},
+  D_OFF: {w:[0.071201,0.160040,0.065793,0.050580,-0.001963,-0.003945,0.095153,0.168552,0.122700,0.086797,0.158935,0.013673,0.018993], cst:4.177806},
+  D_DEF: {w:[0.118770,0.077492,0.147627,0.043248,0.014035,0.015385,0.087341,0.118938,0.088093,0.193175,0.073577,0.015078,0.013870], cst:4.016048}
+};
+function ovDetaille(cotes, groupe){
+  /* cotes : objet portant it, sp, st, en, du, di, sk, pa, pc, df, sc, ex, ld.
+     groupe : 'F' (attaquant) ou 'D' (défenseur).
+     Retourne {valeur, arrondi, formule} ou null si une cote est absente
+     ou non numérique (cas des gardiens : df et sc à null). */
+  if (OV_ORDRE.some(k => cotes[k] === null || cotes[k] === undefined || isNaN(cotes[k]))) return null;
+  let jeu, formule;
+  if (groupe === 'D'){
+    const offensif = (cotes.pa + cotes.sc) >= (cotes.df + cotes.st);
+    jeu = offensif ? OV_POIDS.D_OFF : OV_POIDS.D_DEF;
+    formule = offensif ? 'défenseur offensif (PA + OF ≥ DF + ST)'
+                       : 'défenseur défensif (PA + OF < DF + ST)';
+  } else {
+    jeu = OV_POIDS.F;
+    formule = 'attaquant';
+  }
+  const valeur = OV_ORDRE.reduce((s,k,i) => s + jeu.w[i]*cotes[k], jeu.cst);
+  return {valeur, arrondi: Math.round(valeur), formule};
+}
+
+const OVD_LIBELLES = {it:'IN', sp:'SP', st:'ST', en:'EN', du:'DU', di:'DI', sk:'SK',
+                      pa:'PA', pc:'PC', df:'DF', sc:'OF', ex:'EX', ld:'LD'};
+function peuplerJoueursOvd(){
+  const sel = document.getElementById('ovdJoueur');
+  if (!sel) return;
+  const courant = sel.value;
+  const patineurs = ETAT.roster.filter(j => j.po !== 'G');
+  sel.innerHTML = '<option value="">— saisie manuelle —</option>' +
+    patineurs.map(j => `<option value="${j.nom}">${j.nom} (${j.po} · OV ${j.ov})</option>`).join('');
+  if (courant && patineurs.some(j => j.nom === courant)) sel.value = courant;
+}
+function chargerJoueurOvd(){
+  const nom = document.getElementById('ovdJoueur').value;
+  if (!nom) return;
+  const j = ETAT.roster.find(x => x.nom === nom);
+  if (!j) return;
+  document.getElementById('ovdGroupe').value = (j.po === 'D') ? 'D' : 'F';
+  OV_ORDRE.forEach(k => { document.getElementById('ovd_' + k).value = j[k]; });
+  calculerOvd();
+}
+function calculerOvd(){
+  const cotes = {};
+  OV_ORDRE.forEach(k => { cotes[k] = parseFloat(document.getElementById('ovd_' + k).value); });
+  const r = ovDetaille(cotes, document.getElementById('ovdGroupe').value);
+  const elV = document.getElementById('ovdValeur');
+  const elA = document.getElementById('ovdArrondi');
+  const elN = document.getElementById('ovdNote');
+  if (!r){
+    elV.textContent = '—'; elA.textContent = '—';
+    elN.textContent = 'Complète les 13 cotes (valeurs numériques) pour obtenir l\'OV détaillé.';
+    return;
+  }
+  elV.textContent = r.valeur.toFixed(2).replace('.', ',');
+  elA.textContent = String(r.arrondi);
+  elN.textContent = 'Formule ' + r.formule + '. L\'OV affiché sur ushl.ca est l\'arrondi au plus proche de l\'OV détaillé.';
+}
+function construireOvd(){
+  const grille = document.getElementById('ovdGrille');
+  if (!grille) return;
+  grille.innerHTML = OV_ORDRE.map(k =>
+    `<div class="ovd-cote"><span>${OVD_LIBELLES[k]}</span>
+     <input type="number" min="1" max="99" step="1" id="ovd_${k}" value="75"></div>`).join('');
+  OV_ORDRE.forEach(k => document.getElementById('ovd_' + k).addEventListener('input', calculerOvd));
+  document.getElementById('ovdGroupe').addEventListener('change', calculerOvd);
+  document.getElementById('ovdJoueur').addEventListener('change', chargerJoueurOvd);
+  peuplerJoueursOvd();
+  calculerOvd();
+}
+construireOvd();
+
 /* exposition pour le harnais de tests (jsdom) */
 if (typeof window !== 'undefined'){
   window.__SJS__ = {parseRoster, parseScoring, parseXtra, determinerProfil, evaluerStat,
@@ -2234,7 +2366,8 @@ if (typeof window !== 'undefined'){
     CHARTE_SALAIRE, salaireMinimum, statutResignature, cleCharte, dureeMaxCharte,
     fmtArgentCourt, parseArgent, litResignatures, ecritResignatures,
     ouvrirProlongation, fermerProlongation, calculerMasse, PLAFOND, echelonEffectif, peutProlonger,
-    MATRICES, STATS_PAR_MATRICE, NIVEAUX, SECOURS_ROSTER, SECOURS_Y21, PROFILS, STATS_DEF};
+    MATRICES, STATS_PAR_MATRICE, NIVEAUX, SECOURS_ROSTER, SECOURS_Y21, PROFILS, STATS_DEF,
+    ovDetaille, OV_POIDS, OV_ORDRE, peuplerJoueursOvd, calculerOvd};
 }
 </script>
 </body>

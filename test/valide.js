@@ -482,6 +482,86 @@ const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
   egal(S.ETAT.modeY21, false, 'Retour à la saison en cours');
   ok(doc.querySelector('#bandeauY21').style.display === 'none', 'Bandeau retiré');
 
+  console.log('— Calculateur OV détaillé : moteur');
+  ok(typeof S.ovDetaille === 'function', 'ovDetaille exposée');
+  tableauEgal(S.OV_ORDRE, ['it','sp','st','en','du','di','sk','pa','pc','df','sc','ex','ld'],
+    'Ordre des cotes IN SP ST EN DU DI SK PA PC DF OF EX LD');
+  // 17 OV détaillés de référence produits par la fonction overall() du classeur Excel
+  const refsOvd = [
+    ['F',[68,85,69,77,79,75,83,71,74,56,75,49,37],76.37,'Lambert'],
+    ['F',[77,71,82,79,79,77,74,78,74,73,78,77,64],80.81,'ErikssonEk'],
+    ['F',[86,78,74,81,75,70,80,79,73,66,80,78,68],81.39,'Konecny'],
+    ['F',[68,81,74,77,75,80,77,72,72,69,75,51,41],77.40,'Olausson'],
+    ['F',[69,79,67,76,70,76,78,77,74,67,74,45,40],76.99,'Tuomaala'],
+    ['F',[64,85,73,87,77,85,86,78,71,69,79,58,58],80.53,'Thomas'],
+    ['F',[66,77,72,76,76,79,77,77,81,63,76,56,41],78.15,'Johnson'],
+    ['F',[65,86,79,87,81,85,89,70,75,61,84,67,58],81.18,'Nylander'],
+    ['F',[62,76,75,77,78,80,78,71,75,62,78,90,75],77.97,'Saad'],
+    ['F',[82,70,94,84,98,79,70,72,69,65,88,60,69],81.96,'Legare'],
+    ['D',[68,70,78,84,68,82,72,73,74,84,62,85,80],79.55,'Brodin'],
+    ['D',[81,73,85,92,89,80,76,66,71,79,58,52,53],80.09,'Schneider'],
+    ['D',[64,84,70,86,83,81,85,86,76,79,70,60,62],82.54,'Fox'],
+    ['D',[73,74,84,94,78,89,81,70,70,80,57,99,78],81.14,'Myers'],
+    ['D',[65,72,82,78,75,79,75,71,72,78,60,70,65],77.84,'Graves'],
+    ['D',[80,70,91,88,86,76,85,75,70,82,67,69,57],83.67,'Fleury'],
+    ['D',[68,74,76,76,74,80,76,71,72,78,61,80,75],77.83,'Schmidt']
+  ];
+  const versCotes = t => Object.fromEntries(S.OV_ORDRE.map((k,i)=>[k,t[i]]));
+  refsOvd.forEach(([g,t,attendu,nom]) => {
+    proche(S.ovDetaille(versCotes(t), g).valeur, attendu, 0.005,
+      `Référence Excel : ${nom} → ${attendu}`);
+  });
+  egal(S.ovDetaille(versCotes([82,70,94,84,98,79,70,72,69,65,88,60,69]),'F').arrondi, 82,
+    'Legare : arrondi 82 (OV affiché sur ushl.ca)');
+  // classement des défenseurs : offensif si PA + OF >= DF + ST
+  ok(S.ovDetaille(versCotes([64,84,70,86,83,81,85,86,76,79,70,60,62]),'D').formule.includes('offensif'),
+    'Fox (PA 86 + OF 70 = 156 ≥ DF 79 + ST 70 = 149) → formule offensive');
+  ok(S.ovDetaille(versCotes([68,70,78,84,68,82,72,73,74,84,62,85,80]),'D').formule.includes('défensif'),
+    'Brodin (PA 73 + OF 62 = 135 < DF 84 + ST 78 = 162) → formule défensive');
+  // cohérence avec l'alignement de secours (25 juin — hors échantillon de calibration)
+  S.SECOURS_ROSTER.filter(j => j.po !== 'G').forEach(j => {
+    const r = S.ovDetaille(j, j.po === 'D' ? 'D' : 'F');
+    ok(r && r.arrondi === j.ov, `Arrondi de l'OV détaillé = OV affiché — ${j.nom} (${j.ov})`);
+  });
+  // ancre 50 partout et gardiens
+  proche(S.ovDetaille(versCotes(Array(13).fill(50)),'F').arrondi, 55, 0,
+    'Patineur 50 partout → OV 55');
+  egal(S.ovDetaille(S.SECOURS_ROSTER.find(j=>j.nom==='Alexandar Georgiev'),'F'), null,
+    'Gardien (df et sc nuls) → null : formule non couverte');
+
+  console.log('— Calculateur OV détaillé : interface');
+  ok(!!doc.querySelector('nav button[data-vue="ovdetail"]'), 'Onglet OV détaillé présent');
+  const selOvd = doc.getElementById('ovdJoueur');
+  egal(selOvd.querySelectorAll('option').length, 23,
+    'Sélecteur : 22 patineurs + saisie manuelle (gardiens exclus)');
+  egal(doc.querySelectorAll('#ovdGrille input').length, 13, '13 champs de cotes');
+  selOvd.value = 'Nathan Legare';
+  selOvd.dispatchEvent(new W.Event('change'));
+  egal(doc.getElementById('ovdGroupe').value, 'F', 'Legare chargé comme attaquant');
+  egal(doc.getElementById('ovd_st').value, '92', 'Cote ST de Legare (alignement du 25 juin) chargée');
+  egal(doc.getElementById('ovdArrondi').textContent, '81', 'OV arrondi de Legare (cotes du 25 juin) = 81');
+  const legareJuin = S.SECOURS_ROSTER.find(j=>j.nom==='Nathan Legare');
+  const attenduLegare = S.ovDetaille(legareJuin,'F').valeur.toFixed(2).replace('.', ',');
+  egal(doc.getElementById('ovdValeur').textContent, attenduLegare, 'OV détaillé affiché avec deux décimales');
+  // saisie manuelle : recopier les cotes de la capture Excel de Legare
+  const capLegare = versCotes([82,70,94,84,98,79,70,72,69,65,88,60,69]);
+  S.OV_ORDRE.forEach(k => { doc.getElementById('ovd_'+k).value = capLegare[k]; });
+  doc.getElementById('ovd_it').dispatchEvent(new W.Event('input'));
+  egal(doc.getElementById('ovdValeur').textContent, '81,96', 'Saisie manuelle : Legare du classeur → 81,96');
+  egal(doc.getElementById('ovdArrondi').textContent, '82', 'Saisie manuelle : arrondi 82');
+  // bascule défenseur : la note reflète la formule retenue
+  selOvd.value = 'Adam Fox';
+  selOvd.dispatchEvent(new W.Event('change'));
+  egal(doc.getElementById('ovdGroupe').value, 'D', 'Fox chargé comme défenseur');
+  ok(doc.getElementById('ovdNote').textContent.includes('offensif'), 'Note : formule offensive pour Fox');
+  selOvd.value = 'Jonas Brodin';
+  selOvd.dispatchEvent(new W.Event('change'));
+  ok(doc.getElementById('ovdNote').textContent.includes('défensif'), 'Note : formule défensive pour Brodin');
+  // champ vidé → résultat neutre
+  doc.getElementById('ovd_pa').value = '';
+  doc.getElementById('ovd_pa').dispatchEvent(new W.Event('input'));
+  egal(doc.getElementById('ovdValeur').textContent, '—', 'Cote manquante → aucun résultat');
+
   console.log(`\n${total - echecs}/${total} vérifications réussies`);
   process.exit(echecs ? 1 : 0);
 })().catch(e => { console.error('ERREUR FATALE', e); process.exit(1); });
