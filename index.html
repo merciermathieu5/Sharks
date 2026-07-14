@@ -122,6 +122,33 @@
   .resign-tag{display:inline-block; font-size:.55rem; letter-spacing:.5px; padding:1px 5px; border-radius:8px;
     background:#3a2506; color:var(--orange-bright); text-transform:uppercase; margin-left:4px;}
   tbody tr.resigne{background:rgba(234,114,0,.06);}
+  .compo-ajout{background:var(--panel); border:1px solid var(--line); padding:14px 16px; margin:14px 0 18px;}
+  .compo-ajout .ha-titre{margin-top:0;}
+  .compo-form{display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;}
+  .compo-form label{display:flex; flex-direction:column; gap:4px; font-size:.65rem; text-transform:uppercase;
+    letter-spacing:1px; color:var(--txt-faint);}
+  .compo-form input, .compo-form select{font-family:var(--font-data); font-size:.82rem; background:var(--ink);
+    color:var(--txt); border:1px solid var(--line); border-radius:3px; padding:7px 9px;}
+  .compo-form input:focus, .compo-form select:focus{outline:none; border-color:var(--orange);}
+  .compo-form #caNom{width:190px;} .compo-form #caOv{width:64px;} .compo-form #caSal{width:110px;}
+  .compo-form button{padding:8px 18px;}
+  .compo-erreur{margin-top:8px; font-size:.72rem; color:var(--bad);}
+  .compo-retires{display:flex; gap:8px; flex-wrap:wrap;}
+  .compo-retires .retire-puce{display:inline-flex; align-items:center; gap:7px; font-family:var(--font-data);
+    font-size:.72rem; color:var(--txt-dim); background:var(--panel); border:1px solid var(--line); padding:5px 10px; border-radius:14px;}
+  .compo-retires button{background:none; border:none; color:var(--teal-bright); cursor:pointer; font-size:.7rem; padding:0;}
+  .compo-retires button:hover{color:var(--orange-bright);}
+  .btn-retirer{font-family:var(--font-data); font-size:.62rem; padding:4px 9px; cursor:pointer; background:transparent;
+    color:var(--bad); border:1px solid var(--bad); border-radius:3px;}
+  .btn-retirer:hover{background:var(--bad); color:#fff;}
+  .prov-tag{display:inline-block; font-size:.58rem; letter-spacing:.5px; padding:1px 7px; border-radius:9px;
+    border:1px solid var(--line); color:var(--txt-dim); text-transform:uppercase;}
+  .prov-tag.prov-prolonge{border-color:var(--orange); color:var(--orange-bright);}
+  .prov-tag.prov-ajout{border-color:var(--teal); color:var(--teal-bright);}
+  .stat-carte.manque{border-left:3px solid var(--bad);}
+  .stat-carte.complet{border-left:3px solid #3f9d4f;}
+  .ha-titre{margin:26px 0 4px; font-size:.8rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--teal-bright);}
+  .ha-note{margin:0 0 10px; font-size:.7rem; color:var(--txt-faint); max-width:70ch;}
 
   /* ---------- Fenêtre Prolongation de contrat ---------- */
   .modal-fond{position:fixed; inset:0; background:rgba(0,0,0,.72); display:flex; align-items:center; justify-content:center;
@@ -272,6 +299,7 @@
 
 <nav>
   <button class="actif" data-vue="alignement">Alignement</button>
+  <button data-vue="composition">Composition</button>
   <button data-vue="production">Production</button>
   <button data-vue="progression">Progression</button>
   <button data-vue="ovdetail">OV détaillé</button>
@@ -293,9 +321,39 @@
     <div class="h2-sous" id="alignSous">Cotes, salaires et contrats — source : TeamRosters.php (SANJOSE)</div>
     <div class="sommaire" id="alignSommaire"></div>
     <div class="table-wrap"><table id="tableAlignement"></table></div>
+    <div id="horsAlignement" style="display:none">
+      <h3 class="ha-titre">Hors alignement — sans contrat / club-école</h3>
+      <p class="ha-note">Ces joueurs apparaissent dans une table séparée de la page de la ligue. Ils ne comptent pas
+      au plafond, sauf s'ils sont prolongés (contrat échu re-signé selon la charte 6.4).</p>
+      <div class="table-wrap"><table id="tableHorsAlign"></table></div>
+    </div>
   </section>
 
   <!-- ================= PRODUCTION ================= -->
+  <section class="vue" id="vue-composition">
+    <h2>Composition d'équipe</h2>
+    <p class="ha-note">L'équipe que tu construis pour la saison : les joueurs <strong>signés</strong> (contrat en cours)
+    et <strong>prolongés</strong> (contrat échu re-signé selon la charte) s'y retrouvent automatiquement. Retire les joueurs
+    transigés ailleurs, ajoute manuellement tes acquisitions. Minimum de la ligue : <strong>22 joueurs</strong>.</p>
+    <div id="compoSommaire" class="sommaire"></div>
+    <div class="compo-ajout">
+      <h3 class="ha-titre">Ajouter un joueur (échange, autonomie…)</h3>
+      <div class="compo-form">
+        <label>Nom<input type="text" id="caNom" placeholder="Prénom Nom"></label>
+        <label>Position<select id="caPo"><option>C</option><option>AG</option><option>AD</option><option>D</option><option>G</option></select></label>
+        <label>OV<input type="text" id="caOv" inputmode="numeric" placeholder="80"></label>
+        <label>Salaire<input type="text" id="caSal" placeholder="ex. 3,5 M"></label>
+        <button id="caAjouter" class="btn-prolong">Ajouter</button>
+      </div>
+      <div id="caErreur" class="compo-erreur" style="display:none"></div>
+    </div>
+    <div class="table-wrap"><table id="tableCompo"></table></div>
+    <div id="compoRetires" style="display:none">
+      <h3 class="ha-titre">Retirés (transigés ailleurs)</h3>
+      <div id="compoRetiresListe" class="compo-retires"></div>
+    </div>
+  </section>
+
   <section class="vue" id="vue-production">
     <h2>Production — saison en cours</h2>
     <div class="h2-sous" id="prodSous">Pointage de la saison actuelle (TeamScoring.php) enrichi de XtraStats (minutes, mises en échec)</div>
@@ -406,6 +464,7 @@ const CONFIG = {
   urls: {
     roster:  'https://ushl.ca/ushl/menu_sim/USHL-pro/jamesishot/TeamRosters.php?team=SANJOSE',
     scoring: 'https://ushl.ca/ushl/menu_sim/USHL-pro/jamesishot/TeamScoring.php?team=SANJOSE',
+    finance: 'https://ushl.ca/ushl/menu_sim/USHL-pro/jamesishot/TeamFinance.php?team=SANJOSE',
     xtra:    'https://ushl.ca/ushl/menu_sim/USHL-pro/USHLxtrastats.html'
   },
   proxys: [
@@ -417,7 +476,7 @@ const CONFIG = {
   ],
   // limites d'utilisation des gardiens (projet gestiongardiens, généré depuis ushl.ca)
   urlLimites: 'https://merciermathieu5.github.io/gestiongardiens/limites.json',
-  ttl: { roster: 12*3600*1000, scoring: 30*60*1000, xtra: 3600*1000, limites: 3600*1000 },
+  ttl: { roster: 12*3600*1000, scoring: 30*60*1000, finance: 30*60*1000, xtra: 3600*1000, limites: 3600*1000 },
   matchsSaison: 82
 };
 
@@ -426,7 +485,8 @@ const CLES_LS = {
   overrides: 'sjs_attentes_joueurs_v1',
   proxy: 'sjs_proxy_prefere_v1',
   cache: 'sjs_cache_v1',
-  resign: 'sjs_resignatures_v1'
+  resign: 'sjs_resignatures_v1',
+  compo: 'sjs_compo_v1'
 };
 
 /* ------------------ DÉFINITION DES STATS ------------------ */
@@ -1133,6 +1193,7 @@ function parseRoster(html, doc){
   const tables = Array.from(d.querySelectorAll('table'));
   const attendu = ['PO','HD','IN','SP','ST','EN','DU','DI','SK','PA','PC','DF','OF','EX','LD','OV'];
   let joueurs = [];
+  let tablesValides = 0;
   for (const table of tables){
     const lignes = Array.from(table.querySelectorAll('tr'));
     if (!lignes.length) continue;
@@ -1163,12 +1224,48 @@ function parseRoster(html, doc){
       };
       if (j.ov===null || j.age===null) continue;
       j.backup = /^backup/i.test(j.nom.replace(/[\s_]/g,'')) || /^back ?up/i.test(j.nom);
+      j.horsAlignement = tablesValides > 0; // tables suivantes : sans contrat / club-école
       joueurs.push(j);
     }
-    if (joueurs.length) break; // première table valide = formation PRO
+    tablesValides++;
+    // on continue : la page peut lister les joueurs à contrat échu dans une table
+    // séparée après la formation PRO (structure observée après la recote Y22)
   }
   return joueurs;
 }
+
+/* Page «Finances» (TeamFinance.php) : source de vérité des CONTRATS. La page
+   Formation peut dater (ex. 28 juin) alors que Finances est régénérée chaque jour :
+   la colonne «A» (années restantes) y est la seule à jour — c'est là que vivent les
+   joueurs à 0 année de contrat. Tables «JOUEUR | A | CONTRAT» : la première liste
+   les pros, la suivante le club-école. Retourne une Map nom normalisé →
+   {ct, salaire, clubEcole}. */
+function parseFinance(html, doc){
+  const d = doc || new DOMParser().parseFromString(html, 'text/html');
+  const tables = Array.from(d.querySelectorAll('table'));
+  const contrats = new Map();
+  let tablesValides = 0;
+  for (const table of tables){
+    const lignes = Array.from(table.querySelectorAll('tr'));
+    if (!lignes.length) continue;
+    const entetes = Array.from(lignes[0].querySelectorAll('th,td')).map(c=>c.textContent.trim().toUpperCase());
+    if (!(entetes.includes('JOUEUR') && entetes.includes('A') && entetes.includes('CONTRAT'))) continue;
+    const iNom = entetes.indexOf('JOUEUR'), iA = entetes.indexOf('A'), iC = entetes.indexOf('CONTRAT');
+    const clubEcole = tablesValides > 0; // 1re table = pros, suivantes = club-école
+    for (let i=1;i<lignes.length;i++){
+      const cel = Array.from(lignes[i].querySelectorAll('td,th')).map(c=>c.textContent.trim());
+      const nom = (cel[iNom]||'').replace(/\s+/g,' ').trim();
+      if (!nom) continue;
+      const ct = nombre(cel[iA]);
+      const salaire = nombre(cel[iC]);
+      if (ct===null && salaire===null) continue;
+      contrats.set(normaliserNom(nom), {ct, salaire, clubEcole});
+    }
+    tablesValides++;
+  }
+  return contrats;
+}
+
 
 /* ---------- Parseur : pointage (TeamScoring.php) ----------
    Table à en-têtes variables ; on mappe par nom d'en-tête reconnu. */
@@ -1509,6 +1606,27 @@ async function actualiserTout(){
       rapport.push('formation ✓ ('+joueurs.length+' joueurs'+((essais||1)>1?', bonne équipe obtenue après réessai':'')+')');
     } else rapport.push('formation : table introuvable, données locales conservées');
   }catch(e){ rapport.push('formation ✗ ('+e.message+')'); }
+  // 1b) Contrats (page Finances — source de vérité des années de contrat)
+  etat.textContent = 'contrats…';
+  try{
+    const {texte, essais} = await chercherSource('finance', validerPageEquipe);
+    const contrats = parseFinance(texte);
+    if (contrats.size >= 5){
+      let maj = 0, echus = 0;
+      for (const j of ETAT.roster){
+        const fin = contrats.get(normaliserNom(j.nom));
+        if (!fin) continue;
+        if (fin.ct !== null) j.ct = fin.ct;
+        if (fin.salaire !== null) j.salaire = fin.salaire;
+        if (fin.clubEcole) j.horsAlignement = true;
+        maj++;
+        if (j.ct === 0 && !j.backup) echus++;
+      }
+      const f = extraireFiche(texte); if (f) ETAT.fiche = f; // la fiche Finances est la plus fraîche
+      rapport.push('contrats ✓ ('+maj+' joueurs synchronisés'+(echus?', '+echus+' à 0 an — prolongeables':'')
+        +((essais||1)>1?', bonne équipe obtenue après réessai':'')+')');
+    } else rapport.push('contrats : tables introuvables, CT de la formation conservés');
+  }catch(e){ rapport.push('contrats ✗ ('+e.message+')'); }
   // 2) Pointage
   etat.textContent = 'production…';
   try{
@@ -1698,12 +1816,12 @@ const PLAFOND = 104000000;
    Un joueur prolongé compte au plafond avec son salaire de prolongation. */
 function calculerMasse(resignMap){
   const r = resignMap || litResignatures();
-  const actifs = ETAT.roster.filter(j=>!j.backup);
   let masse = 0;
-  for (const j of actifs){
+  for (const j of ETAT.roster){
+    if (j.backup) continue;
     const sig = (j.ct === 0) ? r[normaliserNom(j.nom)] : null; // prolongation valable pour les contrats échus seulement
-    if (sig) masse += sig.salaire;
-    else if (j.ct > 0) masse += (j.salaire || 0);
+    if (sig) masse += sig.salaire;                              // un prolongé rentre au plafond, même hors alignement
+    else if (!j.horsAlignement && j.ct > 0) masse += (j.salaire || 0); // hors alignement non prolongé : jamais compté
   }
   return {masse, cap: PLAFOND};
 }
@@ -1713,10 +1831,11 @@ let triAlign = {col:'ov', desc:true};
 function rendreAlignement(){
   $('#ficheEquipe').textContent = ETAT.fiche;
   $('#sourceInfo').textContent = ETAT.source;
-  const actifs = ETAT.roster.filter(j=>!j.backup);
+  const actifs = ETAT.roster.filter(j=>!j.backup && !j.horsAlignement);
+  const horsAlign = ETAT.roster.filter(j=>j.horsAlignement && !j.backup);
   const resign = litResignatures();
   const {masse, cap} = calculerMasse(resign);
-  const nbResignes = actifs.filter(j=>peutProlonger(j) && resign[normaliserNom(j.nom)]).length;
+  const nbResignes = ETAT.roster.filter(j=>peutProlonger(j) && resign[normaliserNom(j.nom)]).length; // alignement + hors alignement
   const moyOV = actifs.length ? (actifs.reduce((s,j)=>s+j.ov,0)/actifs.length) : 0;
   const vedettes = actifs.filter(j=>j.ov>=80).length;
   const expirants = actifs.filter(j=>j.ct===1).length;
@@ -1740,7 +1859,7 @@ function rendreAlignement(){
     ['ex','EX'],['ld','LD'],['ov','OV'],['profil','Profil'],['salaire','Salaire'],['ct','CT'],
     ['resign','Re-signer']
   ];
-  const liste = [...ETAT.roster].sort((a,b)=>{
+  const trieur = (a,b)=>{
     const c = triAlign.col;
     const va = c==='profil' ? a._profil.profil : a[c];
     const vb = c==='profil' ? b._profil.profil : b[c];
@@ -1749,7 +1868,8 @@ function rendreAlignement(){
     if (vb===null||vb===undefined) return -1;
     const r = (typeof va==='string') ? va.localeCompare(vb) : va-vb;
     return triAlign.desc ? -r : r;
-  });
+  };
+  const liste = ETAT.roster.filter(j=>!j.horsAlignement).sort(trieur);
   let html = '<thead><tr>' + cols.map(([c,l])=>
     c==='resign'
       ? `<th class="col-resign">${l}</th>`
@@ -1796,7 +1916,50 @@ function rendreAlignement(){
     });
   });
   attacherProlongations(table);
+
+  // Section «Hors alignement» : joueurs listés dans les tables suivantes de la
+  // page (sans contrat / club-école). Visibles et prolongeables (si contrat échu),
+  // jamais comptés au plafond sauf prolongation.
+  const secHA = $('#horsAlignement');
+  if (!horsAlign.length){
+    secHA.style.display = 'none';
+    $('#tableHorsAlign').innerHTML = '';
+  } else {
+    secHA.style.display = '';
+    let htmlHA = '<thead><tr>' + cols.map(([c,l])=>
+      c==='resign' ? `<th class="col-resign">${l}</th>` : `<th>${l}</th>`).join('') + '</tr></thead><tbody>';
+    for (const j of [...horsAlign].sort(trieur)){
+      const p = j._profil;
+      const badge = j.po==='G' ? 'g' : (j.po==='D' ? 'd' : '');
+      const tag = j.po==='G' ? 'g-tag' : (j.po==='D' ? 'd-tag' : '');
+      htmlHA += `<tr class="${peutProlonger(j) && resign[normaliserNom(j.nom)]?'resigne':''}">`;
+      htmlHA += `<td><span class="pos-badge ${badge}">${j.po}</span>${j.nom}</td>`;
+      htmlHA += `<td>${j.po}</td><td>${j.age}</td>`;
+      for (const c of ['it','sp','st','en','du','di','sk','pa','pc','df','sc','ex','ld']){
+        const v = j[c];
+        const cls = v===null?'':(v>=85?'cote-elite':(v>=78?'cote-forte':''));
+        htmlHA += `<td class="${cls}">${v===null?'—':v}</td>`;
+      }
+      htmlHA += `<td class="${j.ov>=82?'cote-elite':(j.ov>=78?'cote-forte':'')}"><strong>${j.ov}</strong></td>`;
+      htmlHA += `<td style="text-align:left"><span class="profil-tag ${tag}">${p.profil}</span></td>`;
+      const eligible = peutProlonger(j);
+      const rSig = eligible ? resign[normaliserNom(j.nom)] : null;
+      const salAff = rSig ? rSig.salaire : j.salaire;
+      htmlHA += `<td>${fmtArgent(salAff)}${rSig?' <span class="resign-tag">prolongé</span>':''}</td>`;
+      const dSig = rSig ? (rSig.duree || dureeMaxCharte(rSig.statut)) : null;
+      htmlHA += `<td>${rSig ? dSig + ' an' + (dSig>1?'s':'') : (j.ct??'—')}</td>`;
+      htmlHA += eligible
+        ? `<td class="col-resign"><button class="btn-prolong ${rSig?'actif':''}" data-nom="${j.nom.replace(/"/g,'&quot;')}">${rSig?'✓ Prolongé':'Prolonger'}</button></td>`
+        : `<td class="col-resign">—</td>`;
+      htmlHA += `</tr>`;
+    }
+    htmlHA += '</tbody>';
+    const tableHA = $('#tableHorsAlign');
+    tableHA.innerHTML = htmlHA;
+    attacherProlongations(tableHA);
+  }
 }
+
 
 /* Le bouton de la colonne Contrat ouvre la fenêtre «Prolongation de contrat». */
 function attacherProlongations(table){
@@ -1962,6 +2125,141 @@ function ouvrirProlongation(nom){
   rafraichir(false);
   el.hidden = false;
   inSal.focus();
+}
+
+/* ---------- Composition d'équipe ---------- */
+/* L'équipe en construction pour la saison : signés (ct>0) + prolongés (ct=0
+   re-signés selon la charte), moins les joueurs retirés (transigés ailleurs),
+   plus les ajouts manuels (nom, position, OV, salaire). Persistance locale. */
+function litCompo(){
+  try { const o = JSON.parse(localStorage.getItem(CLES_LS.compo) || '{}');
+        return {retires: o.retires||[], ajouts: o.ajouts||[]}; }
+  catch { return {retires: [], ajouts: []}; }
+}
+function ecritCompo(o){ localStorage.setItem(CLES_LS.compo, JSON.stringify(o)); }
+
+/* Liste des joueurs de la composition, chacun {nom, po, ov, salaire, prov}
+   où prov ∈ 'signe' | 'prolonge' | 'ajout'. */
+function joueursComposition(){
+  const compo = litCompo();
+  const retires = new Set(compo.retires);
+  const resign = litResignatures();
+  const liste = [];
+  for (const j of ETAT.roster){
+    if (j.backup) continue;
+    const cle = normaliserNom(j.nom);
+    if (retires.has(cle)) continue;
+    const sig = (j.ct === 0) ? resign[cle] : null;
+    if (sig) liste.push({nom:j.nom, po:j.po, ov:j.ov, salaire:sig.salaire, prov:'prolonge'});
+    else if (!j.horsAlignement && j.ct > 0) liste.push({nom:j.nom, po:j.po, ov:j.ov, salaire:j.salaire||0, prov:'signe'});
+    // hors alignement non prolongé ou contrat échu non prolongé : pas encore dans l'équipe
+  }
+  for (const a of compo.ajouts){
+    if (retires.has(normaliserNom(a.nom))) continue;
+    liste.push({nom:a.nom, po:a.po, ov:a.ov, salaire:a.salaire, prov:'ajout'});
+  }
+  return liste;
+}
+
+const EST_ATTAQUANT = po => po==='C' || po==='AG' || po==='AD';
+
+function rendreComposition(){
+  const liste = joueursComposition();
+  const compo = litCompo();
+  const nbA = liste.filter(j=>EST_ATTAQUANT(j.po)).length;
+  const nbD = liste.filter(j=>j.po==='D').length;
+  const nbG = liste.filter(j=>j.po==='G').length;
+  const masse = liste.reduce((s,j)=>s+(j.salaire||0),0);
+  const manquants = Math.max(0, 22 - liste.length);
+  $('#compoSommaire').innerHTML = `
+    <div class="stat-carte"><div class="lbl">Attaquants</div><div class="val">${nbA}</div></div>
+    <div class="stat-carte"><div class="lbl">Défenseurs</div><div class="val">${nbD}</div></div>
+    <div class="stat-carte"><div class="lbl">Gardiens</div><div class="val">${nbG}</div></div>
+    <div class="stat-carte ${manquants?'manque':'complet'}">
+      <div class="lbl">Joueurs</div><div class="val">${liste.length}</div>
+      <div class="det">${manquants ? manquants+' manquant'+(manquants>1?'s':'')+' (minimum 22)' : 'minimum de 22 atteint'}</div>
+    </div>
+    <div class="stat-carte ${masse>PLAFOND?'alerte':''}">
+      <div class="lbl">Masse salariale</div><div class="val">${fmtArgent(masse)}</div>
+      <div class="det">plafond ${fmtArgent(PLAFOND)} · ${masse>PLAFOND?'dépassement '+fmtArgent(masse-PLAFOND):'marge '+fmtArgent(PLAFOND-masse)}</div>
+    </div>`;
+
+  const ordrePo = {C:0, AG:1, AD:2, D:3, G:4};
+  const tri = [...liste].sort((a,b)=> (ordrePo[a.po]??9)-(ordrePo[b.po]??9) || b.ov-a.ov);
+  let html = '<thead><tr><th>Nom</th><th>PO</th><th>OV</th><th>Salaire</th><th>Provenance</th><th></th></tr></thead><tbody>';
+  const provLbl = {signe:'signé', prolonge:'prolongé', ajout:'ajout'};
+  for (const j of tri){
+    html += `<tr>`
+      + `<td style="text-align:left">${j.nom}</td><td>${j.po}</td>`
+      + `<td class="${j.ov>=82?'cote-elite':(j.ov>=78?'cote-forte':'')}"><strong>${j.ov??'—'}</strong></td>`
+      + `<td>${fmtArgent(j.salaire)}</td>`
+      + `<td><span class="prov-tag prov-${j.prov}">${provLbl[j.prov]}</span></td>`
+      + `<td><button class="btn-retirer" data-nom="${j.nom.replace(/"/g,'&quot;')}">Retirer</button></td>`
+      + `</tr>`;
+  }
+  html += '</tbody>';
+  const table = $('#tableCompo');
+  table.innerHTML = html;
+  table.querySelectorAll('button.btn-retirer').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const c = litCompo();
+      const cle = normaliserNom(b.dataset.nom);
+      // un ajout manuel retiré est simplement supprimé; un joueur du club part dans «Retirés»
+      const iAjout = c.ajouts.findIndex(a=>normaliserNom(a.nom)===cle);
+      if (iAjout >= 0) c.ajouts.splice(iAjout, 1);
+      else if (!c.retires.includes(cle)) c.retires.push(cle);
+      ecritCompo(c);
+      rendreComposition();
+    });
+  });
+
+  // retirés restaurables
+  const zone = $('#compoRetires');
+  if (!compo.retires.length){ zone.style.display='none'; $('#compoRetiresListe').innerHTML=''; }
+  else {
+    zone.style.display='';
+    const nomDe = cle => (ETAT.roster.find(j=>normaliserNom(j.nom)===cle)?.nom) || cle;
+    $('#compoRetiresListe').innerHTML = compo.retires.map(cle=>
+      `<span class="retire-puce">${nomDe(cle)} <button data-cle="${cle.replace(/"/g,'&quot;')}">restaurer</button></span>`).join('');
+    $('#compoRetiresListe').querySelectorAll('button').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const c = litCompo();
+        c.retires = c.retires.filter(x=>x!==b.dataset.cle);
+        ecritCompo(c);
+        rendreComposition();
+      });
+    });
+  }
+}
+
+function attacherFormulaireCompo(){
+  const err = $('#caErreur');
+  $('#caAjouter').addEventListener('click', ()=>{
+    const nom = $('#caNom').value.trim().replace(/\s+/g,' ');
+    const po = $('#caPo').value;
+    const ov = nombre($('#caOv').value);
+    const salaire = parseArgent($('#caSal').value);
+    let msg = null;
+    if (!nom) msg = 'Le nom est requis.';
+    else if (ov===null || ov<40 || ov>99) msg = 'OV invalide (entre 40 et 99).';
+    else if (salaire===null || salaire<0) msg = 'Salaire invalide (ex. «3,5 M», «900 k» ou un montant en dollars).';
+    else {
+      const cle = normaliserNom(nom);
+      const c = litCompo();
+      if (c.ajouts.some(a=>normaliserNom(a.nom)===cle) || joueursComposition().some(j=>normaliserNom(j.nom)===cle))
+        msg = 'Ce joueur est déjà dans la composition.';
+      else {
+        c.retires = c.retires.filter(x=>x!==cle); // au cas où il avait été retiré
+        c.ajouts.push({nom, po, ov: Math.round(ov), salaire});
+        ecritCompo(c);
+        $('#caNom').value=''; $('#caOv').value=''; $('#caSal').value='';
+        err.style.display='none';
+        rendreComposition();
+        return;
+      }
+    }
+    err.textContent = msg; err.style.display='';
+  });
 }
 
 /* ---------- Production ---------- */
@@ -2201,11 +2499,13 @@ document.querySelectorAll('nav button[data-vue]').forEach(b=>{
     document.querySelectorAll('section.vue').forEach(x=>x.classList.remove('actif'));
     b.classList.add('actif');
     document.getElementById('vue-'+b.dataset.vue).classList.add('actif');
+    if (b.dataset.vue==='composition') rendreComposition();
     if (b.dataset.vue==='progression') rendreProgression();
     if (b.dataset.vue==='ovdetail') peuplerJoueursOvd();
     if (b.dataset.vue==='reglages') rendreMatrice();
   });
 });
+attacherFormulaireCompo();
 document.getElementById('progFiltres').addEventListener('click', e=>{
   const b = e.target.closest('button'); if (!b) return;
   document.querySelectorAll('#progFiltres button').forEach(x=>x.classList.remove('actif'));
@@ -2362,7 +2662,8 @@ if (typeof window !== 'undefined'){
   window.__SJS__ = {parseRoster, parseScoring, parseXtra, determinerProfil, evaluerStat,
     normaliserNom, seuilsPour, seuilsMatrice, statutSelonSeuils, valeurStat, calculerPmRangs,
     modA, convertirJet, fourchetteRecote, modsEstime, matchsEquipe, xtraEstArchive, productionDe, ETAT,
-    extraireFiche, validerPageEquipe, CONFIG,
+    extraireFiche, validerPageEquipe, CONFIG, parseFinance,
+    litCompo, ecritCompo, joueursComposition, rendreComposition,
     CHARTE_SALAIRE, salaireMinimum, statutResignature, cleCharte, dureeMaxCharte,
     fmtArgentCourt, parseArgent, litResignatures, ecritResignatures,
     ouvrirProlongation, fermerProlongation, calculerMasse, PLAFOND, echelonEffectif, peutProlonger,
