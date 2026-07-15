@@ -1070,36 +1070,37 @@ function seuilsMatrice(matCle, statCle, ov){
 }
 
 /* ------------------ DONNÉES DE SECOURS ------------------
-   Alignement SANJOSE tel que publié sur ushl.ca (dernière mise à jour :
-   dimanche 28 juin 2026 — cotes actuelles vérifiées sur TeamRosters.php).
+   Alignement SANJOSE tel que publié sur ushl.ca (recote Y22 du
+   mercredi 8 juillet 2026 — TeamRosters.php, cotes vérifiées contre
+   USHL22Rosters.html, salaires et contrats contre USHL22Finance.html).
    Sert de base hors-ligne et de fixture de tests. */
-const DATE_SECOURS = '28 juin 2026';
+const DATE_SECOURS = '8 juillet 2026';
 const SECOURS_ROSTER = [
- {nom:'Jesperi Kotkaniemi', po:'C', hd:'G', it:70,sp:83,st:77,en:89,du:86,di:83,sk:83,pa:83,pc:79,df:62,sc:79,ex:61,ld:51,ov:82,age:25,salaire:7250000,ct:3},
- {nom:'Brad Lambert',       po:'C', hd:'D', it:68,sp:85,st:69,en:77,du:79,di:75,sk:83,pa:71,pc:74,df:56,sc:74,ex:49,ld:37,ov:76,age:22,salaire:900000, ct:2},
+ {nom:'Jesperi Kotkaniemi', po:'C', hd:'G', it:69,sp:83,st:77,en:90,du:87,di:83,sk:83,pa:82,pc:78,df:60,sc:78,ex:64,ld:51,ov:81,age:26,salaire:9075000,ct:2},
+ {nom:'Brad Lambert',       po:'C', hd:'D', it:69,sp:87,st:71,en:80,du:81,di:76,sk:85,pa:71,pc:73,df:57,sc:74,ex:51,ld:38,ov:77,age:23,salaire:900000, ct:1},
  {nom:'Backup_C',           po:'C', hd:'G', it:50,sp:50,st:50,en:50,du:50,di:50,sk:50,pa:50,pc:50,df:50,sc:50,ex:50,ld:50,ov:55,age:25,salaire:0,      ct:0, backup:true},
- {nom:'Jaden Schwartz',     po:'C', hd:'G', it:62,sp:81,st:64,en:89,du:83,di:98,sk:89,pa:85,pc:83,df:66,sc:68,ex:99,ld:99,ov:81,age:33,salaire:5750000,ct:2},
- {nom:'Ryan Johansen',      po:'C', hd:'D', it:61,sp:80,st:77,en:84,du:92,di:85,sk:82,pa:79,pc:76,df:67,sc:75,ex:95,ld:88,ov:81,age:33,salaire:4750000,ct:2},
- {nom:'Joel ErikssonEk',    po:'AG',hd:'G', it:77,sp:71,st:82,en:79,du:79,di:77,sk:74,pa:78,pc:74,df:73,sc:78,ex:77,ld:64,ov:81,age:28,salaire:6000000,ct:2},
- {nom:'Travis Konecny',     po:'AG',hd:'D', it:86,sp:78,st:74,en:81,du:75,di:70,sk:80,pa:79,pc:73,df:66,sc:80,ex:78,ld:68,ov:81,age:28,salaire:6000000,ct:3},
- {nom:'Nathan Legare',      po:'AG',hd:'D', it:82,sp:69,st:92,en:83,du:95,di:77,sk:69,pa:72,pc:69,df:65,sc:87,ex:57,ld:66,ov:81,age:24,salaire:3000000,ct:1},
- {nom:'Oskar Olausson',     po:'AG',hd:'G', it:68,sp:81,st:74,en:77,du:75,di:80,sk:77,pa:72,pc:72,df:69,sc:75,ex:51,ld:41,ov:77,age:23,salaire:800000, ct:1},
- {nom:'Akil Thomas',        po:'AD',hd:'D', it:64,sp:85,st:73,en:87,du:77,di:85,sk:86,pa:78,pc:71,df:69,sc:79,ex:58,ld:58,ov:81,age:25,salaire:4750000,ct:3},
- {nom:'Kent Johnson',       po:'AD',hd:'G', it:66,sp:77,st:72,en:76,du:76,di:79,sk:77,pa:77,pc:81,df:63,sc:76,ex:56,ld:41,ov:78,age:23,salaire:1500000,ct:1},
- {nom:'Alexander Nylander', po:'AD',hd:'D', it:65,sp:86,st:79,en:87,du:81,di:85,sk:89,pa:70,pc:75,df:61,sc:84,ex:67,ld:58,ov:81,age:27,salaire:4750000,ct:1},
- {nom:'Brandon Saad',       po:'AD',hd:'G', it:62,sp:76,st:75,en:77,du:78,di:80,sk:78,pa:71,pc:75,df:62,sc:78,ex:90,ld:75,ov:78,age:33,salaire:800000, ct:1},
- {nom:'Samu Tuomaala',      po:'AD',hd:'G', it:69,sp:79,st:67,en:76,du:70,di:76,sk:78,pa:77,pc:74,df:67,sc:74,ex:45,ld:40,ov:77,age:22,salaire:800000, ct:1},
- {nom:'Tyler Myers',        po:'D', hd:'D', it:73,sp:74,st:84,en:94,du:78,di:89,sk:81,pa:70,pc:70,df:80,sc:57,ex:99,ld:78,ov:81,age:35,salaire:2500000,ct:1},
- {nom:'Ryan Graves',        po:'D', hd:'G', it:65,sp:72,st:82,en:78,du:75,di:79,sk:75,pa:71,pc:72,df:78,sc:60,ex:70,ld:65,ov:78,age:30,salaire:800000, ct:1},
- {nom:'Haydn Fleury',       po:'D', hd:'G', it:80,sp:70,st:91,en:88,du:86,di:76,sk:85,pa:75,pc:70,df:82,sc:67,ex:69,ld:57,ov:84,age:29,salaire:9750000,ct:2},
- {nom:'Jonas Brodin',       po:'D', hd:'G', it:68,sp:70,st:78,en:84,du:68,di:82,sk:72,pa:73,pc:74,df:84,sc:62,ex:85,ld:80,ov:80,age:31,salaire:6100000,ct:1},
- {nom:'Adam Fox',           po:'D', hd:'D', it:64,sp:84,st:70,en:86,du:83,di:81,sk:85,pa:86,pc:76,df:79,sc:70,ex:60,ld:62,ov:83,age:27,salaire:7250000,ct:1},
- {nom:'Nate Schmidt',       po:'D', hd:'G', it:68,sp:74,st:76,en:76,du:74,di:80,sk:76,pa:71,pc:72,df:78,sc:61,ex:80,ld:75,ov:78,age:34,salaire:1250000,ct:2},
- {nom:'Braden Schneider',   po:'D', hd:'D', it:81,sp:73,st:85,en:92,du:89,di:80,sk:76,pa:66,pc:71,df:79,sc:58,ex:52,ld:53,ov:80,age:24,salaire:4750000,ct:3},
+ {nom:'Jaden Schwartz',     po:'C', hd:'G', it:60,sp:81,st:64,en:90,du:83,di:99,sk:91,pa:86,pc:84,df:63,sc:67,ex:99,ld:99,ov:81,age:34,salaire:7200000,ct:1},
+ {nom:'Ryan Johansen',      po:'C', hd:'D', it:59,sp:80,st:76,en:84,du:92,di:84,sk:81,pa:78,pc:74,df:66,sc:74,ex:98,ld:91,ov:80,age:34,salaire:5950000,ct:1},
+ {nom:'Joel ErikssonEk',    po:'AG',hd:'G', it:76,sp:71,st:82,en:80,du:81,di:78,sk:74,pa:78,pc:73,df:73,sc:77,ex:80,ld:65,ov:81,age:29,salaire:7500000,ct:1},
+ {nom:'Travis Konecny',     po:'AG',hd:'D', it:86,sp:78,st:75,en:82,du:78,di:70,sk:80,pa:77,pc:72,df:66,sc:80,ex:81,ld:72,ov:81,age:29,salaire:7500000,ct:2},
+ {nom:'Nathan Legare',      po:'AG',hd:'D', it:82,sp:70,st:94,en:84,du:98,di:79,sk:70,pa:72,pc:69,df:65,sc:88,ex:60,ld:69,ov:82,age:25,salaire:3750000,ct:0},
+ {nom:'Oskar Olausson',     po:'AG',hd:'G', it:66,sp:81,st:73,en:77,du:75,di:80,sk:77,pa:71,pc:71,df:67,sc:73,ex:53,ld:41,ov:76,age:24,salaire:1000000,ct:0},
+ {nom:'Akil Thomas',        po:'AD',hd:'D', it:63,sp:87,st:73,en:90,du:80,di:87,sk:86,pa:80,pc:71,df:71,sc:81,ex:61,ld:64,ov:82,age:26,salaire:5950000,ct:2},
+ {nom:'Kent Johnson',       po:'AD',hd:'G', it:66,sp:80,st:74,en:79,du:78,di:80,sk:79,pa:78,pc:82,df:62,sc:77,ex:58,ld:44,ov:79,age:24,salaire:1875000,ct:0},
+ {nom:'Alexander Nylander', po:'AD',hd:'D', it:64,sp:88,st:78,en:88,du:81,di:85,sk:91,pa:69,pc:74,df:60,sc:84,ex:70,ld:63,ov:81,age:28,salaire:5950000,ct:0},
+ {nom:'Brandon Saad',       po:'AD',hd:'G', it:59,sp:74,st:74,en:76,du:78,di:80,sk:75,pa:68,pc:72,df:59,sc:75,ex:93,ld:75,ov:76,age:34,salaire:1000000,ct:0},
+ {nom:'Samu Tuomaala',      po:'AD',hd:'G', it:67,sp:80,st:67,en:77,du:72,di:77,sk:77,pa:76,pc:72,df:67,sc:73,ex:48,ld:40,ov:76,age:23,salaire:1000000,ct:0},
+ {nom:'Tyler Myers',        po:'D', hd:'D', it:70,sp:72,st:81,en:93,du:76,di:89,sk:79,pa:67,pc:68,df:76,sc:54,ex:99,ld:78,ov:78,age:36,salaire:3125000,ct:0},
+ {nom:'Ryan Graves',        po:'D', hd:'G', it:63,sp:72,st:81,en:78,du:76,di:78,sk:74,pa:69,pc:70,df:75,sc:59,ex:71,ld:65,ov:76,age:31,salaire:1000000,ct:0},
+ {nom:'Haydn Fleury',       po:'D', hd:'G', it:80,sp:70,st:91,en:89,du:87,di:76,sk:85,pa:73,pc:68,df:82,sc:65,ex:72,ld:61,ov:83,age:30,salaire:12200000,ct:1},
+ {nom:'Jonas Brodin',       po:'D', hd:'G', it:66,sp:68,st:77,en:83,du:68,di:82,sk:71,pa:70,pc:72,df:80,sc:60,ex:87,ld:78,ov:77,age:32,salaire:7625000,ct:0},
+ {nom:'Adam Fox',           po:'D', hd:'D', it:64,sp:84,st:69,en:88,du:83,di:82,sk:85,pa:85,pc:76,df:77,sc:70,ex:62,ld:65,ov:82,age:28,salaire:9075000,ct:0},
+ {nom:'Nate Schmidt',       po:'D', hd:'G', it:64,sp:73,st:74,en:74,du:73,di:80,sk:74,pa:68,pc:70,df:75,sc:59,ex:82,ld:73,ov:75,age:35,salaire:1575000,ct:1},
+ {nom:'Braden Schneider',   po:'D', hd:'D', it:82,sp:73,st:87,en:94,du:91,di:80,sk:77,pa:65,pc:71,df:79,sc:56,ex:54,ld:58,ov:81,age:25,salaire:5950000,ct:2},
  {nom:'Backup_D_SanJose',   po:'D', hd:'G', it:50,sp:50,st:50,en:50,du:50,di:50,sk:50,pa:50,pc:50,df:50,sc:50,ex:50,ld:50,ov:55,age:25,salaire:0,      ct:0, backup:true},
- {nom:'Alexandar Georgiev', po:'G', hd:'G', it:83,sp:87,st:81,en:85,du:87,di:85,sk:88,pa:73,pc:80,df:null,sc:null,ex:83,ld:74,ov:80,age:29,salaire:3000000,ct:1},
- {nom:'Cal Petersen',       po:'G', hd:'D', it:84,sp:83,st:82,en:80,du:73,di:82,sk:83,pa:75,pc:85,df:null,sc:null,ex:60,ld:50,ov:78,age:31,salaire:1000000,ct:1},
- {nom:'Chris Driedger',     po:'G', hd:'G', it:83,sp:81,st:87,en:78,du:76,di:79,sk:84,pa:74,pc:81,df:null,sc:null,ex:50,ld:50,ov:77,age:31,salaire:800000, ct:1}
+ {nom:'Alexandar Georgiev', po:'G', hd:'G', it:83,sp:88,st:81,en:87,du:89,di:87,sk:90,pa:71,pc:81,df:null,sc:null,ex:84,ld:78,ov:81,age:30,salaire:3750000,ct:0},
+ {nom:'Cal Petersen',       po:'G', hd:'D', it:82,sp:84,st:82,en:82,du:74,di:83,sk:83,pa:73,pc:84,df:null,sc:null,ex:62,ld:52,ov:78,age:32,salaire:1250000,ct:0},
+ {nom:'Chris Driedger',     po:'G', hd:'G', it:80,sp:78,st:85,en:76,du:74,di:78,sk:80,pa:72,pc:77,df:null,sc:null,ex:52,ld:46,ov:74,age:32,salaire:1000000,ct:0}
 ];
 
 </script>
@@ -2597,7 +2598,7 @@ if (typeof window !== 'undefined'){
   window.__SJS__ = {parseRoster, parseScoring, parseXtra, determinerProfil, evaluerStat,
     normaliserNom, seuilsPour, seuilsMatrice, statutSelonSeuils, valeurStat, calculerPmRangs,
     modA, convertirJet, fourchetteRecote, modsEstime, matchsEquipe, xtraEstArchive, productionDe, ETAT,
-    extraireFiche, validerPageEquipe, CONFIG, parseFinance,
+    extraireFiche, validerPageEquipe, CONFIG, CLES_LS, parseFinance,
     litCompo, ecritCompo, joueursComposition, rendreComposition,
     CHARTE_SALAIRE, salaireMinimum, statutResignature, cleCharte, dureeMaxCharte,
     fmtArgentCourt, parseArgent, litResignatures, ecritResignatures,
