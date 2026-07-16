@@ -734,6 +734,130 @@ const ATTENDU = {
   doc.getElementById('ovd_pa').dispatchEvent(new W.Event('input'));
   egal(doc.getElementById('ovdValeur').textContent, '—', 'Cote manquante → aucun résultat');
 
+  console.log('— Alignement des trios (règlements 1.1.1 et 1.1.2)');
+  // bassin de test : signés du club + ajouts (6 attaquants, 2 défenseurs, 2 gardiens)
+  W.localStorage.setItem(S.CLES_LS.trios, JSON.stringify(S.TRIOS_VIDES()));
+  W.localStorage.setItem(S.CLES_LS.compo, JSON.stringify({retires: [], ajouts: [
+    {nom:'Attaquant Un',   po:'AG', ov:79, salaire:1000000},
+    {nom:'Attaquant Deux', po:'AD', ov:78, salaire:1000000},
+    {nom:'Attaquant Trois',po:'C',  ov:77, salaire:1000000},
+    {nom:'Attaquant Quatre',po:'AG',ov:76, salaire:1000000},
+    {nom:'Attaquant Cinq', po:'AD', ov:75, salaire:1000000},
+    {nom:'Attaquant Six',  po:'C',  ov:74, salaire:1000000},
+    {nom:'Defenseur Un',   po:'D',  ov:78, salaire:1000000},
+    {nom:'Defenseur Deux', po:'D',  ov:77, salaire:1000000},
+    {nom:'Gardien Un',     po:'G',  ov:80, salaire:1000000},
+    {nom:'Gardien Deux',   po:'G',  ov:78, salaire:900000}
+  ]}));
+  const poolTrios = S.joueursComposition();
+  egal(poolTrios.filter(j=>j.po==='G').length, 2, 'Bassin de la Composition : 2 gardiens ajoutés');
+  egal(poolTrios.filter(j=>j.po!=='G').length, 18, 'Bassin de la Composition : 18 patineurs (10 signés + 8 ajouts)');
+  ok(!!doc.querySelector('nav button[data-vue="trios"]'), 'Onglet Trios présent dans la navigation');
+  S.rendreTrios();
+  const selsF = [...doc.querySelectorAll('#vue-trios select[data-zone="trio"]')];
+  const selsD = [...doc.querySelectorAll('#vue-trios select[data-zone="duo"]')];
+  const selsG = [...doc.querySelectorAll('#vue-trios select[data-zone="g"]')];
+  egal(selsF.length, 12, '12 cases d\'attaquants (4 trios)');
+  egal(selsD.length, 6, '6 cases de défenseurs (3 duos)');
+  egal(selsG.length, 2, 'Cases du partant et du substitut');
+  const poDe = nom => poolTrios.find(p=>p.nom===nom)?.po;
+  ok(selsG.every(s=>[...s.options].slice(1).every(o=>!o.value || poDe(o.value)==='G')),
+     'Cases de gardiens : seuls des gardiens offerts (art. 1.1.1)');
+  ok([...selsF[0].options].slice(1).every(o=>!o.value || poDe(o.value)!=='G'),
+     'Cases de patineurs : aucun gardien offert (art. 1.1.1)');
+  ok([...selsF[0].options].some(o=>poDe(o.value)==='D'),
+     'Un défenseur peut être placé à l\'attaque (position libre, art. 1.1.1)');
+
+  // validation pure : construire un alignement complet légal
+  const attq = poolTrios.filter(j=>S.EST_ATTAQUANT ? S.EST_ATTAQUANT(j.po) : (j.po==='C'||j.po==='AG'||j.po==='AD')).map(j=>j.nom);
+  const defs = poolTrios.filter(j=>j.po==='D').map(j=>j.nom);
+  const pats = poolTrios.filter(j=>j.po!=='G').map(j=>j.nom);
+  const gars = poolTrios.filter(j=>j.po==='G').sort((a,b)=>b.ov-a.ov).map(j=>j.nom);
+  const patsRestants = pats.filter(n=>!attq.slice(0,12).includes(n));
+  const legal = {
+    trios: [attq.slice(0,3), attq.slice(3,6), attq.slice(6,9), attq.slice(9,12)],
+    duos: [patsRestants.slice(0,2), patsRestants.slice(2,4), patsRestants.slice(4,6)],
+    gardiens: [gars[0], gars[1]]
+  };
+  let v = S.validerAlignementTrios(legal, poolTrios);
+  egal(v.erreurs.length, 0, 'Alignement complet de 20 cases : aucune infraction');
+  egal(v.nbRemplis, 20, '20 cases remplies');
+  egal(v.nbDistincts, 20, '20 joueurs distincts');
+  ok(v.horsPosition >= 1, 'Patineurs hors position naturelle comptés à titre indicatif (permis)');
+
+  // double quart légal : trio 1 et trio 4 (art. 1.1.2)
+  const dq = JSON.parse(JSON.stringify(legal));
+  dq.trios[3][2] = dq.trios[0][0];
+  v = S.validerAlignementTrios(dq, poolTrios);
+  egal(v.erreurs.length, 0, 'Double quart 1-4 : permis (art. 1.1.2)');
+  ok(v.avertissements.some(a=>a.includes('20 habillés')), 'Rappel des 20 habillés quand le double quart est utilisé');
+
+  // double quart illégal : trios 2 et 3
+  const dq23 = JSON.parse(JSON.stringify(legal));
+  dq23.trios[2][2] = dq23.trios[1][0];
+  v = S.validerAlignementTrios(dq23, poolTrios);
+  ok(v.erreurs.length===1 && v.erreurs[0].includes('1-4, 2-4 et 3-4'), 'Double quart 2-3 : infraction (art. 1.1.2)');
+
+  // trois trios pour un même joueur
+  const dq3 = JSON.parse(JSON.stringify(legal));
+  dq3.trios[1][1] = dq3.trios[0][0]; dq3.trios[3][1] = dq3.trios[0][0];
+  v = S.validerAlignementTrios(dq3, poolTrios);
+  ok(v.erreurs.some(e=>e.includes('se limite à deux lignes')), 'Trois trios pour un même joueur : infraction');
+
+  // même joueur deux fois dans le même trio
+  const memeTrio = JSON.parse(JSON.stringify(legal));
+  memeTrio.trios[0][1] = memeTrio.trios[0][0];
+  v = S.validerAlignementTrios(memeTrio, poolTrios);
+  ok(v.erreurs.some(e=>e.includes('Trio 1')), 'Même joueur deux fois dans un trio : infraction');
+
+  // défenseur dans deux duos
+  const duoDouble = JSON.parse(JSON.stringify(legal));
+  duoDouble.duos[1][0] = duoDouble.duos[0][0];
+  v = S.validerAlignementTrios(duoDouble, poolTrios);
+  ok(v.erreurs.some(e=>e.includes('duos')), 'Défenseur dans deux duos : infraction (aucune 4e paire, art. 1.1.2)');
+
+  // gardiens : identiques, ou hors du filet
+  const gDouble = JSON.parse(JSON.stringify(legal));
+  gDouble.gardiens = [gars[0], gars[0]];
+  v = S.validerAlignementTrios(gDouble, poolTrios);
+  ok(v.erreurs.some(e=>e.includes('différents')), 'Partant = substitut : infraction');
+  const gAttaque = JSON.parse(JSON.stringify(legal));
+  gAttaque.trios[3][2] = gars[1];
+  v = S.validerAlignementTrios(gAttaque, poolTrios);
+  ok(v.erreurs.some(e=>e.includes('case de patineur')), 'Gardien placé à l\'attaque : infraction (art. 1.1.1)');
+
+  // patineur en attaque ET en défense : avertissement, pas d'infraction
+  const mixte = JSON.parse(JSON.stringify(legal));
+  mixte.duos[0][0] = mixte.trios[0][0];
+  v = S.validerAlignementTrios(mixte, poolTrios);
+  ok(v.avertissements.some(a=>a.includes('attaque ET en défense')) , 'Attaque et défense à la fois : avertissement');
+
+  // joueur disparu de la composition
+  const fantome = JSON.parse(JSON.stringify(legal));
+  fantome.trios[0][0] = 'Joueur Fantome';
+  v = S.validerAlignementTrios(fantome, poolTrios);
+  ok(v.avertissements.some(a=>a.includes('plus dans la composition')), 'Joueur retiré de la composition : avertissement');
+
+  // persistance : un changement dans l'interface est sauvegardé
+  selsG[0].value = gars[0];
+  selsG[0].dispatchEvent(new W.Event('change'));
+  ok((W.localStorage.getItem(S.CLES_LS.trios)||'').includes(gars[0]), 'Choix sauvegardé dans la mémoire locale');
+
+  // proposition automatique par OV
+  doc.getElementById('btnTriosProposer').click();
+  const propose = S.litTrios();
+  v = S.validerAlignementTrios(propose, poolTrios);
+  egal(v.nbRemplis, 20, 'Proposition automatique : 20 cases remplies');
+  egal(v.erreurs.length, 0, 'Proposition automatique : aucune infraction');
+  egal(propose.gardiens[0], gars[0], 'Partant proposé = meilleur OV des gardiens');
+  ok(propose.trios.flat().every(n=>poDe(n)!=='G'), 'Aucun gardien dans les trios proposés');
+
+  // vider
+  doc.getElementById('btnTriosVider').click();
+  ok(S.litTrios().trios.flat().every(n=>!n), 'Bouton Vider : toutes les cases libérées');
+  W.localStorage.removeItem(S.CLES_LS.compo);
+  W.localStorage.removeItem(S.CLES_LS.trios);
+
   console.log(`\n${total - echecs}/${total} vérifications réussies`);
   process.exit(echecs ? 1 : 0);
 })().catch(e => { console.error('ERREUR FATALE', e); process.exit(1); });
