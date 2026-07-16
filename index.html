@@ -131,18 +131,30 @@
     font-size:.72rem; color:var(--txt-dim); background:var(--panel); border:1px solid var(--line); padding:5px 10px; border-radius:14px;}
   .compo-retires button{background:none; border:none; color:var(--teal-bright); cursor:pointer; font-size:.7rem; padding:0;}
   .compo-retires button:hover{color:var(--orange-bright);}
-  /* ---------- Alignement des trios ---------- */
+  /* ---------- Alignement des trios et unités spéciales ---------- */
   .trios-outils{display:flex; gap:10px; margin:12px 0 16px; flex-wrap:wrap;}
-  .trios-grille{display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:14px;}
-  .trio-carte{background:var(--panel); border:1px solid var(--line); padding:12px 14px;}
-  .trio-carte h3{margin:0 0 10px; font-size:.72rem; letter-spacing:1px; text-transform:uppercase; color:var(--teal-bright);}
-  .trio-carte label{display:flex; align-items:center; gap:8px; margin:6px 0; font-size:.6rem;
+  .trios-colonnes{display:grid; grid-template-columns:1fr; gap:16px; align-items:start;}
+  @media(min-width:1080px){ .trios-colonnes{grid-template-columns:1fr 1fr;} }
+  .uni-bloc{background:var(--panel); border:1px solid var(--line); margin-bottom:16px;}
+  .uni-bloc:last-child{margin-bottom:0;}
+  .uni-titre{display:flex; justify-content:space-between; align-items:baseline; gap:10px;
+    padding:9px 14px; border-bottom:1px solid var(--line); color:var(--teal-bright);
+    font-size:.7rem; letter-spacing:1.5px; text-transform:uppercase; font-weight:700;}
+  .uni-titre small{color:#8fa6a9; letter-spacing:.5px; text-transform:none; font-weight:400; font-size:.62rem;}
+  .uni-rangee{display:flex; align-items:center; gap:8px; padding:7px 14px;
+    border-bottom:1px solid rgba(255,255,255,.05);}
+  .uni-rangee:last-child{border-bottom:none;}
+  .uni-rangee:nth-child(odd){background:rgba(255,255,255,.015);}
+  .uni-rangee .ur-lbl{width:78px; flex:none; font-family:var(--font-data); font-size:.62rem;
     text-transform:uppercase; letter-spacing:.5px; color:#8fa6a9;}
-  .trio-carte label span{width:70px; flex:none;}
-  .trio-carte select{flex:1; min-width:0; font-family:var(--font-data); font-size:.78rem; background:var(--ink);
-    color:inherit; border:1px solid var(--line); padding:6px 8px;}
-  .trio-carte select:focus{outline:none; border-color:var(--orange);}
-  #triosValidation{margin-top:16px;}
+  .uni-rangee select{flex:1; min-width:0; font-family:var(--font-data); font-size:.76rem;
+    background:var(--ink); color:inherit; border:1px solid var(--line); padding:6px 7px;}
+  .uni-rangee select:focus{outline:none; border-color:var(--orange);}
+  .uni-rangee select.vide{color:#8fa6a9;}
+  .uni-entete{padding-top:8px; padding-bottom:4px; border-bottom:none; background:none !important;}
+  .uni-entete .ur-col{flex:1; font-size:.58rem; letter-spacing:1px; text-transform:uppercase;
+    color:var(--orange-bright); text-align:center;}
+  #triosValidation{margin:14px 0 18px;}
   #triosValidation .tv-erreur{color:var(--bad); font-size:.75rem; margin:5px 0;}
   #triosValidation .tv-avert{color:var(--orange-bright); font-size:.75rem; margin:5px 0;}
   #triosValidation .tv-ok{color:#79d27a; font-size:.78rem; margin:5px 0;}
@@ -361,57 +373,65 @@
     </div>
   </section>
 
-  <!-- ================= TRIOS ================= -->
+  <!-- ================= TRIOS ET UNITÉS SPÉCIALES ================= -->
   <section class="vue" id="vue-trios">
-    <h2>Alignement des trios</h2>
-    <p class="ha-note">Bâti à partir des joueurs de la <strong>Composition</strong>. Règles appliquées (règlements 1.1.1 et 1.1.2) :
-    un patineur peut occuper n'importe quelle case, peu importe sa position naturelle — les gardiens, eux, restent devant le filet;
-    le <strong>double quart</strong> n'est permis qu'entre la 4<sup>e</sup> ligne et l'une des trois premières (1-4, 2-4 ou 3-4);
-    un alignement complet compte <strong>20 joueurs habillés</strong> (12 attaquants, 6 défenseurs, 2 gardiens).</p>
+    <h2>Feuille d'alignement</h2>
+    <p class="ha-note">Bâtie à partir des joueurs de la <strong>Composition</strong> (règlements 1.1.1 et 1.1.2) :
+    un patineur peut occuper n'importe quelle case, peu importe sa position naturelle — les gardiens restent devant le filet;
+    le <strong>double quart</strong> à 5 contre 5 n'est permis qu'entre la 4<sup>e</sup> ligne et l'une des trois premières;
+    sur les unités spéciales, <strong>les positions n'ont aucune importance</strong> (cinq attaquants si tu veux), mais un joueur
+    ne peut pas jouer sur les <strong>2 vagues</strong> d'un même groupe; un alignement complet compte <strong>20 habillés</strong>.</p>
     <div class="trios-outils">
       <button id="btnTriosProposer" class="btn-prolong">Proposer un alignement (par OV)</button>
       <button id="btnTriosVider">Vider</button>
     </div>
     <div id="triosSommaire" class="sommaire"></div>
-    <div class="trios-grille">
-      <div class="trio-carte"><h3>Trio 1</h3>
-        <label><span>AG</span><select class="trio-sel" data-zone="trio" data-i="0" data-k="0"></select></label>
-        <label><span>C</span><select class="trio-sel" data-zone="trio" data-i="0" data-k="1"></select></label>
-        <label><span>AD</span><select class="trio-sel" data-zone="trio" data-i="0" data-k="2"></select></label>
+    <div id="triosValidation"></div>
+    <div class="trios-colonnes">
+    <div>
+      <div class="uni-bloc">
+      <div class="uni-titre">Attaque <small>4 trios — cases AG · C · AD indicatives</small></div>
+      <div class="uni-rangee uni-entete"><div class="ur-lbl"></div><div class="ur-col">AG</div><div class="ur-col">C</div><div class="ur-col">AD</div></div>
+      <div class="uni-rangee"><div class="ur-lbl">Trio 1</div><select class="trio-sel" data-zone="trio" data-i="0" data-k="0"></select><select class="trio-sel" data-zone="trio" data-i="0" data-k="1"></select><select class="trio-sel" data-zone="trio" data-i="0" data-k="2"></select></div>
+      <div class="uni-rangee"><div class="ur-lbl">Trio 2</div><select class="trio-sel" data-zone="trio" data-i="1" data-k="0"></select><select class="trio-sel" data-zone="trio" data-i="1" data-k="1"></select><select class="trio-sel" data-zone="trio" data-i="1" data-k="2"></select></div>
+      <div class="uni-rangee"><div class="ur-lbl">Trio 3</div><select class="trio-sel" data-zone="trio" data-i="2" data-k="0"></select><select class="trio-sel" data-zone="trio" data-i="2" data-k="1"></select><select class="trio-sel" data-zone="trio" data-i="2" data-k="2"></select></div>
+      <div class="uni-rangee"><div class="ur-lbl">Trio 4</div><select class="trio-sel" data-zone="trio" data-i="3" data-k="0"></select><select class="trio-sel" data-zone="trio" data-i="3" data-k="1"></select><select class="trio-sel" data-zone="trio" data-i="3" data-k="2"></select></div>
       </div>
-      <div class="trio-carte"><h3>Trio 2</h3>
-        <label><span>AG</span><select class="trio-sel" data-zone="trio" data-i="1" data-k="0"></select></label>
-        <label><span>C</span><select class="trio-sel" data-zone="trio" data-i="1" data-k="1"></select></label>
-        <label><span>AD</span><select class="trio-sel" data-zone="trio" data-i="1" data-k="2"></select></label>
+      <div class="uni-bloc">
+      <div class="uni-titre">Défense <small>3 duos</small></div>
+      <div class="uni-rangee"><div class="ur-lbl">Duo 1</div><select class="trio-sel" data-zone="duo" data-i="0" data-k="0"></select><select class="trio-sel" data-zone="duo" data-i="0" data-k="1"></select></div>
+      <div class="uni-rangee"><div class="ur-lbl">Duo 2</div><select class="trio-sel" data-zone="duo" data-i="1" data-k="0"></select><select class="trio-sel" data-zone="duo" data-i="1" data-k="1"></select></div>
+      <div class="uni-rangee"><div class="ur-lbl">Duo 3</div><select class="trio-sel" data-zone="duo" data-i="2" data-k="0"></select><select class="trio-sel" data-zone="duo" data-i="2" data-k="1"></select></div>
       </div>
-      <div class="trio-carte"><h3>Trio 3</h3>
-        <label><span>AG</span><select class="trio-sel" data-zone="trio" data-i="2" data-k="0"></select></label>
-        <label><span>C</span><select class="trio-sel" data-zone="trio" data-i="2" data-k="1"></select></label>
-        <label><span>AD</span><select class="trio-sel" data-zone="trio" data-i="2" data-k="2"></select></label>
-      </div>
-      <div class="trio-carte"><h3>Trio 4</h3>
-        <label><span>AG</span><select class="trio-sel" data-zone="trio" data-i="3" data-k="0"></select></label>
-        <label><span>C</span><select class="trio-sel" data-zone="trio" data-i="3" data-k="1"></select></label>
-        <label><span>AD</span><select class="trio-sel" data-zone="trio" data-i="3" data-k="2"></select></label>
-      </div>
-      <div class="trio-carte"><h3>Duo 1</h3>
-        <label><span>D</span><select class="trio-sel" data-zone="duo" data-i="0" data-k="0"></select></label>
-        <label><span>D</span><select class="trio-sel" data-zone="duo" data-i="0" data-k="1"></select></label>
-      </div>
-      <div class="trio-carte"><h3>Duo 2</h3>
-        <label><span>D</span><select class="trio-sel" data-zone="duo" data-i="1" data-k="0"></select></label>
-        <label><span>D</span><select class="trio-sel" data-zone="duo" data-i="1" data-k="1"></select></label>
-      </div>
-      <div class="trio-carte"><h3>Duo 3</h3>
-        <label><span>D</span><select class="trio-sel" data-zone="duo" data-i="2" data-k="0"></select></label>
-        <label><span>D</span><select class="trio-sel" data-zone="duo" data-i="2" data-k="1"></select></label>
-      </div>
-      <div class="trio-carte"><h3>Gardiens</h3>
-        <label><span>Partant</span><select class="trio-sel" data-zone="g" data-i="0" data-k="0"></select></label>
-        <label><span>Substitut</span><select class="trio-sel" data-zone="g" data-i="0" data-k="1"></select></label>
+      <div class="uni-bloc">
+      <div class="uni-titre">Gardiens</div>
+      <div class="uni-rangee"><div class="ur-lbl">Partant</div><select class="trio-sel" data-zone="g" data-i="0" data-k="0"></select></div>
+      <div class="uni-rangee"><div class="ur-lbl">Substitut</div><select class="trio-sel" data-zone="g" data-i="0" data-k="1"></select></div>
       </div>
     </div>
-    <div id="triosValidation"></div>
+    <div>
+      <div class="uni-bloc">
+      <div class="uni-titre">Avantage numérique à 5 <small>2 vagues de 5 — positions libres</small></div>
+      <div class="uni-rangee"><div class="ur-lbl">Vague 1</div><select class="trio-sel" data-zone="an5" data-i="0" data-k="0"></select><select class="trio-sel" data-zone="an5" data-i="0" data-k="1"></select><select class="trio-sel" data-zone="an5" data-i="0" data-k="2"></select><select class="trio-sel" data-zone="an5" data-i="0" data-k="3"></select><select class="trio-sel" data-zone="an5" data-i="0" data-k="4"></select></div>
+      <div class="uni-rangee"><div class="ur-lbl">Vague 2</div><select class="trio-sel" data-zone="an5" data-i="1" data-k="0"></select><select class="trio-sel" data-zone="an5" data-i="1" data-k="1"></select><select class="trio-sel" data-zone="an5" data-i="1" data-k="2"></select><select class="trio-sel" data-zone="an5" data-i="1" data-k="3"></select><select class="trio-sel" data-zone="an5" data-i="1" data-k="4"></select></div>
+      </div>
+      <div class="uni-bloc">
+      <div class="uni-titre">Avantage numérique à 4 <small>2 vagues de 4 — positions libres</small></div>
+      <div class="uni-rangee"><div class="ur-lbl">Vague 1</div><select class="trio-sel" data-zone="an4" data-i="0" data-k="0"></select><select class="trio-sel" data-zone="an4" data-i="0" data-k="1"></select><select class="trio-sel" data-zone="an4" data-i="0" data-k="2"></select><select class="trio-sel" data-zone="an4" data-i="0" data-k="3"></select></div>
+      <div class="uni-rangee"><div class="ur-lbl">Vague 2</div><select class="trio-sel" data-zone="an4" data-i="1" data-k="0"></select><select class="trio-sel" data-zone="an4" data-i="1" data-k="1"></select><select class="trio-sel" data-zone="an4" data-i="1" data-k="2"></select><select class="trio-sel" data-zone="an4" data-i="1" data-k="3"></select></div>
+      </div>
+      <div class="uni-bloc">
+      <div class="uni-titre">Infériorité numérique à 4 <small>2 vagues de 4 — positions libres</small></div>
+      <div class="uni-rangee"><div class="ur-lbl">Vague 1</div><select class="trio-sel" data-zone="in4" data-i="0" data-k="0"></select><select class="trio-sel" data-zone="in4" data-i="0" data-k="1"></select><select class="trio-sel" data-zone="in4" data-i="0" data-k="2"></select><select class="trio-sel" data-zone="in4" data-i="0" data-k="3"></select></div>
+      <div class="uni-rangee"><div class="ur-lbl">Vague 2</div><select class="trio-sel" data-zone="in4" data-i="1" data-k="0"></select><select class="trio-sel" data-zone="in4" data-i="1" data-k="1"></select><select class="trio-sel" data-zone="in4" data-i="1" data-k="2"></select><select class="trio-sel" data-zone="in4" data-i="1" data-k="3"></select></div>
+      </div>
+      <div class="uni-bloc">
+      <div class="uni-titre">Infériorité numérique à 3 <small>2 vagues de 3 — positions libres</small></div>
+      <div class="uni-rangee"><div class="ur-lbl">Vague 1</div><select class="trio-sel" data-zone="in3" data-i="0" data-k="0"></select><select class="trio-sel" data-zone="in3" data-i="0" data-k="1"></select><select class="trio-sel" data-zone="in3" data-i="0" data-k="2"></select></div>
+      <div class="uni-rangee"><div class="ur-lbl">Vague 2</div><select class="trio-sel" data-zone="in3" data-i="1" data-k="0"></select><select class="trio-sel" data-zone="in3" data-i="1" data-k="1"></select><select class="trio-sel" data-zone="in3" data-i="1" data-k="2"></select></div>
+      </div>
+    </div>
+    </div>
   </section>
 
   <section class="vue" id="vue-production">
@@ -2283,41 +2303,59 @@ function attacherFormulaireCompo(){
   });
 }
 
-/* ---------- Alignement des trios (règlements 1.1.1 et 1.1.2) ---------- */
-/* 4 trios, 3 duos, gardien partant et substitut, bâtis à partir des joueurs
-   de la Composition. Art. 1.1.1 : un joueur peut évoluer à une autre position
-   que la sienne, sauf les gardiens; alignement complet = 20 habillés.
-   Art. 1.1.2 : double quart permis uniquement entre la 4e ligne et l'une des
-   trois premières (1-4, 2-4, 3-4). */
+/* ---------- Feuille d'alignement (règlements 1.1.1 et 1.1.2) ---------- */
+/* 4 trios, 3 duos, 2 gardiens + unités spéciales (AN à 5 et à 4, IN à 4 et
+   à 3, 2 vagues chacune), bâtis à partir des joueurs de la Composition.
+   Art. 1.1.1 : un joueur peut évoluer à une autre position que la sienne,
+   sauf les gardiens; alignement complet = 20 habillés. Art. 1.1.2 : double
+   quart à 5c5 permis uniquement entre la 4e ligne et l'une des trois
+   premières; sur les unités spéciales les positions sont libres, mais un
+   joueur ne peut pas jouer sur les 2 vagues d'un même groupe. */
+const GROUPES_SPECIAUX = [
+  {zone:'an5', nom:'Avantage numérique à 5', n:5},
+  {zone:'an4', nom:'Avantage numérique à 4', n:4},
+  {zone:'in4', nom:'Infériorité numérique à 4', n:4},
+  {zone:'in3', nom:'Infériorité numérique à 3', n:3}
+];
 const TRIOS_VIDES = () => ({
   trios: [['','',''],['','',''],['','',''],['','','']],
   duos: [['',''],['',''],['','']],
-  gardiens: ['','']
+  gardiens: ['',''],
+  an5: [['','','','',''],['','','','','']],
+  an4: [['','','',''],['','','','']],
+  in4: [['','','',''],['','','','']],
+  in3: [['',''],['','']].map(v=>[...v,'']) // 2 vagues de 3
 });
+function normaliserSelTrios(o){
+  const v = TRIOS_VIDES();
+  if (!o) return v;
+  for (let i=0;i<4;i++) for (let k=0;k<3;k++) v.trios[i][k] = (o.trios?.[i]?.[k]) || '';
+  for (let i=0;i<3;i++) for (let k=0;k<2;k++) v.duos[i][k] = (o.duos?.[i]?.[k]) || '';
+  for (let k=0;k<2;k++) v.gardiens[k] = (o.gardiens?.[k]) || '';
+  for (const g of GROUPES_SPECIAUX)
+    for (let i=0;i<2;i++) for (let k=0;k<g.n;k++) v[g.zone][i][k] = (o[g.zone]?.[i]?.[k]) || '';
+  return v;
+}
 function litTrios(){
-  try {
-    const o = JSON.parse(localStorage.getItem(CLES_LS.trios) || 'null');
-    if (!o) return TRIOS_VIDES();
-    const v = TRIOS_VIDES();
-    for (let i=0;i<4;i++) for (let k=0;k<3;k++) v.trios[i][k] = (o.trios?.[i]?.[k]) || '';
-    for (let i=0;i<3;i++) for (let k=0;k<2;k++) v.duos[i][k] = (o.duos?.[i]?.[k]) || '';
-    for (let k=0;k<2;k++) v.gardiens[k] = (o.gardiens?.[k]) || '';
-    return v;
-  } catch { return TRIOS_VIDES(); }
+  try { return normaliserSelTrios(JSON.parse(localStorage.getItem(CLES_LS.trios) || 'null')); }
+  catch { return TRIOS_VIDES(); }
 }
 function ecritTrios(sel){ localStorage.setItem(CLES_LS.trios, JSON.stringify(sel)); }
 
-function validerAlignementTrios(sel, pool){
+function validerAlignementTrios(brut, pool){
+  const sel = normaliserSelTrios(brut);
   const erreurs = [], avertissements = [];
   const parCle = new Map(pool.map(j=>[normaliserNom(j.nom), j]));
   const info = nom => parCle.get(normaliserNom(nom)) || null;
 
   const casesF = sel.trios.flat(), casesD = sel.duos.flat(), casesG = sel.gardiens;
-  const toutes = [...casesF, ...casesD, ...casesG];
-  const nbRemplis = toutes.filter(Boolean).length;
-  const distincts = new Set(toutes.filter(Boolean).map(normaliserNom));
+  const casesES = [...casesF, ...casesD, ...casesG];
+  const casesSpec = GROUPES_SPECIAUX.flatMap(g=>sel[g.zone].flat());
+  const nbRemplis = casesES.filter(Boolean).length;
+  const habilles = new Set(casesES.filter(Boolean).map(normaliserNom));
+  const specRemplis = casesSpec.filter(Boolean).length;
 
-  for (const nom of new Set(toutes.filter(Boolean)))
+  for (const nom of new Set([...casesES, ...casesSpec].filter(Boolean)))
     if (!info(nom)) avertissements.push(`${nom} n'est plus dans la composition — remplace-le.`);
 
   // Gardiens : seuls des gardiens au filet, jamais ailleurs, partant ≠ substitut
@@ -2327,22 +2365,17 @@ function validerAlignementTrios(sel, pool){
   }
   if (casesG[0] && casesG[1] && normaliserNom(casesG[0]) === normaliserNom(casesG[1]))
     erreurs.push('Le partant et le substitut doivent être deux gardiens différents.');
-  for (const nom of [...casesF, ...casesD].filter(Boolean)){
+  for (const nom of [...casesF, ...casesD, ...casesSpec].filter(Boolean)){
     const j = info(nom);
     if (j && j.po === 'G') erreurs.push(`${nom} est un gardien : il ne peut pas occuper une case de patineur (art. 1.1.1).`);
   }
 
   // Même joueur deux fois dans une même unité
-  sel.trios.forEach((t,i)=>{
-    const remplis = t.filter(Boolean).map(normaliserNom);
-    if (new Set(remplis).size !== remplis.length) erreurs.push(`Trio ${i+1} : le même joueur y figure deux fois.`);
-  });
-  sel.duos.forEach((d,i)=>{
-    if (d[0] && d[1] && normaliserNom(d[0]) === normaliserNom(d[1]))
-      erreurs.push(`Duo ${i+1} : le même joueur y figure deux fois.`);
-  });
+  const dupDans = (liste)=>{ const r = liste.filter(Boolean).map(normaliserNom); return new Set(r).size !== r.length; };
+  sel.trios.forEach((t,i)=>{ if (dupDans(t)) erreurs.push(`Trio ${i+1} : le même joueur y figure deux fois.`); });
+  sel.duos.forEach((d,i)=>{ if (dupDans(d)) erreurs.push(`Duo ${i+1} : le même joueur y figure deux fois.`); });
 
-  // Double quart des attaquants : uniquement 1-4, 2-4 ou 3-4 (art. 1.1.2)
+  // Double quart à 5c5 : uniquement 1-4, 2-4 ou 3-4 (art. 1.1.2)
   const parTrio = new Map();
   sel.trios.forEach((t,i)=> new Set(t.filter(Boolean).map(normaliserNom)).forEach(c=>{
     if (!parTrio.has(c)) parTrio.set(c, []);
@@ -2366,28 +2399,39 @@ function validerAlignementTrios(sel, pool){
     if (idx.length > 1)
       erreurs.push(`${info(cle)?.nom || cle} figure dans ${idx.length} duos : l'art. 1.1.2 ne permet le double quart qu'avec une 4e ligne — une seule paire par joueur.`);
 
-  // À la fois en attaque et en défense : non couvert par les combinaisons permises
+  // À la fois en attaque et en défense à 5c5 : non couvert par les combinaisons permises
   const clesF = new Set(casesF.filter(Boolean).map(normaliserNom));
   for (const cle of new Set(casesD.filter(Boolean).map(normaliserNom)))
     if (clesF.has(cle))
       avertissements.push(`${info(cle)?.nom || cle} est utilisé en attaque ET en défense — combinaison non couverte par l'art. 1.1.2, à valider avec la ligue.`);
 
-  // Hors position naturelle : permis (art. 1.1.1), simple décompte informatif
+  // Unités spéciales : positions libres, mais jamais sur les 2 vagues d'un même groupe
+  for (const g of GROUPES_SPECIAUX){
+    sel[g.zone].forEach((vague,i)=>{
+      if (dupDans(vague)) erreurs.push(`${g.nom}, vague ${i+1} : le même joueur y figure deux fois.`);
+    });
+    const v1 = new Set(sel[g.zone][0].filter(Boolean).map(normaliserNom));
+    for (const nom of sel[g.zone][1].filter(Boolean))
+      if (v1.has(normaliserNom(nom)))
+        erreurs.push(`${info(nom)?.nom || nom} est sur les 2 vagues de l'${g.nom.toLowerCase()} : interdit (art. 1.1.2).`);
+    for (const nom of new Set(sel[g.zone].flat().filter(Boolean).map(normaliserNom)))
+      if (!habilles.has(nom) && info(nom))
+        avertissements.push(`${info(nom).nom} est sur l'${g.nom.toLowerCase()} sans être parmi les habillés du 5 contre 5.`);
+  }
+
+  // Hors position naturelle à 5c5 : permis (art. 1.1.1), simple décompte informatif
   let horsPosition = 0;
   for (const nom of casesF.filter(Boolean)){ const j = info(nom); if (j && j.po === 'D') horsPosition++; }
   for (const nom of casesD.filter(Boolean)){ const j = info(nom); if (j && EST_ATTAQUANT(j.po)) horsPosition++; }
 
-  if (nbRemplis === toutes.length && distincts.size < 20 && !erreurs.length)
-    avertissements.push(`Double quart utilisé : ${distincts.size} joueurs distincts occupent les 20 cases — l'envoi à la ligue doit tout de même compter 20 habillés (art. 1.1.1).`);
+  if (nbRemplis === casesES.length && habilles.size < 20 && !erreurs.length)
+    avertissements.push(`Double quart utilisé : ${habilles.size} joueurs distincts occupent les 20 cases — l'envoi à la ligue doit tout de même compter 20 habillés (art. 1.1.1).`);
 
-  return {erreurs, avertissements, nbRemplis, nbCases: toutes.length, nbDistincts: distincts.size, horsPosition};
+  return {erreurs, avertissements, nbRemplis, nbCases: casesES.length,
+          nbDistincts: habilles.size, horsPosition,
+          specRemplis, specCases: casesSpec.length};
 }
 
-function valeurCase(sel, s){
-  if (s.dataset.zone === 'g') return sel.gardiens[+s.dataset.k];
-  if (s.dataset.zone === 'trio') return sel.trios[+s.dataset.i][+s.dataset.k];
-  return sel.duos[+s.dataset.i][+s.dataset.k];
-}
 function rendreTrios(){
   const pool = joueursComposition();
   const ordrePo = {C:0, AG:1, AD:2, D:3};
@@ -2395,8 +2439,10 @@ function rendreTrios(){
   const gardiens = pool.filter(j=>j.po==='G').sort((a,b)=> b.ov-a.ov);
   const sel = litTrios();
   document.querySelectorAll('#vue-trios select.trio-sel').forEach(s=>{
-    const valeur = valeurCase(sel, s);
-    const liste = s.dataset.zone === 'g' ? gardiens : patineurs;
+    const zone = s.dataset.zone, i = +s.dataset.i, k = +s.dataset.k;
+    const cleZone = zone==='trio' ? 'trios' : zone==='duo' ? 'duos' : zone;
+    const valeur = zone==='g' ? sel.gardiens[k] : sel[cleZone][i][k];
+    const liste = zone==='g' ? gardiens : patineurs;
     let html = '<option value="">—</option>';
     for (const j of liste)
       html += `<option value="${j.nom.replace(/"/g,'&quot;')}">${j.nom} — ${j.po} · ${j.ov ?? '—'}</option>`;
@@ -2404,24 +2450,27 @@ function rendreTrios(){
       html += `<option value="${valeur.replace(/"/g,'&quot;')}">${valeur} (hors composition)</option>`;
     s.innerHTML = html;
     s.value = valeur;
+    s.classList.toggle('vide', !valeur);
   });
   rendreValidationTrios(sel, pool);
 }
 function rendreValidationTrios(sel, pool){
   const v = validerAlignementTrios(sel, pool);
   $('#triosSommaire').innerHTML = `
-    <div class="stat-carte ${v.nbRemplis===v.nbCases?'complet':'manque'}"><div class="lbl">Cases remplies</div>
+    <div class="stat-carte ${v.nbRemplis===v.nbCases?'complet':'manque'}"><div class="lbl">5 contre 5</div>
       <div class="val">${v.nbRemplis}/${v.nbCases}</div>
-      <div class="det">${v.nbRemplis===v.nbCases?'alignement complet (art. 1.1.1)':(v.nbCases-v.nbRemplis)+' à remplir'}</div></div>
-    <div class="stat-carte"><div class="lbl">Joueurs distincts</div><div class="val">${v.nbDistincts}</div></div>
+      <div class="det">${v.nbRemplis===v.nbCases ? v.nbDistincts+' joueurs distincts habillés' : (v.nbCases-v.nbRemplis)+' case'+(v.nbCases-v.nbRemplis>1?'s':'')+' à remplir'}</div></div>
+    <div class="stat-carte ${v.specRemplis===v.specCases?'complet':'manque'}"><div class="lbl">Unités spéciales</div>
+      <div class="val">${v.specRemplis}/${v.specCases}</div>
+      <div class="det">AN à 5 et à 4 · IN à 4 et à 3</div></div>
     <div class="stat-carte"><div class="lbl">Hors position</div><div class="val">${v.horsPosition}</div>
       <div class="det">permis par l'art. 1.1.1</div></div>
     <div class="stat-carte ${v.erreurs.length?'alerte':''}"><div class="lbl">Infractions</div><div class="val">${v.erreurs.length}</div></div>`;
   let html = '';
   for (const e of v.erreurs) html += `<div class="tv-erreur">✗ ${e}</div>`;
   for (const a of v.avertissements) html += `<div class="tv-avert">△ ${a}</div>`;
-  if (!v.erreurs.length && v.nbRemplis === v.nbCases)
-    html += `<div class="tv-ok">✓ Alignement complet et conforme aux articles 1.1.1 et 1.1.2.</div>`;
+  if (!v.erreurs.length && v.nbRemplis === v.nbCases && v.specRemplis === v.specCases)
+    html += `<div class="tv-ok">✓ Feuille complète et conforme aux articles 1.1.1 et 1.1.2.</div>`;
   $('#triosValidation').innerHTML = html;
 }
 function proposerTrios(){
@@ -2446,6 +2495,24 @@ function proposerTrios(){
       sel.duos[i][k] = prendre(x=>x.po==='D') || prendre();
   const g = pool.filter(x=>x.po==='G').sort((a,b)=>b.ov-a.ov);
   sel.gardiens = [g[0]?.nom || '', g[1]?.nom || ''];
+
+  // Unités spéciales : à même les habillés (positions libres), sans doubler une vague
+  const habilles = new Set([...sel.trios.flat(), ...sel.duos.flat()].filter(Boolean));
+  const dispo = pool.filter(x=>habilles.has(x.nom));
+  const tri = (avant)=>[...dispo].sort((a,b)=>{
+    const pa = avant(a)?0:1, pb = avant(b)?0:1;
+    return pa-pb || b.ov-a.ov;
+  });
+  const remplirGroupe = (zone, n, prio)=>{
+    const ordre = tri(prio);
+    for (let i=0;i<2;i++)
+      for (let k=0;k<n;k++)
+        sel[zone][i][k] = ordre[i*n+k]?.nom || '';
+  };
+  remplirGroupe('an5', 5, x=>EST_ATTAQUANT(x.po));
+  remplirGroupe('an4', 4, x=>EST_ATTAQUANT(x.po));
+  remplirGroupe('in4', 4, x=>x.po==='D');
+  remplirGroupe('in3', 3, x=>x.po==='D');
   ecritTrios(sel);
   rendreTrios();
 }
@@ -2455,10 +2522,11 @@ function attacherTrios(){
   document.querySelectorAll('#vue-trios select.trio-sel').forEach(s=>{
     s.addEventListener('change', ()=>{
       const sel = litTrios();
-      if (s.dataset.zone === 'g') sel.gardiens[+s.dataset.k] = s.value;
-      else if (s.dataset.zone === 'trio') sel.trios[+s.dataset.i][+s.dataset.k] = s.value;
-      else sel.duos[+s.dataset.i][+s.dataset.k] = s.value;
+      const z = s.dataset.zone, cz = z==='trio' ? 'trios' : z==='duo' ? 'duos' : z;
+      if (z === 'g') sel.gardiens[+s.dataset.k] = s.value;
+      else sel[cz][+s.dataset.i][+s.dataset.k] = s.value;
       ecritTrios(sel);
+      s.classList.toggle('vide', !s.value);
       rendreValidationTrios(sel, joueursComposition());
     });
   });

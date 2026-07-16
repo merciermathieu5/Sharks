@@ -855,6 +855,70 @@ const ATTENDU = {
   // vider
   doc.getElementById('btnTriosVider').click();
   ok(S.litTrios().trios.flat().every(n=>!n), 'Bouton Vider : toutes les cases libérées');
+
+  // ---- Unités spéciales ----
+  console.log('— Unités spéciales (2 vagues par groupe, positions libres)');
+  egal(doc.querySelectorAll('#vue-trios select[data-zone="an5"]').length, 10, 'AN à 5 : 2 vagues de 5 cases');
+  egal(doc.querySelectorAll('#vue-trios select[data-zone="an4"]').length, 8, 'AN à 4 : 2 vagues de 4 cases');
+  egal(doc.querySelectorAll('#vue-trios select[data-zone="in4"]').length, 8, 'IN à 4 : 2 vagues de 4 cases');
+  egal(doc.querySelectorAll('#vue-trios select[data-zone="in3"]').length, 6, 'IN à 3 : 2 vagues de 3 cases');
+  egal(doc.querySelectorAll('#vue-trios select.trio-sel').length, 52, '52 cases au total (20 à 5c5 + 32 spéciales)');
+  ok([...doc.querySelector('#vue-trios select[data-zone="an5"]').options].slice(1)
+      .every(o=>!o.value || poDe(o.value)!=='G'), 'Aucun gardien offert sur les unités spéciales');
+
+  // 5 attaquants sur une vague d'AN : permis (positions sans importance)
+  const cinqAv = JSON.parse(JSON.stringify(legal));
+  cinqAv.an5 = [attq.slice(0,5), attq.slice(5,10)];
+  v = S.validerAlignementTrios(cinqAv, poolTrios);
+  egal(v.erreurs.length, 0, 'Cinq attaquants sur une vague d\'AN à 5 : aucune infraction (positions libres)');
+  egal(v.specRemplis, 10, 'Cases spéciales remplies comptées (10/32)');
+
+  // même joueur sur les 2 vagues d'un même groupe : interdit
+  const deuxVagues = JSON.parse(JSON.stringify(cinqAv));
+  deuxVagues.an5[1][0] = deuxVagues.an5[0][0];
+  v = S.validerAlignementTrios(deuxVagues, poolTrios);
+  ok(v.erreurs.some(e=>e.includes('2 vagues')), 'Joueur sur les 2 vagues de l\'AN à 5 : infraction (art. 1.1.2)');
+  const deuxVaguesIn = JSON.parse(JSON.stringify(legal));
+  deuxVaguesIn.in3 = [[defs[0], defs[1], attq[0]], [defs[0], attq[1], attq[2]]];
+  v = S.validerAlignementTrios(deuxVaguesIn, poolTrios);
+  ok(v.erreurs.some(e=>e.includes('2 vagues') && e.includes('infériorité')), 'Joueur sur les 2 vagues de l\'IN à 3 : infraction');
+
+  // même joueur deux fois dans la même vague
+  const dupVague = JSON.parse(JSON.stringify(legal));
+  dupVague.an4 = [[attq[0], attq[0], attq[1], attq[2]], ['','','','']];
+  v = S.validerAlignementTrios(dupVague, poolTrios);
+  ok(v.erreurs.some(e=>e.includes('vague 1')), 'Même joueur deux fois dans une vague : infraction');
+
+  // gardien sur une unité spéciale : infraction
+  const gSpec = JSON.parse(JSON.stringify(legal));
+  gSpec.in4 = [[gars[1], defs[0], defs[1], attq[0]], ['','','','']];
+  v = S.validerAlignementTrios(gSpec, poolTrios);
+  ok(v.erreurs.some(e=>e.includes('case de patineur')), 'Gardien sur une unité spéciale : infraction (art. 1.1.1)');
+
+  // joueur des unités spéciales absent des 20 habillés : avertissement
+  const nonHabille = JSON.parse(JSON.stringify(legal));
+  nonHabille.trios[3][2] = '';
+  const excluReel = pats.find(n=>!nonHabille.trios.flat().includes(n) && !nonHabille.duos.flat().includes(n));
+  ok(!!excluReel, 'Un patineur non habillé disponible pour le scénario');
+  nonHabille.an5 = [[excluReel, '', '', '', ''], ['','','','','']];
+  v = S.validerAlignementTrios(nonHabille, poolTrios);
+  ok(v.avertissements.some(a=>a.includes('sans être parmi les habillés')), 'Unité spéciale avec un joueur non habillé : avertissement');
+
+  // proposition automatique : la feuille complète, unités spéciales incluses
+  doc.getElementById('btnTriosProposer').click();
+  const feuille = S.litTrios();
+  v = S.validerAlignementTrios(feuille, poolTrios);
+  egal(v.specRemplis, 32, 'Proposition automatique : 32 cases spéciales remplies');
+  egal(v.erreurs.length, 0, 'Proposition automatique : aucune infraction, spéciales incluses');
+  ok(!v.avertissements.some(a=>a.includes('sans être parmi les habillés')),
+     'Unités spéciales proposées à même les 20 habillés');
+  for (const z of ['an5','an4','in4','in3']){
+    const v1 = new Set(feuille[z][0].filter(Boolean));
+    ok(feuille[z][1].filter(Boolean).every(n=>!v1.has(n)), `Proposition ${z.toUpperCase()} : aucun joueur sur les 2 vagues`);
+  }
+  doc.getElementById('btnTriosVider').click();
+  ok(['an5','an4','in4','in3'].every(z=>S.litTrios()[z].flat().every(n=>!n)), 'Vider libère aussi les unités spéciales');
+
   W.localStorage.removeItem(S.CLES_LS.compo);
   W.localStorage.removeItem(S.CLES_LS.trios);
 
