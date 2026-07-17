@@ -849,8 +849,17 @@ const ATTENDU = {
   tuilesG[0].click();
   [...doc.querySelectorAll('#tuileModalListe button.choix-joueur')].find(b=>b.dataset.nom===gars[0]).click();
   ok((W.localStorage.getItem(S.CLES_LS.trios)||'').includes(gars[0]), 'Choix sauvegardé dans la mémoire locale');
-  ok(tuilesG[0].textContent.includes(gars[0]), 'La tuile affiche le joueur placé');
+  const svgG = tuilesG[0].querySelector('svg.chandail');
+  ok(!!svgG, 'La tuile porte un chandail SVG');
+  const textesG = [...svgG.querySelectorAll('text')].map(t=>t.textContent);
+  ok(textesG.includes(gars[0].split(' ').pop().toUpperCase()), 'Plaque du chandail : nom de famille du joueur placé');
+  const ovG = poolTrios.find(p=>p.nom===gars[0]).ov;
+  ok(textesG.includes(String(ovG)), 'Numéro dans le dos = OV du joueur');
+  ok(tuilesG[0].title.includes(gars[0]), 'Infobulle : nom complet du joueur');
   ok(!tuilesG[0].classList.contains('vide'), 'La tuile n\'est plus marquée vide');
+  const svgVide = tuilesF[0].querySelector('svg.chandail');
+  ok(!!svgVide && [...svgVide.querySelectorAll('text')].some(t=>t.textContent==='CHOISIR'),
+     'Tuile vide : chandail neutre marqué CHOISIR');
   tuilesG[0].click();
   const btnLiberer = doc.querySelector('#tuileModalListe button.choix-joueur.liberer');
   ok(!!btnLiberer, 'Option «Libérer la case» offerte quand la tuile est occupée');

@@ -149,16 +149,16 @@
   .uni-entete{padding:8px 12px 2px; border-bottom:none;}
   .uni-entete .ur-col{flex:1; font-size:.58rem; letter-spacing:1px; text-transform:uppercase;
     color:var(--orange-bright); text-align:center;}
-  .tuile{flex:1; min-width:0; background:var(--ink); border:1px solid var(--line); padding:9px 6px 8px;
-    cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px;
-    font-family:var(--font-data); color:inherit; transition:border-color .12s;}
-  .tuile:hover{border-color:var(--teal-bright);}
-  .tuile .tu-nom{font-size:.73rem; font-weight:700; max-width:100%;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .tuile{flex:1; min-width:0; background:var(--ink); border:1px solid var(--line); padding:7px 4px 6px;
+    cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px;
+    font-family:var(--font-data); color:inherit; transition:border-color .12s, transform .12s;}
+  .tuile:hover{border-color:var(--teal-bright); transform:translateY(-1px);}
+  .tuile svg.chandail{width:min(84px,100%); height:auto; display:block;
+    filter:drop-shadow(0 2px 3px rgba(0,0,0,.45));}
   .tuile .tu-info{font-size:.6rem; color:#8fa6a9; letter-spacing:.5px;}
-  .tuile .tu-info b{color:var(--teal-bright); font-weight:700;}
   .tuile.vide{border-style:dashed; color:#8fa6a9;}
   .tuile.vide:hover{border-color:var(--orange); color:var(--orange-bright);}
+  .tuile.vide svg.chandail{filter:none; opacity:.8;}
   .tuile.horscompo{border-color:var(--bad);}
   .tuile.horscompo .tu-info{color:var(--bad);}
   .choix-liste{max-height:min(58vh,420px); overflow:auto; padding:8px 12px 14px;}
@@ -2473,6 +2473,34 @@ function usagesES(sel){
   sel.gardiens.forEach((n,k)=>noter(n, k===0?'G1':'G2'));
   return u;
 }
+function nomFamille(nom){
+  return (nom || '').replace(/_/g, ' ').trim().split(/\s+/).pop().toUpperCase();
+}
+/* Chandail vu de dos : couleurs tirées des variables CSS de l'équipe
+   (--teal, --teal-dark, --orange), nom sur l'empiècement, OV en numéro. */
+function svgChandail(nomplaque, numero, estVide){
+  const long = nomplaque.length > 9 ? ` textLength="56" lengthAdjust="spacingAndGlyphs"` : '';
+  const corps = estVide ? '#232b2e' : 'var(--teal)';
+  const emp = estVide ? '#1b2124' : 'var(--teal-dark)';
+  const bande = estVide ? '#39464a' : 'var(--orange)';
+  const encre = estVide ? '#8fa6a9' : '#fff';
+  return `<svg class="chandail" viewBox="0 0 100 88" aria-hidden="true">
+    <path d="M2,26 L18,12 L18,52 L6,56 Z" fill="${corps}"/>
+    <path d="M98,26 L82,12 L82,52 L94,56 Z" fill="${corps}"/>
+    <path d="M4,44 L18,39 L18,46 L5,50 Z" fill="${bande}"/>
+    <path d="M96,44 L82,39 L82,46 L95,50 Z" fill="${bande}"/>
+    <path d="M18,11 Q18,8 22,8 L38,8 Q50,17 62,8 L78,8 Q82,8 82,11 L82,83 Q82,86 78,86 L22,86 Q18,86 18,83 Z" fill="${corps}"/>
+    <path d="M18,11 Q18,8 22,8 L38,8 Q50,17 62,8 L78,8 Q82,8 82,11 L82,25 L18,25 Z" fill="${emp}"/>
+    <path d="M38,8 Q50,18 62,8" fill="none" stroke="${encre}" stroke-width="1.4" opacity=".9"/>
+    <rect x="18" y="75" width="64" height="4.5" fill="${bande}"/>
+    <rect x="18" y="80.5" width="64" height="1.8" fill="${encre}" opacity=".8"/>
+    <text x="50" y="20.5" text-anchor="middle" font-size="8.5" font-weight="700" fill="${encre}"
+      font-family="var(--font-data)" letter-spacing=".5"${long}>${nomplaque}</text>
+    <text x="50" y="66" text-anchor="middle" font-size="${estVide ? 30 : 31}" font-weight="800" fill="${encre}"
+      paint-order="stroke" stroke="${estVide ? 'none' : bande}" stroke-width="1.1"
+      font-family="var(--font-data)">${numero}</text>
+  </svg>`;
+}
 function rendreTrios(){
   const pool = joueursComposition();
   const parCle = new Map(pool.map(j=>[normaliserNom(j.nom), j]));
@@ -2483,13 +2511,18 @@ function rendreTrios(){
     const j = nom ? parCle.get(normaliserNom(nom)) : null;
     t.classList.toggle('vide', !nom);
     t.classList.toggle('horscompo', !!nom && !j);
-    if (!nom)
-      t.innerHTML = `<span class="tu-nom">+</span><span class="tu-info">Choisir</span>`;
-    else if (j)
-      t.innerHTML = `<span class="tu-nom">${j.nom}</span><span class="tu-info">${j.po} · <b>${j.ov ?? '—'}</b></span>`;
-    else
-      t.innerHTML = `<span class="tu-nom">${nom}</span><span class="tu-info">hors composition</span>`;
-    t.title = CASE_LIBELLES[zone](i,k);
+    if (!nom){
+      t.innerHTML = svgChandail('CHOISIR', '+', true);
+      t.title = CASE_LIBELLES[zone](i,k);
+    } else if (j){
+      t.innerHTML = svgChandail(nomFamille(j.nom), j.ov ?? '—', false)
+        + `<span class="tu-info">${j.po}</span>`;
+      t.title = `${CASE_LIBELLES[zone](i,k)} — ${j.nom} (${j.po} · ${j.ov ?? '—'})`;
+    } else {
+      t.innerHTML = svgChandail(nomFamille(nom), '?', true)
+        + `<span class="tu-info">hors composition</span>`;
+      t.title = `${CASE_LIBELLES[zone](i,k)} — ${nom} (hors composition)`;
+    }
   });
   rendreValidationTrios(sel, pool);
 }
