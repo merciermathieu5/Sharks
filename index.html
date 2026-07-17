@@ -131,7 +131,7 @@
     font-size:.72rem; color:var(--txt-dim); background:var(--panel); border:1px solid var(--line); padding:5px 10px; border-radius:14px;}
   .compo-retires button{background:none; border:none; color:var(--teal-bright); cursor:pointer; font-size:.7rem; padding:0;}
   .compo-retires button:hover{color:var(--orange-bright);}
-  /* ---------- Alignement des trios et unités spéciales ---------- */
+  /* ---------- Feuille d'alignement : tuiles de joueurs ---------- */
   .trios-outils{display:flex; gap:10px; margin:12px 0 16px; flex-wrap:wrap;}
   .trios-colonnes{display:grid; grid-template-columns:1fr; gap:16px; align-items:start;}
   @media(min-width:1080px){ .trios-colonnes{grid-template-columns:1fr 1fr;} }
@@ -141,19 +141,33 @@
     padding:9px 14px; border-bottom:1px solid var(--line); color:var(--teal-bright);
     font-size:.7rem; letter-spacing:1.5px; text-transform:uppercase; font-weight:700;}
   .uni-titre small{color:#8fa6a9; letter-spacing:.5px; text-transform:none; font-weight:400; font-size:.62rem;}
-  .uni-rangee{display:flex; align-items:center; gap:8px; padding:7px 14px;
+  .dfo-ligne{display:flex; align-items:stretch; gap:8px; padding:8px 12px;
     border-bottom:1px solid rgba(255,255,255,.05);}
-  .uni-rangee:last-child{border-bottom:none;}
-  .uni-rangee:nth-child(odd){background:rgba(255,255,255,.015);}
-  .uni-rangee .ur-lbl{width:78px; flex:none; font-family:var(--font-data); font-size:.62rem;
-    text-transform:uppercase; letter-spacing:.5px; color:#8fa6a9;}
-  .uni-rangee select{flex:1; min-width:0; font-family:var(--font-data); font-size:.76rem;
-    background:var(--ink); color:inherit; border:1px solid var(--line); padding:6px 7px;}
-  .uni-rangee select:focus{outline:none; border-color:var(--orange);}
-  .uni-rangee select.vide{color:#8fa6a9;}
-  .uni-entete{padding-top:8px; padding-bottom:4px; border-bottom:none; background:none !important;}
+  .dfo-ligne:last-child{border-bottom:none;}
+  .dfo-ligne .ur-lbl{width:46px; flex:none; align-self:center; font-family:var(--font-data);
+    font-size:.62rem; text-transform:uppercase; letter-spacing:.5px; color:#8fa6a9;}
+  .uni-entete{padding:8px 12px 2px; border-bottom:none;}
   .uni-entete .ur-col{flex:1; font-size:.58rem; letter-spacing:1px; text-transform:uppercase;
     color:var(--orange-bright); text-align:center;}
+  .tuile{flex:1; min-width:0; background:var(--ink); border:1px solid var(--line); padding:9px 6px 8px;
+    cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px;
+    font-family:var(--font-data); color:inherit; transition:border-color .12s;}
+  .tuile:hover{border-color:var(--teal-bright);}
+  .tuile .tu-nom{font-size:.73rem; font-weight:700; max-width:100%;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .tuile .tu-info{font-size:.6rem; color:#8fa6a9; letter-spacing:.5px;}
+  .tuile .tu-info b{color:var(--teal-bright); font-weight:700;}
+  .tuile.vide{border-style:dashed; color:#8fa6a9;}
+  .tuile.vide:hover{border-color:var(--orange); color:var(--orange-bright);}
+  .tuile.horscompo{border-color:var(--bad);}
+  .tuile.horscompo .tu-info{color:var(--bad);}
+  .choix-liste{max-height:min(58vh,420px); overflow:auto; padding:8px 12px 14px;}
+  .choix-joueur{display:flex; justify-content:space-between; align-items:baseline; gap:10px; width:100%;
+    text-align:left; background:none; border:none; border-bottom:1px solid rgba(255,255,255,.06);
+    padding:9px 8px; color:inherit; cursor:pointer; font-family:var(--font-data); font-size:.8rem;}
+  .choix-joueur:hover{background:rgba(255,255,255,.06);}
+  .choix-joueur .cj-meta{color:#8fa6a9; font-size:.66rem; flex:none; letter-spacing:.5px;}
+  .choix-joueur.liberer{color:var(--orange-bright); border-bottom:1px solid var(--line);}
   #triosValidation{margin:14px 0 18px;}
   #triosValidation .tv-erreur{color:var(--bad); font-size:.75rem; margin:5px 0;}
   #triosValidation .tv-avert{color:var(--orange-bright); font-size:.75rem; margin:5px 0;}
@@ -373,14 +387,13 @@
     </div>
   </section>
 
-  <!-- ================= TRIOS ET UNITÉS SPÉCIALES ================= -->
+  <!-- ================= FEUILLE D'ALIGNEMENT ================= -->
   <section class="vue" id="vue-trios">
     <h2>Feuille d'alignement</h2>
-    <p class="ha-note">Bâtie à partir des joueurs de la <strong>Composition</strong> (règlements 1.1.1 et 1.1.2) :
-    un patineur peut occuper n'importe quelle case, peu importe sa position naturelle — les gardiens restent devant le filet;
-    le <strong>double quart</strong> à 5 contre 5 n'est permis qu'entre la 4<sup>e</sup> ligne et l'une des trois premières;
-    sur les unités spéciales, <strong>les positions n'ont aucune importance</strong> (cinq attaquants si tu veux), mais un joueur
-    ne peut pas jouer sur les <strong>2 vagues</strong> d'un même groupe; un alignement complet compte <strong>20 habillés</strong>.</p>
+    <p class="ha-note">Clique une tuile pour y placer un joueur de la <strong>Composition</strong> (règlements 1.1.1 et 1.1.2) :
+    positions libres pour les patineurs, gardiens au filet; double quart à 5c5 seulement entre la 4<sup>e</sup> ligne
+    et l'une des trois premières; sur les unités spéciales, positions sans importance mais jamais
+    sur les <strong>2 vagues</strong> d'un même groupe; alignement complet = <strong>20 habillés</strong>.</p>
     <div class="trios-outils">
       <button id="btnTriosProposer" class="btn-prolong">Proposer un alignement (par OV)</button>
       <button id="btnTriosVider">Vider</button>
@@ -390,47 +403,53 @@
     <div class="trios-colonnes">
     <div>
       <div class="uni-bloc">
-      <div class="uni-titre">Attaque <small>4 trios — cases AG · C · AD indicatives</small></div>
-      <div class="uni-rangee uni-entete"><div class="ur-lbl"></div><div class="ur-col">AG</div><div class="ur-col">C</div><div class="ur-col">AD</div></div>
-      <div class="uni-rangee"><div class="ur-lbl">Trio 1</div><select class="trio-sel" data-zone="trio" data-i="0" data-k="0"></select><select class="trio-sel" data-zone="trio" data-i="0" data-k="1"></select><select class="trio-sel" data-zone="trio" data-i="0" data-k="2"></select></div>
-      <div class="uni-rangee"><div class="ur-lbl">Trio 2</div><select class="trio-sel" data-zone="trio" data-i="1" data-k="0"></select><select class="trio-sel" data-zone="trio" data-i="1" data-k="1"></select><select class="trio-sel" data-zone="trio" data-i="1" data-k="2"></select></div>
-      <div class="uni-rangee"><div class="ur-lbl">Trio 3</div><select class="trio-sel" data-zone="trio" data-i="2" data-k="0"></select><select class="trio-sel" data-zone="trio" data-i="2" data-k="1"></select><select class="trio-sel" data-zone="trio" data-i="2" data-k="2"></select></div>
-      <div class="uni-rangee"><div class="ur-lbl">Trio 4</div><select class="trio-sel" data-zone="trio" data-i="3" data-k="0"></select><select class="trio-sel" data-zone="trio" data-i="3" data-k="1"></select><select class="trio-sel" data-zone="trio" data-i="3" data-k="2"></select></div>
+      <div class="uni-titre">Attaque <small>4 trios — colonnes AG · C · AD indicatives</small></div>
+      <div class="dfo-ligne uni-entete"><div class="ur-lbl"></div><div class="ur-col">AG</div><div class="ur-col">C</div><div class="ur-col">AD</div></div>
+      <div class="dfo-ligne"><div class="ur-lbl">T1</div><button type="button" class="tuile" data-zone="trio" data-i="0" data-k="0"></button><button type="button" class="tuile" data-zone="trio" data-i="0" data-k="1"></button><button type="button" class="tuile" data-zone="trio" data-i="0" data-k="2"></button></div>
+      <div class="dfo-ligne"><div class="ur-lbl">T2</div><button type="button" class="tuile" data-zone="trio" data-i="1" data-k="0"></button><button type="button" class="tuile" data-zone="trio" data-i="1" data-k="1"></button><button type="button" class="tuile" data-zone="trio" data-i="1" data-k="2"></button></div>
+      <div class="dfo-ligne"><div class="ur-lbl">T3</div><button type="button" class="tuile" data-zone="trio" data-i="2" data-k="0"></button><button type="button" class="tuile" data-zone="trio" data-i="2" data-k="1"></button><button type="button" class="tuile" data-zone="trio" data-i="2" data-k="2"></button></div>
+      <div class="dfo-ligne"><div class="ur-lbl">T4</div><button type="button" class="tuile" data-zone="trio" data-i="3" data-k="0"></button><button type="button" class="tuile" data-zone="trio" data-i="3" data-k="1"></button><button type="button" class="tuile" data-zone="trio" data-i="3" data-k="2"></button></div>
       </div>
       <div class="uni-bloc">
       <div class="uni-titre">Défense <small>3 duos</small></div>
-      <div class="uni-rangee"><div class="ur-lbl">Duo 1</div><select class="trio-sel" data-zone="duo" data-i="0" data-k="0"></select><select class="trio-sel" data-zone="duo" data-i="0" data-k="1"></select></div>
-      <div class="uni-rangee"><div class="ur-lbl">Duo 2</div><select class="trio-sel" data-zone="duo" data-i="1" data-k="0"></select><select class="trio-sel" data-zone="duo" data-i="1" data-k="1"></select></div>
-      <div class="uni-rangee"><div class="ur-lbl">Duo 3</div><select class="trio-sel" data-zone="duo" data-i="2" data-k="0"></select><select class="trio-sel" data-zone="duo" data-i="2" data-k="1"></select></div>
+      <div class="dfo-ligne"><div class="ur-lbl">D1</div><button type="button" class="tuile" data-zone="duo" data-i="0" data-k="0"></button><button type="button" class="tuile" data-zone="duo" data-i="0" data-k="1"></button></div>
+      <div class="dfo-ligne"><div class="ur-lbl">D2</div><button type="button" class="tuile" data-zone="duo" data-i="1" data-k="0"></button><button type="button" class="tuile" data-zone="duo" data-i="1" data-k="1"></button></div>
+      <div class="dfo-ligne"><div class="ur-lbl">D3</div><button type="button" class="tuile" data-zone="duo" data-i="2" data-k="0"></button><button type="button" class="tuile" data-zone="duo" data-i="2" data-k="1"></button></div>
       </div>
       <div class="uni-bloc">
       <div class="uni-titre">Gardiens</div>
-      <div class="uni-rangee"><div class="ur-lbl">Partant</div><select class="trio-sel" data-zone="g" data-i="0" data-k="0"></select></div>
-      <div class="uni-rangee"><div class="ur-lbl">Substitut</div><select class="trio-sel" data-zone="g" data-i="0" data-k="1"></select></div>
+      <div class="dfo-ligne"><div class="ur-lbl">Part.</div><button type="button" class="tuile" data-zone="g" data-i="0" data-k="0"></button></div>
+      <div class="dfo-ligne"><div class="ur-lbl">Subst.</div><button type="button" class="tuile" data-zone="g" data-i="0" data-k="1"></button></div>
       </div>
     </div>
     <div>
       <div class="uni-bloc">
       <div class="uni-titre">Avantage numérique à 5 <small>2 vagues de 5 — positions libres</small></div>
-      <div class="uni-rangee"><div class="ur-lbl">Vague 1</div><select class="trio-sel" data-zone="an5" data-i="0" data-k="0"></select><select class="trio-sel" data-zone="an5" data-i="0" data-k="1"></select><select class="trio-sel" data-zone="an5" data-i="0" data-k="2"></select><select class="trio-sel" data-zone="an5" data-i="0" data-k="3"></select><select class="trio-sel" data-zone="an5" data-i="0" data-k="4"></select></div>
-      <div class="uni-rangee"><div class="ur-lbl">Vague 2</div><select class="trio-sel" data-zone="an5" data-i="1" data-k="0"></select><select class="trio-sel" data-zone="an5" data-i="1" data-k="1"></select><select class="trio-sel" data-zone="an5" data-i="1" data-k="2"></select><select class="trio-sel" data-zone="an5" data-i="1" data-k="3"></select><select class="trio-sel" data-zone="an5" data-i="1" data-k="4"></select></div>
+      <div class="dfo-ligne"><div class="ur-lbl">V1</div><button type="button" class="tuile" data-zone="an5" data-i="0" data-k="0"></button><button type="button" class="tuile" data-zone="an5" data-i="0" data-k="1"></button><button type="button" class="tuile" data-zone="an5" data-i="0" data-k="2"></button><button type="button" class="tuile" data-zone="an5" data-i="0" data-k="3"></button><button type="button" class="tuile" data-zone="an5" data-i="0" data-k="4"></button></div>
+      <div class="dfo-ligne"><div class="ur-lbl">V2</div><button type="button" class="tuile" data-zone="an5" data-i="1" data-k="0"></button><button type="button" class="tuile" data-zone="an5" data-i="1" data-k="1"></button><button type="button" class="tuile" data-zone="an5" data-i="1" data-k="2"></button><button type="button" class="tuile" data-zone="an5" data-i="1" data-k="3"></button><button type="button" class="tuile" data-zone="an5" data-i="1" data-k="4"></button></div>
       </div>
       <div class="uni-bloc">
       <div class="uni-titre">Avantage numérique à 4 <small>2 vagues de 4 — positions libres</small></div>
-      <div class="uni-rangee"><div class="ur-lbl">Vague 1</div><select class="trio-sel" data-zone="an4" data-i="0" data-k="0"></select><select class="trio-sel" data-zone="an4" data-i="0" data-k="1"></select><select class="trio-sel" data-zone="an4" data-i="0" data-k="2"></select><select class="trio-sel" data-zone="an4" data-i="0" data-k="3"></select></div>
-      <div class="uni-rangee"><div class="ur-lbl">Vague 2</div><select class="trio-sel" data-zone="an4" data-i="1" data-k="0"></select><select class="trio-sel" data-zone="an4" data-i="1" data-k="1"></select><select class="trio-sel" data-zone="an4" data-i="1" data-k="2"></select><select class="trio-sel" data-zone="an4" data-i="1" data-k="3"></select></div>
+      <div class="dfo-ligne"><div class="ur-lbl">V1</div><button type="button" class="tuile" data-zone="an4" data-i="0" data-k="0"></button><button type="button" class="tuile" data-zone="an4" data-i="0" data-k="1"></button><button type="button" class="tuile" data-zone="an4" data-i="0" data-k="2"></button><button type="button" class="tuile" data-zone="an4" data-i="0" data-k="3"></button></div>
+      <div class="dfo-ligne"><div class="ur-lbl">V2</div><button type="button" class="tuile" data-zone="an4" data-i="1" data-k="0"></button><button type="button" class="tuile" data-zone="an4" data-i="1" data-k="1"></button><button type="button" class="tuile" data-zone="an4" data-i="1" data-k="2"></button><button type="button" class="tuile" data-zone="an4" data-i="1" data-k="3"></button></div>
       </div>
       <div class="uni-bloc">
       <div class="uni-titre">Infériorité numérique à 4 <small>2 vagues de 4 — positions libres</small></div>
-      <div class="uni-rangee"><div class="ur-lbl">Vague 1</div><select class="trio-sel" data-zone="in4" data-i="0" data-k="0"></select><select class="trio-sel" data-zone="in4" data-i="0" data-k="1"></select><select class="trio-sel" data-zone="in4" data-i="0" data-k="2"></select><select class="trio-sel" data-zone="in4" data-i="0" data-k="3"></select></div>
-      <div class="uni-rangee"><div class="ur-lbl">Vague 2</div><select class="trio-sel" data-zone="in4" data-i="1" data-k="0"></select><select class="trio-sel" data-zone="in4" data-i="1" data-k="1"></select><select class="trio-sel" data-zone="in4" data-i="1" data-k="2"></select><select class="trio-sel" data-zone="in4" data-i="1" data-k="3"></select></div>
+      <div class="dfo-ligne"><div class="ur-lbl">V1</div><button type="button" class="tuile" data-zone="in4" data-i="0" data-k="0"></button><button type="button" class="tuile" data-zone="in4" data-i="0" data-k="1"></button><button type="button" class="tuile" data-zone="in4" data-i="0" data-k="2"></button><button type="button" class="tuile" data-zone="in4" data-i="0" data-k="3"></button></div>
+      <div class="dfo-ligne"><div class="ur-lbl">V2</div><button type="button" class="tuile" data-zone="in4" data-i="1" data-k="0"></button><button type="button" class="tuile" data-zone="in4" data-i="1" data-k="1"></button><button type="button" class="tuile" data-zone="in4" data-i="1" data-k="2"></button><button type="button" class="tuile" data-zone="in4" data-i="1" data-k="3"></button></div>
       </div>
       <div class="uni-bloc">
       <div class="uni-titre">Infériorité numérique à 3 <small>2 vagues de 3 — positions libres</small></div>
-      <div class="uni-rangee"><div class="ur-lbl">Vague 1</div><select class="trio-sel" data-zone="in3" data-i="0" data-k="0"></select><select class="trio-sel" data-zone="in3" data-i="0" data-k="1"></select><select class="trio-sel" data-zone="in3" data-i="0" data-k="2"></select></div>
-      <div class="uni-rangee"><div class="ur-lbl">Vague 2</div><select class="trio-sel" data-zone="in3" data-i="1" data-k="0"></select><select class="trio-sel" data-zone="in3" data-i="1" data-k="1"></select><select class="trio-sel" data-zone="in3" data-i="1" data-k="2"></select></div>
+      <div class="dfo-ligne"><div class="ur-lbl">V1</div><button type="button" class="tuile" data-zone="in3" data-i="0" data-k="0"></button><button type="button" class="tuile" data-zone="in3" data-i="0" data-k="1"></button><button type="button" class="tuile" data-zone="in3" data-i="0" data-k="2"></button></div>
+      <div class="dfo-ligne"><div class="ur-lbl">V2</div><button type="button" class="tuile" data-zone="in3" data-i="1" data-k="0"></button><button type="button" class="tuile" data-zone="in3" data-i="1" data-k="1"></button><button type="button" class="tuile" data-zone="in3" data-i="1" data-k="2"></button></div>
       </div>
     </div>
+    </div>
+    <div class="modal-fond" id="tuileModalFond" hidden>
+      <div class="modal" style="width:min(430px,94vw)">
+        <div class="modal-tete"><h3 id="tuileModalTitre">Choisir un joueur</h3><button class="modal-x" id="tuileModalX" type="button">×</button></div>
+        <div class="choix-liste" id="tuileModalListe"></div>
+      </div>
     </div>
   </section>
 
@@ -2432,27 +2451,83 @@ function validerAlignementTrios(brut, pool){
           specRemplis, specCases: casesSpec.length};
 }
 
+const CASE_LIBELLES = {
+  trio: (i,k)=>`Trio ${i+1} — case ${['AG','C','AD'][k]}`,
+  duo: (i,k)=>`Duo ${i+1}`,
+  g: (i,k)=> k===0 ? 'Gardien partant' : 'Gardien substitut',
+  an5: (i,k)=>`Avantage numérique à 5 — vague ${i+1}`,
+  an4: (i,k)=>`Avantage numérique à 4 — vague ${i+1}`,
+  in4: (i,k)=>`Infériorité numérique à 4 — vague ${i+1}`,
+  in3: (i,k)=>`Infériorité numérique à 3 — vague ${i+1}`
+};
+function cleZoneTrios(zone){ return zone==='trio' ? 'trios' : zone==='duo' ? 'duos' : zone; }
+function valeurCaseTrios(sel, zone, i, k){
+  return zone==='g' ? sel.gardiens[k] : sel[cleZoneTrios(zone)][i][k];
+}
+function usagesES(sel){
+  const u = new Map();
+  const noter = (nom, tag)=>{ if (!nom) return; const c = normaliserNom(nom);
+    if (!u.has(c)) u.set(c, []); u.get(c).push(tag); };
+  sel.trios.forEach((t,i)=>t.forEach(n=>noter(n, 'T'+(i+1))));
+  sel.duos.forEach((d,i)=>d.forEach(n=>noter(n, 'D'+(i+1))));
+  sel.gardiens.forEach((n,k)=>noter(n, k===0?'G1':'G2'));
+  return u;
+}
 function rendreTrios(){
   const pool = joueursComposition();
-  const ordrePo = {C:0, AG:1, AD:2, D:3};
-  const patineurs = pool.filter(j=>j.po!=='G').sort((a,b)=> (ordrePo[a.po]??9)-(ordrePo[b.po]??9) || b.ov-a.ov);
-  const gardiens = pool.filter(j=>j.po==='G').sort((a,b)=> b.ov-a.ov);
+  const parCle = new Map(pool.map(j=>[normaliserNom(j.nom), j]));
   const sel = litTrios();
-  document.querySelectorAll('#vue-trios select.trio-sel').forEach(s=>{
-    const zone = s.dataset.zone, i = +s.dataset.i, k = +s.dataset.k;
-    const cleZone = zone==='trio' ? 'trios' : zone==='duo' ? 'duos' : zone;
-    const valeur = zone==='g' ? sel.gardiens[k] : sel[cleZone][i][k];
-    const liste = zone==='g' ? gardiens : patineurs;
-    let html = '<option value="">—</option>';
-    for (const j of liste)
-      html += `<option value="${j.nom.replace(/"/g,'&quot;')}">${j.nom} — ${j.po} · ${j.ov ?? '—'}</option>`;
-    if (valeur && !liste.some(j=>j.nom===valeur))
-      html += `<option value="${valeur.replace(/"/g,'&quot;')}">${valeur} (hors composition)</option>`;
-    s.innerHTML = html;
-    s.value = valeur;
-    s.classList.toggle('vide', !valeur);
+  document.querySelectorAll('#vue-trios button.tuile').forEach(t=>{
+    const zone = t.dataset.zone, i = +t.dataset.i, k = +t.dataset.k;
+    const nom = valeurCaseTrios(sel, zone, i, k);
+    const j = nom ? parCle.get(normaliserNom(nom)) : null;
+    t.classList.toggle('vide', !nom);
+    t.classList.toggle('horscompo', !!nom && !j);
+    if (!nom)
+      t.innerHTML = `<span class="tu-nom">+</span><span class="tu-info">Choisir</span>`;
+    else if (j)
+      t.innerHTML = `<span class="tu-nom">${j.nom}</span><span class="tu-info">${j.po} · <b>${j.ov ?? '—'}</b></span>`;
+    else
+      t.innerHTML = `<span class="tu-nom">${nom}</span><span class="tu-info">hors composition</span>`;
+    t.title = CASE_LIBELLES[zone](i,k);
   });
   rendreValidationTrios(sel, pool);
+}
+let tuileCible = null;
+function ouvrirChoixTuile(zone, i, k){
+  tuileCible = {zone, i, k};
+  const pool = joueursComposition();
+  const ordrePo = {C:0, AG:1, AD:2, D:3};
+  const liste = zone==='g'
+    ? pool.filter(j=>j.po==='G').sort((a,b)=>b.ov-a.ov)
+    : pool.filter(j=>j.po!=='G').sort((a,b)=> (ordrePo[a.po]??9)-(ordrePo[b.po]??9) || b.ov-a.ov);
+  const sel = litTrios();
+  const usages = usagesES(sel);
+  const actuel = valeurCaseTrios(sel, zone, i, k);
+  $('#tuileModalTitre').textContent = CASE_LIBELLES[zone](i,k);
+  let html = '';
+  if (actuel)
+    html += `<button type="button" class="choix-joueur liberer" data-nom="">Libérer la case (retirer ${actuel})</button>`;
+  for (const j of liste){
+    const tags = usages.get(normaliserNom(j.nom)) || [];
+    html += `<button type="button" class="choix-joueur" data-nom="${j.nom.replace(/"/g,'&quot;')}">`
+      + `<span>${j.nom}</span><span class="cj-meta">${j.po} · ${j.ov ?? '—'}${tags.length ? ' · '+tags.join(' ') : ''}</span></button>`;
+  }
+  if (!liste.length)
+    html += `<div class="tv-avert" style="padding:10px 6px">Aucun ${zone==='g'?'gardien':'patineur'} dans la Composition — complète-la d'abord.</div>`;
+  $('#tuileModalListe').innerHTML = html;
+  $('#tuileModalFond').hidden = false;
+}
+function fermerChoixTuile(){ $('#tuileModalFond').hidden = true; tuileCible = null; }
+function assignerTuile(nom){
+  if (!tuileCible) return;
+  const {zone, i, k} = tuileCible;
+  const sel = litTrios();
+  if (zone === 'g') sel.gardiens[k] = nom;
+  else sel[cleZoneTrios(zone)][i][k] = nom;
+  ecritTrios(sel);
+  fermerChoixTuile();
+  rendreTrios();
 }
 function rendreValidationTrios(sel, pool){
   const v = validerAlignementTrios(sel, pool);
@@ -2484,15 +2559,19 @@ function proposerTrios(){
   };
   const sel = TRIOS_VIDES();
   const poParCase = ['AG','C','AD'];
+  // Position naturelle d'abord (meilleur OV disponible, trio 1 vers 4)
   for (let k=0; k<3; k++)
     for (let i=0; i<4; i++)
       sel.trios[i][k] = prendre(x=>x.po===poParCase[k]) || '';
+  // Case d'attaque sans titulaire naturel : un AUTRE ATTAQUANT non utilisé
+  // (jamais un défenseur); s'il n'en reste plus, la case demeure vide.
   for (let i=0; i<4; i++)
     for (let k=0; k<3; k++)
-      if (!sel.trios[i][k]) sel.trios[i][k] = prendre(x=>EST_ATTAQUANT(x.po)) || prendre();
+      if (!sel.trios[i][k]) sel.trios[i][k] = prendre(x=>EST_ATTAQUANT(x.po)) || '';
+  // Duos : défenseurs naturels seulement; case vide plutôt qu'un attaquant.
   for (let i=0; i<3; i++)
     for (let k=0; k<2; k++)
-      sel.duos[i][k] = prendre(x=>x.po==='D') || prendre();
+      sel.duos[i][k] = prendre(x=>x.po==='D') || '';
   const g = pool.filter(x=>x.po==='G').sort((a,b)=>b.ov-a.ov);
   sel.gardiens = [g[0]?.nom || '', g[1]?.nom || ''];
 
@@ -2519,17 +2598,14 @@ function proposerTrios(){
 function attacherTrios(){
   $('#btnTriosProposer').addEventListener('click', proposerTrios);
   $('#btnTriosVider').addEventListener('click', ()=>{ ecritTrios(TRIOS_VIDES()); rendreTrios(); });
-  document.querySelectorAll('#vue-trios select.trio-sel').forEach(s=>{
-    s.addEventListener('change', ()=>{
-      const sel = litTrios();
-      const z = s.dataset.zone, cz = z==='trio' ? 'trios' : z==='duo' ? 'duos' : z;
-      if (z === 'g') sel.gardiens[+s.dataset.k] = s.value;
-      else sel[cz][+s.dataset.i][+s.dataset.k] = s.value;
-      ecritTrios(sel);
-      s.classList.toggle('vide', !s.value);
-      rendreValidationTrios(sel, joueursComposition());
-    });
+  $('#vue-trios').addEventListener('click', e=>{
+    const t = e.target.closest('button.tuile');
+    if (t){ ouvrirChoixTuile(t.dataset.zone, +t.dataset.i, +t.dataset.k); return; }
+    const c = e.target.closest('button.choix-joueur');
+    if (c){ assignerTuile(c.dataset.nom || ''); return; }
   });
+  $('#tuileModalX').addEventListener('click', fermerChoixTuile);
+  $('#tuileModalFond').addEventListener('click', e=>{ if (e.target === e.currentTarget) fermerChoixTuile(); });
 }
 
 /* ---------- Production ---------- */

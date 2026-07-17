@@ -746,27 +746,34 @@ const ATTENDU = {
     {nom:'Attaquant Six',  po:'C',  ov:74, salaire:1000000},
     {nom:'Defenseur Un',   po:'D',  ov:78, salaire:1000000},
     {nom:'Defenseur Deux', po:'D',  ov:77, salaire:1000000},
+    {nom:'Defenseur Trois',po:'D',  ov:76, salaire:1000000},
     {nom:'Gardien Un',     po:'G',  ov:80, salaire:1000000},
     {nom:'Gardien Deux',   po:'G',  ov:78, salaire:900000}
   ]}));
   const poolTrios = S.joueursComposition();
   egal(poolTrios.filter(j=>j.po==='G').length, 2, 'Bassin de la Composition : 2 gardiens ajoutés');
-  egal(poolTrios.filter(j=>j.po!=='G').length, 18, 'Bassin de la Composition : 18 patineurs (10 signés + 8 ajouts)');
+  egal(poolTrios.filter(j=>j.po!=='G').length, 19, 'Bassin de la Composition : 19 patineurs (10 signés + 9 ajouts)');
   ok(!!doc.querySelector('nav button[data-vue="trios"]'), 'Onglet Trios présent dans la navigation');
   S.rendreTrios();
-  const selsF = [...doc.querySelectorAll('#vue-trios select[data-zone="trio"]')];
-  const selsD = [...doc.querySelectorAll('#vue-trios select[data-zone="duo"]')];
-  const selsG = [...doc.querySelectorAll('#vue-trios select[data-zone="g"]')];
-  egal(selsF.length, 12, '12 cases d\'attaquants (4 trios)');
-  egal(selsD.length, 6, '6 cases de défenseurs (3 duos)');
-  egal(selsG.length, 2, 'Cases du partant et du substitut');
+  const tuilesF = [...doc.querySelectorAll('#vue-trios button.tuile[data-zone="trio"]')];
+  const tuilesD = [...doc.querySelectorAll('#vue-trios button.tuile[data-zone="duo"]')];
+  const tuilesG = [...doc.querySelectorAll('#vue-trios button.tuile[data-zone="g"]')];
+  egal(tuilesF.length, 12, '12 tuiles d\'attaquants (4 trios)');
+  egal(tuilesD.length, 6, '6 tuiles de défenseurs (3 duos)');
+  egal(tuilesG.length, 2, 'Tuiles du partant et du substitut');
+  ok(tuilesF.every(t=>t.classList.contains('vide')), 'Tuiles vides au départ (état «+ Choisir»)');
   const poDe = nom => poolTrios.find(p=>p.nom===nom)?.po;
-  ok(selsG.every(s=>[...s.options].slice(1).every(o=>!o.value || poDe(o.value)==='G')),
-     'Cases de gardiens : seuls des gardiens offerts (art. 1.1.1)');
-  ok([...selsF[0].options].slice(1).every(o=>!o.value || poDe(o.value)!=='G'),
-     'Cases de patineurs : aucun gardien offert (art. 1.1.1)');
-  ok([...selsF[0].options].some(o=>poDe(o.value)==='D'),
-     'Un défenseur peut être placé à l\'attaque (position libre, art. 1.1.1)');
+  const choixDe = ()=>[...doc.querySelectorAll('#tuileModalListe button.choix-joueur')].map(b=>b.dataset.nom).filter(Boolean);
+  tuilesG[0].click();
+  ok(doc.getElementById('tuileModalFond').hidden === false, 'Clic sur une tuile : le sélecteur s\'ouvre');
+  ok(choixDe().every(n=>poDe(n)==='G'), 'Tuiles de gardiens : seuls des gardiens offerts (art. 1.1.1)');
+  ok(doc.getElementById('tuileModalTitre').textContent.includes('partant'), 'Titre du sélecteur : la case visée');
+  doc.getElementById('tuileModalX').click();
+  ok(doc.getElementById('tuileModalFond').hidden === true, 'Fermeture du sélecteur par le ×');
+  tuilesF[0].click();
+  ok(choixDe().every(n=>poDe(n)!=='G'), 'Tuiles de patineurs : aucun gardien offert (art. 1.1.1)');
+  ok(choixDe().some(n=>poDe(n)==='D'), 'Un défenseur peut être placé à l\'attaque (position libre, art. 1.1.1)');
+  doc.getElementById('tuileModalX').click();
 
   // validation pure : construire un alignement complet légal
   const attq = poolTrios.filter(j=>S.EST_ATTAQUANT ? S.EST_ATTAQUANT(j.po) : (j.po==='C'||j.po==='AG'||j.po==='AD')).map(j=>j.nom);
@@ -838,10 +845,17 @@ const ATTENDU = {
   v = S.validerAlignementTrios(fantome, poolTrios);
   ok(v.avertissements.some(a=>a.includes('plus dans la composition')), 'Joueur retiré de la composition : avertissement');
 
-  // persistance : un changement dans l'interface est sauvegardé
-  selsG[0].value = gars[0];
-  selsG[0].dispatchEvent(new W.Event('change'));
+  // persistance : placer un joueur par le sélecteur, puis libérer la case
+  tuilesG[0].click();
+  [...doc.querySelectorAll('#tuileModalListe button.choix-joueur')].find(b=>b.dataset.nom===gars[0]).click();
   ok((W.localStorage.getItem(S.CLES_LS.trios)||'').includes(gars[0]), 'Choix sauvegardé dans la mémoire locale');
+  ok(tuilesG[0].textContent.includes(gars[0]), 'La tuile affiche le joueur placé');
+  ok(!tuilesG[0].classList.contains('vide'), 'La tuile n\'est plus marquée vide');
+  tuilesG[0].click();
+  const btnLiberer = doc.querySelector('#tuileModalListe button.choix-joueur.liberer');
+  ok(!!btnLiberer, 'Option «Libérer la case» offerte quand la tuile est occupée');
+  btnLiberer.click();
+  ok(tuilesG[0].classList.contains('vide'), 'Case libérée : la tuile redevient vide');
 
   // proposition automatique par OV
   doc.getElementById('btnTriosProposer').click();
@@ -851,6 +865,15 @@ const ATTENDU = {
   egal(v.erreurs.length, 0, 'Proposition automatique : aucune infraction');
   egal(propose.gardiens[0], gars[0], 'Partant proposé = meilleur OV des gardiens');
   ok(propose.trios.flat().every(n=>poDe(n)!=='G'), 'Aucun gardien dans les trios proposés');
+  ok(propose.trios.flat().filter(Boolean).every(n=>['C','AG','AD'].includes(poDe(n))),
+     'Proposition : aucun défenseur placé à l\'attaque');
+  ok(propose.duos.flat().filter(Boolean).every(n=>poDe(n)==='D'),
+     'Proposition : duos réservés aux défenseurs naturels');
+  egal(v.horsPosition, 0, 'Proposition : zéro joueur hors position naturelle');
+  const colAD = propose.trios.map(t=>t[2]);
+  egal(colAD.filter(n=>poDe(n)==='AD').length, 3, 'Colonne AD : les 3 ailiers droits naturels d\'abord');
+  ok(['C','AG'].includes(poDe(colAD.find(n=>poDe(n)!=='AD'))),
+     'Case AD sans titulaire naturel : complétée par un autre attaquant inutilisé');
 
   // vider
   doc.getElementById('btnTriosVider').click();
@@ -858,13 +881,14 @@ const ATTENDU = {
 
   // ---- Unités spéciales ----
   console.log('— Unités spéciales (2 vagues par groupe, positions libres)');
-  egal(doc.querySelectorAll('#vue-trios select[data-zone="an5"]').length, 10, 'AN à 5 : 2 vagues de 5 cases');
-  egal(doc.querySelectorAll('#vue-trios select[data-zone="an4"]').length, 8, 'AN à 4 : 2 vagues de 4 cases');
-  egal(doc.querySelectorAll('#vue-trios select[data-zone="in4"]').length, 8, 'IN à 4 : 2 vagues de 4 cases');
-  egal(doc.querySelectorAll('#vue-trios select[data-zone="in3"]').length, 6, 'IN à 3 : 2 vagues de 3 cases');
-  egal(doc.querySelectorAll('#vue-trios select.trio-sel').length, 52, '52 cases au total (20 à 5c5 + 32 spéciales)');
-  ok([...doc.querySelector('#vue-trios select[data-zone="an5"]').options].slice(1)
-      .every(o=>!o.value || poDe(o.value)!=='G'), 'Aucun gardien offert sur les unités spéciales');
+  egal(doc.querySelectorAll('#vue-trios button.tuile[data-zone="an5"]').length, 10, 'AN à 5 : 2 vagues de 5 cases');
+  egal(doc.querySelectorAll('#vue-trios button.tuile[data-zone="an4"]').length, 8, 'AN à 4 : 2 vagues de 4 cases');
+  egal(doc.querySelectorAll('#vue-trios button.tuile[data-zone="in4"]').length, 8, 'IN à 4 : 2 vagues de 4 cases');
+  egal(doc.querySelectorAll('#vue-trios button.tuile[data-zone="in3"]').length, 6, 'IN à 3 : 2 vagues de 3 cases');
+  egal(doc.querySelectorAll('#vue-trios button.tuile').length, 52, '52 tuiles au total (20 à 5c5 + 32 spéciales)');
+  doc.querySelector('#vue-trios button.tuile[data-zone="an5"]').click();
+  ok(choixDe().every(n=>poDe(n)!=='G'), 'Aucun gardien offert sur les unités spéciales');
+  doc.getElementById('tuileModalX').click();
 
   // 5 attaquants sur une vague d'AN : permis (positions sans importance)
   const cinqAv = JSON.parse(JSON.stringify(legal));
