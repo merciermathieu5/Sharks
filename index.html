@@ -2540,7 +2540,7 @@ function rendreBanc(pool, sel){
     const tags = [...(usES.get(cle)||[]), ...(usSpec.get(cle)||new Set())];
     const bulle = `${j.nom} (${j.po} · ${j.ov ?? '—'})${tags.length ? ' — ' + tags.join(' ') : ''}`;
     return `<div class="banc-joueur${tags.length?' utilise':''}" draggable="true" title="${bulle.replace(/"/g,'&quot;')}"
-      data-nom="${j.nom.replace(/"/g,'&quot;')}">${j.nom} <b>(${j.ov ?? '—'})</b></div>`;
+      data-nom="${j.nom.replace(/"/g,'&quot;')}">${j.po} - ${j.nom} <b>(${j.ov ?? '—'})</b></div>`;
   }).join('') || `<div class="tv-avert" style="padding:6px">Aucun joueur — complète d'abord la Composition.</div>`;
 }
 function rendreTrios(){

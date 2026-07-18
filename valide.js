@@ -736,23 +736,22 @@ const ATTENDU = {
 
   console.log('— Alignement des trios (règlements 1.1.1 et 1.1.2)');
   // bassin de test : signés du club + ajouts (6 attaquants, 2 défenseurs, 2 gardiens)
+  // Bassin déterministe, indépendant de l'équipe : on retire les signés du club
+  // et on peuple la Composition d'un effectif synthétique fixe (6C, 4AG, 3AD, 6D, 2G).
   W.localStorage.setItem(S.CLES_LS.trios, JSON.stringify(S.TRIOS_VIDES()));
-  W.localStorage.setItem(S.CLES_LS.compo, JSON.stringify({retires: [], ajouts: [
-    {nom:'Attaquant Un',   po:'AG', ov:79, salaire:1000000},
-    {nom:'Attaquant Deux', po:'AD', ov:78, salaire:1000000},
-    {nom:'Attaquant Trois',po:'C',  ov:77, salaire:1000000},
-    {nom:'Attaquant Quatre',po:'AG',ov:76, salaire:1000000},
-    {nom:'Attaquant Cinq', po:'AD', ov:75, salaire:1000000},
-    {nom:'Attaquant Six',  po:'C',  ov:74, salaire:1000000},
-    {nom:'Defenseur Un',   po:'D',  ov:78, salaire:1000000},
-    {nom:'Defenseur Deux', po:'D',  ov:77, salaire:1000000},
-    {nom:'Defenseur Trois',po:'D',  ov:76, salaire:1000000},
-    {nom:'Gardien Un',     po:'G',  ov:80, salaire:1000000},
-    {nom:'Gardien Deux',   po:'G',  ov:78, salaire:900000}
-  ]}));
+  W.localStorage.removeItem(S.CLES_LS.resign);
+  const signesClub = S.SECOURS_ROSTER.filter(j=>!j.backup && j.ct>0).map(j=>S.normaliserNom(j.nom));
+  const ajoutsTrios = [];
+  const groupesAjouts = [['C',6,84],['AG',4,80],['AD',3,78],['D',6,79],['G',2,80]];
+  const NOMS_AJOUTS = {C:'Centre', AG:'AilierG', AD:'AilierD', D:'Defenseur', G:'Gardien'};
+  const NUMS = ['Un','Deux','Trois','Quatre','Cinq','Six'];
+  for (const [po,n,ovBase] of groupesAjouts)
+    for (let x=0;x<n;x++)
+      ajoutsTrios.push({nom:`${NOMS_AJOUTS[po]} ${NUMS[x]}`, po, ov:ovBase-x*2, salaire:1000000});
+  W.localStorage.setItem(S.CLES_LS.compo, JSON.stringify({retires: signesClub, ajouts: ajoutsTrios}));
   const poolTrios = S.joueursComposition();
-  egal(poolTrios.filter(j=>j.po==='G').length, 2, 'Bassin de la Composition : 2 gardiens ajoutés');
-  egal(poolTrios.filter(j=>j.po!=='G').length, 19, 'Bassin de la Composition : 19 patineurs (10 signés + 9 ajouts)');
+  egal(poolTrios.filter(j=>j.po==='G').length, 2, 'Bassin déterministe : 2 gardiens');
+  egal(poolTrios.filter(j=>j.po!=='G').length, 19, 'Bassin déterministe : 19 patineurs (6C, 4AG, 3AD, 6D)');
   ok(!!doc.querySelector('nav button[data-vue="trios"]'), 'Onglet Trios présent dans la navigation');
   S.rendreTrios();
   const tuilesF = [...doc.querySelectorAll('#vue-trios button.tuile[data-zone="trio"]')];
@@ -961,8 +960,8 @@ const ATTENDU = {
      'Chaque joueur du banc : libellé texte glissable, sans chandail');
   ok([...banc.querySelectorAll('.banc-joueur')].every(b=>{
       const j = poolTrios.find(p=>p.nom===b.dataset.nom);
-      return j && b.textContent.trim().startsWith(j.nom) && b.textContent.includes(`(${j.ov})`);
-    }), 'Banc : chaque libellé = Nom (OV)');
+      return j && b.textContent.trim().startsWith(`${j.po} - ${j.nom}`) && b.textContent.includes(`(${j.ov})`);
+    }), 'Banc : chaque libellé = PO - Nom (OV)');
   // le chandail n'apparaît qu'une fois le joueur déposé sur une case
   console.log('— Mise en page : attaque | défense+gardiens, unités spéciales plus bas');
   const rangees5c5 = doc.querySelectorAll('#vue-trios .trios-colonnes');
