@@ -12,7 +12,7 @@ function egal(a, b, msg){ ok(a===b, msg + ` (obtenu: ${JSON.stringify(a)}, atten
 function proche(a, b, tol, msg){ ok(a!==null && a!==undefined && Math.abs(a-b)<=tol, msg + ` (obtenu: ${a}, attendu: ~${b})`); }
 function tableauEgal(a, b, msg){ ok(JSON.stringify(a)===JSON.stringify(b), msg + ` (obtenu: ${JSON.stringify(a)}, attendu: ${JSON.stringify(b)})`); }
 
-const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
 
 /* Constantes propres à l'équipe (recote ushl.ca du 8 juillet 2026).
    masseSousContrat = somme des salaires CT>0 de l'alignement PRO — recoupée
@@ -951,6 +951,52 @@ const ATTENDU = {
   }
   doc.getElementById('btnTriosVider').click();
   ok(['an5','an4','in4','in3'].every(z=>S.litTrios()[z].flat().every(n=>!n)), 'Vider libère aussi les unités spéciales');
+
+  // ---- Glisser-déposer ----
+  console.log('— Glisser-déposer (banc des joueurs, double quart, échanges)');
+  const banc = doc.getElementById('bancJoueurs');
+  ok(!!banc, 'Banc des joueurs présent');
+  egal(banc.querySelectorAll('.banc-joueur').length, poolTrios.length, 'Le banc offre tous les joueurs de la Composition');
+  ok([...banc.querySelectorAll('.banc-joueur')].every(b=>b.getAttribute('draggable')==='true' && b.querySelector('svg.chandail')),
+     'Chaque joueur du banc : chandail glissable');
+  const evt = (type)=>new W.Event(type, {bubbles:true, cancelable:true});
+  const bancDe = nom => [...banc.querySelectorAll('.banc-joueur')].find(b=>b.dataset.nom===nom);
+  const tuileDe = (zone,i,k)=>doc.querySelector(`#vue-trios button.tuile[data-zone="${zone}"][data-i="${i}"][data-k="${k}"]`);
+  const glisser = (source, cible)=>{ source.dispatchEvent(evt('dragstart')); cible.dispatchEvent(evt('drop')); };
+
+  const at1 = attq[0];
+  glisser(bancDe(at1), tuileDe('trio',0,0));
+  egal(S.litTrios().trios[0][0], at1, 'Banc → T1 : joueur placé et sauvegardé');
+  ok(tuileDe('trio',0,0).getAttribute('draggable')==='true', 'Tuile occupée : glissable');
+  ok(bancDe(at1).classList.contains('utilise') && bancDe(at1).textContent.includes('T1'),
+     'Banc : le joueur placé est marqué utilisé (T1)');
+
+  glisser(bancDe(at1), tuileDe('trio',3,0));
+  egal(S.litTrios().trios[3][0], at1, 'Reprise du banc → T4 : double quart posé');
+  egal(S.litTrios().trios[0][0], at1, 'Le joueur reste sur T1 (copie, pas déplacement)');
+  egal(S.validerAlignementTrios(S.litTrios(), poolTrios).erreurs.length, 0, 'Double quart 1-4 par glisser : conforme');
+
+  glisser(bancDe(at1), tuileDe('an5',0,0));
+  egal(S.litTrios().an5[0][0], at1, 'Reprise du banc → AN à 5 : joueur posé sur la vague');
+  ok(bancDe(at1).textContent.includes('AN'), 'Banc : étiquette AN ajoutée');
+
+  const at2 = attq[1];
+  glisser(bancDe(at2), tuileDe('trio',0,1));
+  glisser(tuileDe('trio',0,0), tuileDe('trio',0,1));
+  egal(S.litTrios().trios[0][1], at1, 'Tuile → tuile : le joueur glissé prend la case');
+  egal(S.litTrios().trios[0][0], at2, 'Échange : l\'occupant précédent prend la case d\'origine');
+
+  glisser(tuileDe('trio',3,0), banc);
+  egal(S.litTrios().trios[3][0], '', 'Tuile redéposée sur le banc : case libérée');
+
+  glisser(bancDe(gars[0]), tuileDe('trio',2,0));
+  egal(S.litTrios().trios[2][0], '', 'Gardien glissé à l\'attaque : refusé (art. 1.1.1)');
+  glisser(bancDe(at2), tuileDe('g',0,0));
+  egal(S.litTrios().gardiens[0], '', 'Patineur glissé au filet : refusé (art. 1.1.1)');
+  glisser(bancDe(gars[1]), tuileDe('g',0,0));
+  egal(S.litTrios().gardiens[0], gars[1], 'Gardien glissé au filet : accepté');
+
+  doc.getElementById('btnTriosVider').click();
 
   W.localStorage.removeItem(S.CLES_LS.compo);
   W.localStorage.removeItem(S.CLES_LS.trios);
