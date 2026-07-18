@@ -57,17 +57,10 @@
   }
   #btnMaj:hover{background:var(--teal-bright);}
   #btnMaj:disabled{background:var(--line); cursor:wait;}
-  #btnModeY21{background:transparent; border:1px solid var(--orange); color:var(--orange-bright);
-    font-family:var(--font-body); font-weight:700; font-size:.72rem; letter-spacing:1px; text-transform:uppercase;
-    padding:9px 14px; border-radius:2px; cursor:pointer;}
-  #btnModeY21:hover{background:var(--orange); color:#fff;}
-  #btnModeY21.actif{background:var(--orange); color:#fff;}
   #btnEffacerCache{background:transparent; border:1px solid var(--line); color:var(--txt-dim);
     font-family:var(--font-body); font-weight:700; font-size:.72rem; letter-spacing:1px; text-transform:uppercase;
     padding:9px 14px; border-radius:2px; cursor:pointer;}
   #btnEffacerCache:hover{border-color:var(--teal); color:var(--teal-bright);}
-  #bandeauY21{flex-basis:100%; margin-top:8px; padding:7px 12px; border:1px dashed var(--orange);
-    color:var(--orange-bright); font-family:var(--font-data); font-size:.68rem; letter-spacing:.5px;}
   #etatMaj{font-family:var(--font-data); font-size:.7rem; color:var(--txt-faint); max-width:340px;}
 
   main{max-width:1240px; margin:0 auto; padding:26px 20px 80px;}
@@ -122,6 +115,85 @@
   .resign-tag{display:inline-block; font-size:.55rem; letter-spacing:.5px; padding:1px 5px; border-radius:8px;
     background:#3a2506; color:var(--orange-bright); text-transform:uppercase; margin-left:4px;}
   tbody tr.resigne{background:rgba(234,114,0,.06);}
+  .compo-ajout{background:var(--panel); border:1px solid var(--line); padding:14px 16px; margin:14px 0 18px;}
+  .compo-ajout .ha-titre{margin-top:0;}
+  .compo-form{display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;}
+  .compo-form label{display:flex; flex-direction:column; gap:4px; font-size:.65rem; text-transform:uppercase;
+    letter-spacing:1px; color:var(--txt-faint);}
+  .compo-form input, .compo-form select{font-family:var(--font-data); font-size:.82rem; background:var(--ink);
+    color:var(--txt); border:1px solid var(--line); border-radius:3px; padding:7px 9px;}
+  .compo-form input:focus, .compo-form select:focus{outline:none; border-color:var(--orange);}
+  .compo-form #caNom{width:190px;} .compo-form #caOv{width:64px;} .compo-form #caSal{width:110px;}
+  .compo-form button{padding:8px 18px;}
+  .compo-erreur{margin-top:8px; font-size:.72rem; color:var(--bad);}
+  .compo-retires{display:flex; gap:8px; flex-wrap:wrap;}
+  .compo-retires .retire-puce{display:inline-flex; align-items:center; gap:7px; font-family:var(--font-data);
+    font-size:.72rem; color:var(--txt-dim); background:var(--panel); border:1px solid var(--line); padding:5px 10px; border-radius:14px;}
+  .compo-retires button{background:none; border:none; color:var(--teal-bright); cursor:pointer; font-size:.7rem; padding:0;}
+  .compo-retires button:hover{color:var(--orange-bright);}
+  /* ---------- Feuille d'alignement : tuiles de joueurs ---------- */
+  .trios-outils{display:flex; gap:10px; margin:12px 0 16px; flex-wrap:wrap;}
+  .trios-colonnes{display:grid; grid-template-columns:1fr; gap:16px; align-items:start;}
+  @media(min-width:1080px){ .trios-colonnes{grid-template-columns:1fr 1fr;} }
+  .uni-bloc{background:var(--panel); border:1px solid var(--line); margin-bottom:16px;}
+  .uni-bloc:last-child{margin-bottom:0;}
+  .uni-titre{display:flex; justify-content:space-between; align-items:baseline; gap:10px;
+    padding:9px 14px; border-bottom:1px solid var(--line); color:var(--teal-bright);
+    font-size:.7rem; letter-spacing:1.5px; text-transform:uppercase; font-weight:700;}
+  .uni-titre small{color:#8fa6a9; letter-spacing:.5px; text-transform:none; font-weight:400; font-size:.62rem;}
+  .dfo-ligne{display:flex; align-items:stretch; gap:8px; padding:8px 12px;
+    border-bottom:1px solid rgba(255,255,255,.05);}
+  .dfo-ligne:last-child{border-bottom:none;}
+  .dfo-ligne .ur-lbl{width:46px; flex:none; align-self:center; font-family:var(--font-data);
+    font-size:.62rem; text-transform:uppercase; letter-spacing:.5px; color:#8fa6a9;}
+  .uni-entete{padding:8px 12px 2px; border-bottom:none;}
+  .uni-entete .ur-col{flex:1; font-size:.58rem; letter-spacing:1px; text-transform:uppercase;
+    color:var(--orange-bright); text-align:center;}
+  .tuile{flex:1; min-width:0; background:var(--ink); border:1px solid var(--line); padding:7px 4px 6px;
+    cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px;
+    font-family:var(--font-data); color:inherit; transition:border-color .12s, transform .12s;}
+  .tuile:hover{border-color:var(--teal-bright); transform:translateY(-1px);}
+  .tuile svg.chandail{width:min(84px,100%); height:auto; display:block;
+    filter:drop-shadow(0 2px 3px rgba(0,0,0,.45));}
+  .tuile .tu-info{font-size:.6rem; color:#8fa6a9; letter-spacing:.5px;}
+  .tuile.vide{border-style:dashed; color:#8fa6a9;}
+  .tuile.vide:hover{border-color:var(--orange); color:var(--orange-bright);}
+  .tuile.vide svg.chandail{filter:none; opacity:.8;}
+  .tuile.horscompo{border-color:var(--bad);}
+  .tuile.horscompo .tu-info{color:var(--bad);}
+  .banc-bloc{margin-bottom:16px;}
+  #bancJoueurs{display:flex; flex-wrap:wrap; gap:8px; padding:10px 12px; min-height:56px;}
+  #bancJoueurs.survol{outline:2px dashed var(--orange); outline-offset:-4px;}
+  .banc-joueur{width:60px; cursor:grab; display:flex; flex-direction:column; align-items:center; gap:2px;
+    user-select:none;}
+  .banc-joueur:active{cursor:grabbing;}
+  .banc-joueur svg.chandail{width:100%; height:auto; display:block; filter:drop-shadow(0 2px 2px rgba(0,0,0,.4));}
+  .banc-joueur .bj-info{font-size:.53rem; color:#8fa6a9; letter-spacing:.4px; text-align:center; line-height:1.3;}
+  .banc-joueur.utilise{opacity:.5;}
+  .tuile[draggable="true"]{cursor:grab;}
+  .tuile.survol{border-color:var(--orange); background:rgba(255,255,255,.05);}
+  .choix-liste{max-height:min(58vh,420px); overflow:auto; padding:8px 12px 14px;}
+  .choix-joueur{display:flex; justify-content:space-between; align-items:baseline; gap:10px; width:100%;
+    text-align:left; background:none; border:none; border-bottom:1px solid rgba(255,255,255,.06);
+    padding:9px 8px; color:inherit; cursor:pointer; font-family:var(--font-data); font-size:.8rem;}
+  .choix-joueur:hover{background:rgba(255,255,255,.06);}
+  .choix-joueur .cj-meta{color:#8fa6a9; font-size:.66rem; flex:none; letter-spacing:.5px;}
+  .choix-joueur.liberer{color:var(--orange-bright); border-bottom:1px solid var(--line);}
+  #triosValidation{margin:14px 0 18px;}
+  #triosValidation .tv-erreur{color:var(--bad); font-size:.75rem; margin:5px 0;}
+  #triosValidation .tv-avert{color:var(--orange-bright); font-size:.75rem; margin:5px 0;}
+  #triosValidation .tv-ok{color:#79d27a; font-size:.78rem; margin:5px 0;}
+  .btn-retirer{font-family:var(--font-data); font-size:.62rem; padding:4px 9px; cursor:pointer; background:transparent;
+    color:var(--bad); border:1px solid var(--bad); border-radius:3px;}
+  .btn-retirer:hover{background:var(--bad); color:#fff;}
+  .prov-tag{display:inline-block; font-size:.58rem; letter-spacing:.5px; padding:1px 7px; border-radius:9px;
+    border:1px solid var(--line); color:var(--txt-dim); text-transform:uppercase;}
+  .prov-tag.prov-prolonge{border-color:var(--orange); color:var(--orange-bright);}
+  .prov-tag.prov-ajout{border-color:var(--teal); color:var(--teal-bright);}
+  .stat-carte.manque{border-left:3px solid var(--bad);}
+  .stat-carte.complet{border-left:3px solid #3f9d4f;}
+  .ha-titre{margin:26px 0 4px; font-size:.8rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--teal-bright);}
+  .ha-note{margin:0 0 10px; font-size:.7rem; color:var(--txt-faint); max-width:70ch;}
 
   /* ---------- Fenêtre Prolongation de contrat ---------- */
   .modal-fond{position:fixed; inset:0; background:rgba(0,0,0,.72); display:flex; align-items:center; justify-content:center;
@@ -272,16 +344,16 @@
 
 <nav>
   <button class="actif" data-vue="alignement">Alignement</button>
+  <button data-vue="composition">Composition</button>
+  <button data-vue="trios">Trios</button>
   <button data-vue="production">Production</button>
   <button data-vue="progression">Progression</button>
   <button data-vue="ovdetail">OV détaillé</button>
   <button data-vue="reglages">Réglages</button>
   <div class="maj-zone">
     <button id="btnMaj">Actualiser depuis ushl.ca</button>
-    <button id="btnModeY21" class="secondaire" title="Affiche l'interface avec les totaux complets de la saison Y21 pour vérifier le moteur des attentes">Vérifier avec la Y21</button>
     <button id="btnEffacerCache" title="Efface les données mises en cache (formation, production, XtraStats, limites) puis actualise depuis ushl.ca">Effacer la cache</button>
     <span id="etatMaj"></span>
-    <div id="bandeauY21" style="display:none">MODE VÉRIFICATION — SAISON Y21 · totaux complets de la saison · l'interface revient à la saison en cours à chaque ouverture</div>
   </div>
 </nav>
 
@@ -293,9 +365,109 @@
     <div class="h2-sous" id="alignSous">Cotes, salaires et contrats — source : TeamRosters.php (SANJOSE)</div>
     <div class="sommaire" id="alignSommaire"></div>
     <div class="table-wrap"><table id="tableAlignement"></table></div>
+    <div id="horsAlignement" style="display:none">
+      <h3 class="ha-titre">Hors alignement — sans contrat / club-école</h3>
+      <p class="ha-note">Ces joueurs apparaissent dans une table séparée de la page de la ligue. Ils ne comptent pas
+      au plafond, sauf s'ils sont prolongés (contrat échu re-signé selon la charte 6.4).</p>
+      <div class="table-wrap"><table id="tableHorsAlign"></table></div>
+    </div>
   </section>
 
   <!-- ================= PRODUCTION ================= -->
+  <section class="vue" id="vue-composition">
+    <h2>Composition d'équipe</h2>
+    <p class="ha-note">L'équipe que tu construis pour la saison : les joueurs <strong>signés</strong> (contrat en cours)
+    et <strong>prolongés</strong> (contrat échu re-signé selon la charte) s'y retrouvent automatiquement. Retire les joueurs
+    transigés ailleurs, ajoute manuellement tes acquisitions. Minimum de la ligue : <strong>22 joueurs</strong>.</p>
+    <div id="compoSommaire" class="sommaire"></div>
+    <div class="compo-ajout">
+      <h3 class="ha-titre">Ajouter un joueur (échange, autonomie…)</h3>
+      <div class="compo-form">
+        <label>Nom<input type="text" id="caNom" placeholder="Prénom Nom"></label>
+        <label>Position<select id="caPo"><option>C</option><option>AG</option><option>AD</option><option>D</option><option>G</option></select></label>
+        <label>OV<input type="text" id="caOv" inputmode="numeric" placeholder="80"></label>
+        <label>Salaire<input type="text" id="caSal" placeholder="ex. 3,5 M"></label>
+        <button id="caAjouter" class="btn-prolong">Ajouter</button>
+      </div>
+      <div id="caErreur" class="compo-erreur" style="display:none"></div>
+    </div>
+    <div class="table-wrap"><table id="tableCompo"></table></div>
+    <div id="compoRetires" style="display:none">
+      <h3 class="ha-titre">Retirés (transigés ailleurs)</h3>
+      <div id="compoRetiresListe" class="compo-retires"></div>
+    </div>
+  </section>
+
+  <!-- ================= FEUILLE D'ALIGNEMENT ================= -->
+  <section class="vue" id="vue-trios">
+    <h2>Feuille d'alignement</h2>
+    <p class="ha-note">Clique une tuile pour y placer un joueur de la <strong>Composition</strong> (règlements 1.1.1 et 1.1.2) :
+    positions libres pour les patineurs, gardiens au filet; double quart à 5c5 seulement entre la 4<sup>e</sup> ligne
+    et l'une des trois premières; sur les unités spéciales, positions sans importance mais jamais
+    sur les <strong>2 vagues</strong> d'un même groupe; alignement complet = <strong>20 habillés</strong>.</p>
+    <div class="trios-outils">
+      <button id="btnTriosProposer" class="btn-prolong">Proposer un alignement (par OV)</button>
+      <button id="btnTriosVider">Vider</button>
+    </div>
+    <div id="triosSommaire" class="sommaire"></div>
+    <div id="triosValidation"></div>
+    <div class="uni-bloc banc-bloc">
+      <div class="uni-titre">Banc des joueurs <small>glisse un chandail sur une case · reprends-le du banc pour un double quart ou une unité spéciale · redépose une tuile ici pour libérer sa case</small></div>
+      <div id="bancJoueurs"></div>
+    </div>
+    <div class="trios-colonnes">
+    <div>
+      <div class="uni-bloc">
+      <div class="uni-titre">Attaque <small>4 trios — colonnes AG · C · AD indicatives</small></div>
+      <div class="dfo-ligne uni-entete"><div class="ur-lbl"></div><div class="ur-col">AG</div><div class="ur-col">C</div><div class="ur-col">AD</div></div>
+      <div class="dfo-ligne"><div class="ur-lbl">T1</div><button type="button" class="tuile" data-zone="trio" data-i="0" data-k="0"></button><button type="button" class="tuile" data-zone="trio" data-i="0" data-k="1"></button><button type="button" class="tuile" data-zone="trio" data-i="0" data-k="2"></button></div>
+      <div class="dfo-ligne"><div class="ur-lbl">T2</div><button type="button" class="tuile" data-zone="trio" data-i="1" data-k="0"></button><button type="button" class="tuile" data-zone="trio" data-i="1" data-k="1"></button><button type="button" class="tuile" data-zone="trio" data-i="1" data-k="2"></button></div>
+      <div class="dfo-ligne"><div class="ur-lbl">T3</div><button type="button" class="tuile" data-zone="trio" data-i="2" data-k="0"></button><button type="button" class="tuile" data-zone="trio" data-i="2" data-k="1"></button><button type="button" class="tuile" data-zone="trio" data-i="2" data-k="2"></button></div>
+      <div class="dfo-ligne"><div class="ur-lbl">T4</div><button type="button" class="tuile" data-zone="trio" data-i="3" data-k="0"></button><button type="button" class="tuile" data-zone="trio" data-i="3" data-k="1"></button><button type="button" class="tuile" data-zone="trio" data-i="3" data-k="2"></button></div>
+      </div>
+      <div class="uni-bloc">
+      <div class="uni-titre">Défense <small>3 duos</small></div>
+      <div class="dfo-ligne"><div class="ur-lbl">D1</div><button type="button" class="tuile" data-zone="duo" data-i="0" data-k="0"></button><button type="button" class="tuile" data-zone="duo" data-i="0" data-k="1"></button></div>
+      <div class="dfo-ligne"><div class="ur-lbl">D2</div><button type="button" class="tuile" data-zone="duo" data-i="1" data-k="0"></button><button type="button" class="tuile" data-zone="duo" data-i="1" data-k="1"></button></div>
+      <div class="dfo-ligne"><div class="ur-lbl">D3</div><button type="button" class="tuile" data-zone="duo" data-i="2" data-k="0"></button><button type="button" class="tuile" data-zone="duo" data-i="2" data-k="1"></button></div>
+      </div>
+      <div class="uni-bloc">
+      <div class="uni-titre">Gardiens</div>
+      <div class="dfo-ligne"><div class="ur-lbl">Part.</div><button type="button" class="tuile" data-zone="g" data-i="0" data-k="0"></button></div>
+      <div class="dfo-ligne"><div class="ur-lbl">Subst.</div><button type="button" class="tuile" data-zone="g" data-i="0" data-k="1"></button></div>
+      </div>
+    </div>
+    <div>
+      <div class="uni-bloc">
+      <div class="uni-titre">Avantage numérique à 5 <small>2 vagues de 5 — positions libres</small></div>
+      <div class="dfo-ligne"><div class="ur-lbl">V1</div><button type="button" class="tuile" data-zone="an5" data-i="0" data-k="0"></button><button type="button" class="tuile" data-zone="an5" data-i="0" data-k="1"></button><button type="button" class="tuile" data-zone="an5" data-i="0" data-k="2"></button><button type="button" class="tuile" data-zone="an5" data-i="0" data-k="3"></button><button type="button" class="tuile" data-zone="an5" data-i="0" data-k="4"></button></div>
+      <div class="dfo-ligne"><div class="ur-lbl">V2</div><button type="button" class="tuile" data-zone="an5" data-i="1" data-k="0"></button><button type="button" class="tuile" data-zone="an5" data-i="1" data-k="1"></button><button type="button" class="tuile" data-zone="an5" data-i="1" data-k="2"></button><button type="button" class="tuile" data-zone="an5" data-i="1" data-k="3"></button><button type="button" class="tuile" data-zone="an5" data-i="1" data-k="4"></button></div>
+      </div>
+      <div class="uni-bloc">
+      <div class="uni-titre">Avantage numérique à 4 <small>2 vagues de 4 — positions libres</small></div>
+      <div class="dfo-ligne"><div class="ur-lbl">V1</div><button type="button" class="tuile" data-zone="an4" data-i="0" data-k="0"></button><button type="button" class="tuile" data-zone="an4" data-i="0" data-k="1"></button><button type="button" class="tuile" data-zone="an4" data-i="0" data-k="2"></button><button type="button" class="tuile" data-zone="an4" data-i="0" data-k="3"></button></div>
+      <div class="dfo-ligne"><div class="ur-lbl">V2</div><button type="button" class="tuile" data-zone="an4" data-i="1" data-k="0"></button><button type="button" class="tuile" data-zone="an4" data-i="1" data-k="1"></button><button type="button" class="tuile" data-zone="an4" data-i="1" data-k="2"></button><button type="button" class="tuile" data-zone="an4" data-i="1" data-k="3"></button></div>
+      </div>
+      <div class="uni-bloc">
+      <div class="uni-titre">Infériorité numérique à 4 <small>2 vagues de 4 — positions libres</small></div>
+      <div class="dfo-ligne"><div class="ur-lbl">V1</div><button type="button" class="tuile" data-zone="in4" data-i="0" data-k="0"></button><button type="button" class="tuile" data-zone="in4" data-i="0" data-k="1"></button><button type="button" class="tuile" data-zone="in4" data-i="0" data-k="2"></button><button type="button" class="tuile" data-zone="in4" data-i="0" data-k="3"></button></div>
+      <div class="dfo-ligne"><div class="ur-lbl">V2</div><button type="button" class="tuile" data-zone="in4" data-i="1" data-k="0"></button><button type="button" class="tuile" data-zone="in4" data-i="1" data-k="1"></button><button type="button" class="tuile" data-zone="in4" data-i="1" data-k="2"></button><button type="button" class="tuile" data-zone="in4" data-i="1" data-k="3"></button></div>
+      </div>
+      <div class="uni-bloc">
+      <div class="uni-titre">Infériorité numérique à 3 <small>2 vagues de 3 — positions libres</small></div>
+      <div class="dfo-ligne"><div class="ur-lbl">V1</div><button type="button" class="tuile" data-zone="in3" data-i="0" data-k="0"></button><button type="button" class="tuile" data-zone="in3" data-i="0" data-k="1"></button><button type="button" class="tuile" data-zone="in3" data-i="0" data-k="2"></button></div>
+      <div class="dfo-ligne"><div class="ur-lbl">V2</div><button type="button" class="tuile" data-zone="in3" data-i="1" data-k="0"></button><button type="button" class="tuile" data-zone="in3" data-i="1" data-k="1"></button><button type="button" class="tuile" data-zone="in3" data-i="1" data-k="2"></button></div>
+      </div>
+    </div>
+    </div>
+    <div class="modal-fond" id="tuileModalFond" hidden>
+      <div class="modal" style="width:min(430px,94vw)">
+        <div class="modal-tete"><h3 id="tuileModalTitre">Choisir un joueur</h3><button class="modal-x" id="tuileModalX" type="button">×</button></div>
+        <div class="choix-liste" id="tuileModalListe"></div>
+      </div>
+    </div>
+  </section>
+
   <section class="vue" id="vue-production">
     <h2>Production — saison en cours</h2>
     <div class="h2-sous" id="prodSous">Pointage de la saison actuelle (TeamScoring.php) enrichi de XtraStats (minutes, mises en échec)</div>
@@ -406,6 +578,7 @@ const CONFIG = {
   urls: {
     roster:  'https://ushl.ca/ushl/menu_sim/USHL-pro/jamesishot/TeamRosters.php?team=SANJOSE',
     scoring: 'https://ushl.ca/ushl/menu_sim/USHL-pro/jamesishot/TeamScoring.php?team=SANJOSE',
+    finance: 'https://ushl.ca/ushl/menu_sim/USHL-pro/jamesishot/TeamFinance.php?team=SANJOSE',
     xtra:    'https://ushl.ca/ushl/menu_sim/USHL-pro/USHLxtrastats.html'
   },
   proxys: [
@@ -417,7 +590,7 @@ const CONFIG = {
   ],
   // limites d'utilisation des gardiens (projet gestiongardiens, généré depuis ushl.ca)
   urlLimites: 'https://merciermathieu5.github.io/gestiongardiens/limites.json',
-  ttl: { roster: 12*3600*1000, scoring: 30*60*1000, xtra: 3600*1000, limites: 3600*1000 },
+  ttl: { roster: 12*3600*1000, scoring: 30*60*1000, finance: 30*60*1000, xtra: 3600*1000, limites: 3600*1000 },
   matchsSaison: 82
 };
 
@@ -426,7 +599,9 @@ const CLES_LS = {
   overrides: 'sjs_attentes_joueurs_v1',
   proxy: 'sjs_proxy_prefere_v1',
   cache: 'sjs_cache_v1',
-  resign: 'sjs_resignatures_v1'
+  resign: 'sjs_resignatures_v1',
+  compo: 'sjs_compo_v1',
+  trios: 'sjs_trios_v1'
 };
 
 /* ------------------ DÉFINITION DES STATS ------------------ */
@@ -1019,61 +1194,39 @@ function seuilsMatrice(matCle, statCle, ov){
 }
 
 /* ------------------ DONNÉES DE SECOURS ------------------
-   Alignement SANJOSE tel que publié sur ushl.ca (dernière mise à jour :
-   jeudi 25 juin 2026). Sert de base hors-ligne et de fixture de tests. */
-const DATE_SECOURS = '25 juin 2026';
+   Alignement SANJOSE tel que publié sur ushl.ca (recote Y22 du
+   mercredi 8 juillet 2026 — TeamRosters.php, cotes vérifiées contre
+   USHL22Rosters.html, salaires et contrats contre USHL22Finance.html).
+   Sert de base hors-ligne et de fixture de tests. */
+const DATE_SECOURS = '8 juillet 2026';
 const SECOURS_ROSTER = [
- {nom:'Jesperi Kotkaniemi', po:'C', hd:'G', it:70,sp:83,st:77,en:89,du:86,di:83,sk:83,pa:83,pc:79,df:62,sc:79,ex:61,ld:51,ov:82,age:25,salaire:7250000,ct:3},
- {nom:'Brad Lambert',       po:'C', hd:'D', it:68,sp:85,st:69,en:77,du:79,di:75,sk:83,pa:71,pc:74,df:56,sc:74,ex:49,ld:37,ov:76,age:22,salaire:900000, ct:2},
+ {nom:'Jesperi Kotkaniemi', po:'C', hd:'G', it:69,sp:83,st:77,en:90,du:87,di:83,sk:83,pa:82,pc:78,df:60,sc:78,ex:64,ld:51,ov:81,age:26,salaire:9075000,ct:2},
+ {nom:'Brad Lambert',       po:'C', hd:'D', it:69,sp:87,st:71,en:80,du:81,di:76,sk:85,pa:71,pc:73,df:57,sc:74,ex:51,ld:38,ov:77,age:23,salaire:900000, ct:1},
  {nom:'Backup_C',           po:'C', hd:'G', it:50,sp:50,st:50,en:50,du:50,di:50,sk:50,pa:50,pc:50,df:50,sc:50,ex:50,ld:50,ov:55,age:25,salaire:0,      ct:0, backup:true},
- {nom:'Jaden Schwartz',     po:'C', hd:'G', it:62,sp:81,st:64,en:89,du:83,di:98,sk:89,pa:85,pc:83,df:66,sc:68,ex:99,ld:99,ov:81,age:33,salaire:5750000,ct:2},
- {nom:'Ryan Johansen',      po:'C', hd:'D', it:61,sp:80,st:77,en:84,du:92,di:85,sk:82,pa:79,pc:76,df:67,sc:75,ex:95,ld:88,ov:81,age:33,salaire:4750000,ct:2},
- {nom:'Joel ErikssonEk',    po:'AG',hd:'G', it:77,sp:71,st:82,en:79,du:79,di:77,sk:74,pa:78,pc:74,df:73,sc:78,ex:77,ld:64,ov:81,age:28,salaire:6000000,ct:2},
- {nom:'Travis Konecny',     po:'AG',hd:'D', it:86,sp:78,st:74,en:81,du:75,di:70,sk:80,pa:79,pc:73,df:66,sc:80,ex:78,ld:68,ov:81,age:28,salaire:6000000,ct:3},
- {nom:'Nathan Legare',      po:'AG',hd:'D', it:82,sp:69,st:92,en:83,du:95,di:77,sk:69,pa:72,pc:69,df:65,sc:87,ex:57,ld:66,ov:81,age:24,salaire:3000000,ct:1},
- {nom:'Oskar Olausson',     po:'AG',hd:'G', it:68,sp:81,st:74,en:77,du:75,di:80,sk:77,pa:72,pc:72,df:69,sc:75,ex:51,ld:41,ov:77,age:23,salaire:800000, ct:1},
- {nom:'Akil Thomas',        po:'AD',hd:'D', it:64,sp:85,st:73,en:87,du:77,di:85,sk:86,pa:78,pc:71,df:69,sc:79,ex:58,ld:58,ov:81,age:25,salaire:4750000,ct:3},
- {nom:'Kent Johnson',       po:'AD',hd:'G', it:66,sp:77,st:72,en:76,du:76,di:79,sk:77,pa:77,pc:81,df:63,sc:76,ex:56,ld:41,ov:78,age:23,salaire:1500000,ct:1},
- {nom:'Alexander Nylander', po:'AD',hd:'D', it:65,sp:86,st:79,en:87,du:81,di:85,sk:89,pa:70,pc:75,df:61,sc:84,ex:67,ld:58,ov:81,age:27,salaire:4750000,ct:1},
- {nom:'Brandon Saad',       po:'AD',hd:'G', it:62,sp:76,st:75,en:77,du:78,di:80,sk:78,pa:71,pc:75,df:62,sc:78,ex:90,ld:75,ov:78,age:33,salaire:800000, ct:1},
- {nom:'Samu Tuomaala',      po:'AD',hd:'G', it:69,sp:79,st:67,en:76,du:70,di:76,sk:78,pa:77,pc:74,df:67,sc:74,ex:45,ld:40,ov:77,age:22,salaire:800000, ct:1},
- {nom:'Tyler Myers',        po:'D', hd:'D', it:73,sp:74,st:84,en:94,du:78,di:89,sk:81,pa:70,pc:70,df:80,sc:57,ex:99,ld:78,ov:81,age:35,salaire:2500000,ct:1},
- {nom:'Ryan Graves',        po:'D', hd:'G', it:65,sp:72,st:82,en:78,du:75,di:79,sk:75,pa:71,pc:72,df:78,sc:60,ex:70,ld:65,ov:78,age:30,salaire:800000, ct:1},
- {nom:'Haydn Fleury',       po:'D', hd:'G', it:80,sp:70,st:91,en:88,du:86,di:76,sk:85,pa:75,pc:70,df:82,sc:67,ex:69,ld:57,ov:84,age:29,salaire:9750000,ct:2},
- {nom:'Jonas Brodin',       po:'D', hd:'G', it:68,sp:70,st:78,en:84,du:68,di:82,sk:72,pa:73,pc:74,df:84,sc:62,ex:85,ld:80,ov:80,age:31,salaire:6100000,ct:1},
- {nom:'Adam Fox',           po:'D', hd:'D', it:64,sp:84,st:70,en:86,du:83,di:81,sk:85,pa:86,pc:76,df:79,sc:70,ex:60,ld:62,ov:83,age:27,salaire:7250000,ct:1},
- {nom:'Nate Schmidt',       po:'D', hd:'G', it:68,sp:74,st:76,en:76,du:74,di:80,sk:76,pa:71,pc:72,df:78,sc:61,ex:80,ld:75,ov:78,age:34,salaire:1250000,ct:2},
- {nom:'Braden Schneider',   po:'D', hd:'D', it:81,sp:73,st:85,en:92,du:89,di:80,sk:76,pa:66,pc:71,df:79,sc:58,ex:52,ld:53,ov:80,age:24,salaire:4750000,ct:3},
+ {nom:'Jaden Schwartz',     po:'C', hd:'G', it:60,sp:81,st:64,en:90,du:83,di:99,sk:91,pa:86,pc:84,df:63,sc:67,ex:99,ld:99,ov:81,age:34,salaire:7200000,ct:1},
+ {nom:'Ryan Johansen',      po:'C', hd:'D', it:59,sp:80,st:76,en:84,du:92,di:84,sk:81,pa:78,pc:74,df:66,sc:74,ex:98,ld:91,ov:80,age:34,salaire:5950000,ct:1},
+ {nom:'Joel ErikssonEk',    po:'AG',hd:'G', it:76,sp:71,st:82,en:80,du:81,di:78,sk:74,pa:78,pc:73,df:73,sc:77,ex:80,ld:65,ov:81,age:29,salaire:7500000,ct:1},
+ {nom:'Travis Konecny',     po:'AG',hd:'D', it:86,sp:78,st:75,en:82,du:78,di:70,sk:80,pa:77,pc:72,df:66,sc:80,ex:81,ld:72,ov:81,age:29,salaire:7500000,ct:2},
+ {nom:'Nathan Legare',      po:'AG',hd:'D', it:82,sp:70,st:94,en:84,du:98,di:79,sk:70,pa:72,pc:69,df:65,sc:88,ex:60,ld:69,ov:82,age:25,salaire:3750000,ct:0},
+ {nom:'Oskar Olausson',     po:'AG',hd:'G', it:66,sp:81,st:73,en:77,du:75,di:80,sk:77,pa:71,pc:71,df:67,sc:73,ex:53,ld:41,ov:76,age:24,salaire:1000000,ct:0},
+ {nom:'Akil Thomas',        po:'AD',hd:'D', it:63,sp:87,st:73,en:90,du:80,di:87,sk:86,pa:80,pc:71,df:71,sc:81,ex:61,ld:64,ov:82,age:26,salaire:5950000,ct:2},
+ {nom:'Kent Johnson',       po:'AD',hd:'G', it:66,sp:80,st:74,en:79,du:78,di:80,sk:79,pa:78,pc:82,df:62,sc:77,ex:58,ld:44,ov:79,age:24,salaire:1875000,ct:0},
+ {nom:'Alexander Nylander', po:'AD',hd:'D', it:64,sp:88,st:78,en:88,du:81,di:85,sk:91,pa:69,pc:74,df:60,sc:84,ex:70,ld:63,ov:81,age:28,salaire:5950000,ct:0},
+ {nom:'Brandon Saad',       po:'AD',hd:'G', it:59,sp:74,st:74,en:76,du:78,di:80,sk:75,pa:68,pc:72,df:59,sc:75,ex:93,ld:75,ov:76,age:34,salaire:1000000,ct:0},
+ {nom:'Samu Tuomaala',      po:'AD',hd:'G', it:67,sp:80,st:67,en:77,du:72,di:77,sk:77,pa:76,pc:72,df:67,sc:73,ex:48,ld:40,ov:76,age:23,salaire:1000000,ct:0},
+ {nom:'Tyler Myers',        po:'D', hd:'D', it:70,sp:72,st:81,en:93,du:76,di:89,sk:79,pa:67,pc:68,df:76,sc:54,ex:99,ld:78,ov:78,age:36,salaire:3125000,ct:0},
+ {nom:'Ryan Graves',        po:'D', hd:'G', it:63,sp:72,st:81,en:78,du:76,di:78,sk:74,pa:69,pc:70,df:75,sc:59,ex:71,ld:65,ov:76,age:31,salaire:1000000,ct:0},
+ {nom:'Haydn Fleury',       po:'D', hd:'G', it:80,sp:70,st:91,en:89,du:87,di:76,sk:85,pa:73,pc:68,df:82,sc:65,ex:72,ld:61,ov:83,age:30,salaire:12200000,ct:1},
+ {nom:'Jonas Brodin',       po:'D', hd:'G', it:66,sp:68,st:77,en:83,du:68,di:82,sk:71,pa:70,pc:72,df:80,sc:60,ex:87,ld:78,ov:77,age:32,salaire:7625000,ct:0},
+ {nom:'Adam Fox',           po:'D', hd:'D', it:64,sp:84,st:69,en:88,du:83,di:82,sk:85,pa:85,pc:76,df:77,sc:70,ex:62,ld:65,ov:82,age:28,salaire:9075000,ct:0},
+ {nom:'Nate Schmidt',       po:'D', hd:'G', it:64,sp:73,st:74,en:74,du:73,di:80,sk:74,pa:68,pc:70,df:75,sc:59,ex:82,ld:73,ov:75,age:35,salaire:1575000,ct:1},
+ {nom:'Braden Schneider',   po:'D', hd:'D', it:82,sp:73,st:87,en:94,du:91,di:80,sk:77,pa:65,pc:71,df:79,sc:56,ex:54,ld:58,ov:81,age:25,salaire:5950000,ct:2},
  {nom:'Backup_D_SanJose',   po:'D', hd:'G', it:50,sp:50,st:50,en:50,du:50,di:50,sk:50,pa:50,pc:50,df:50,sc:50,ex:50,ld:50,ov:55,age:25,salaire:0,      ct:0, backup:true},
- {nom:'Alexandar Georgiev', po:'G', hd:'G', it:83,sp:87,st:81,en:85,du:87,di:85,sk:88,pa:73,pc:80,df:null,sc:null,ex:83,ld:74,ov:80,age:29,salaire:3000000,ct:1},
- {nom:'Cal Petersen',       po:'G', hd:'D', it:84,sp:83,st:82,en:80,du:73,di:82,sk:83,pa:75,pc:85,df:null,sc:null,ex:60,ld:50,ov:78,age:31,salaire:1000000,ct:1},
- {nom:'Chris Driedger',     po:'G', hd:'G', it:83,sp:81,st:87,en:78,du:76,di:79,sk:84,pa:74,pc:81,df:null,sc:null,ex:50,ld:50,ov:77,age:31,salaire:800000, ct:1}
+ {nom:'Alexandar Georgiev', po:'G', hd:'G', it:83,sp:88,st:81,en:87,du:89,di:87,sk:90,pa:71,pc:81,df:null,sc:null,ex:84,ld:78,ov:81,age:30,salaire:3750000,ct:0},
+ {nom:'Cal Petersen',       po:'G', hd:'D', it:82,sp:84,st:82,en:82,du:74,di:83,sk:83,pa:73,pc:84,df:null,sc:null,ex:62,ld:52,ov:78,age:32,salaire:1250000,ct:0},
+ {nom:'Chris Driedger',     po:'G', hd:'G', it:80,sp:78,st:85,en:76,du:74,di:78,sk:80,pa:72,pc:77,df:null,sc:null,ex:52,ld:46,ov:74,age:32,salaire:1000000,ct:0}
 ];
 
-/* Saison de référence Y21 (XtraStats du 21 avril 2026) — patineurs SANJOSE.
-   Sert de repère tant que la saison Y22 n'a pas produit de matchs. */
-const SECOURS_Y21 = [
- {nom:'Adam Fox',           gp:82, goals:17, assists:41, pts:58, shots:166, pim:34, mp:1839, hits:99},
- {nom:'Akil Thomas',        gp:82, goals:32, assists:49, pts:81, shots:224, pim:16, mp:1863, hits:95},
- {nom:'Alexander Nylander', gp:82, goals:32, assists:34, pts:66, shots:216, pim:48, mp:1472, hits:111},
- {nom:'Brad Lambert',       gp:68, goals:2,  assists:7,  pts:9,  shots:31,  pim:4,  mp:283,  hits:12},
- {nom:'Braden Schneider',   gp:80, goals:3,  assists:32, pts:35, shots:89,  pim:42, mp:1604, hits:184},
- {nom:'Brandon Saad',       gp:65, goals:2,  assists:4,  pts:6,  shots:29,  pim:22, mp:235,  hits:13},
- {nom:'Haydn Fleury',       gp:80, goals:11, assists:48, pts:59, shots:143, pim:43, mp:1854, hits:150},
- {nom:'Jaden Schwartz',     gp:82, goals:25, assists:69, pts:94, shots:187, pim:10, mp:1767, hits:81},
- {nom:'Jesperi Kotkaniemi', gp:75, goals:25, assists:36, pts:61, shots:203, pim:40, mp:1484, hits:96},
- {nom:'Joel ErikssonEk',    gp:82, goals:24, assists:38, pts:62, shots:136, pim:59, mp:1413, hits:156},
- {nom:'Jonas Brodin',       gp:82, goals:7,  assists:26, pts:33, shots:106, pim:45, mp:1377, hits:94},
- {nom:'Kent Johnson',       gp:80, goals:27, assists:35, pts:62, shots:175, pim:42, mp:1529, hits:84},
- {nom:'Nate Schmidt',       gp:28, goals:1,  assists:5,  pts:6,  shots:17,  pim:6,  mp:253,  hits:15},
- {nom:'Nathan Legare',      gp:82, goals:31, assists:29, pts:60, shots:197, pim:64, mp:1519, hits:161},
- {nom:'Oskar Olausson',     gp:83, goals:8,  assists:13, pts:21, shots:49,  pim:24, mp:532,  hits:27},
- {nom:'Ryan Graves',        gp:66, goals:0,  assists:9,  pts:9,  shots:13,  pim:14, mp:292,  hits:18},
- {nom:'Ryan Johansen',      gp:83, goals:28, assists:42, pts:70, shots:174, pim:34, mp:1502, hits:106},
- {nom:'Samu Tuomaala',      gp:82, goals:11, assists:20, pts:31, shots:101, pim:22, mp:852,  hits:62},
- {nom:'Travis Konecny',     gp:80, goals:33, assists:40, pts:73, shots:209, pim:75, mp:1622, hits:211},
- {nom:'Tyler Myers',        gp:72, goals:5,  assists:23, pts:28, shots:115, pim:22, mp:1461, hits:120}
-];
 </script>
 <script>
 /* =====================================================================
@@ -1133,6 +1286,7 @@ function parseRoster(html, doc){
   const tables = Array.from(d.querySelectorAll('table'));
   const attendu = ['PO','HD','IN','SP','ST','EN','DU','DI','SK','PA','PC','DF','OF','EX','LD','OV'];
   let joueurs = [];
+  let tablesValides = 0;
   for (const table of tables){
     const lignes = Array.from(table.querySelectorAll('tr'));
     if (!lignes.length) continue;
@@ -1163,12 +1317,48 @@ function parseRoster(html, doc){
       };
       if (j.ov===null || j.age===null) continue;
       j.backup = /^backup/i.test(j.nom.replace(/[\s_]/g,'')) || /^back ?up/i.test(j.nom);
+      j.horsAlignement = tablesValides > 0; // tables suivantes : sans contrat / club-école
       joueurs.push(j);
     }
-    if (joueurs.length) break; // première table valide = formation PRO
+    tablesValides++;
+    // on continue : la page peut lister les joueurs à contrat échu dans une table
+    // séparée après la formation PRO (structure observée après la recote Y22)
   }
   return joueurs;
 }
+
+/* Page «Finances» (TeamFinance.php) : source de vérité des CONTRATS. La page
+   Formation peut dater (ex. 28 juin) alors que Finances est régénérée chaque jour :
+   la colonne «A» (années restantes) y est la seule à jour — c'est là que vivent les
+   joueurs à 0 année de contrat. Tables «JOUEUR | A | CONTRAT» : la première liste
+   les pros, la suivante le club-école. Retourne une Map nom normalisé →
+   {ct, salaire, clubEcole}. */
+function parseFinance(html, doc){
+  const d = doc || new DOMParser().parseFromString(html, 'text/html');
+  const tables = Array.from(d.querySelectorAll('table'));
+  const contrats = new Map();
+  let tablesValides = 0;
+  for (const table of tables){
+    const lignes = Array.from(table.querySelectorAll('tr'));
+    if (!lignes.length) continue;
+    const entetes = Array.from(lignes[0].querySelectorAll('th,td')).map(c=>c.textContent.trim().toUpperCase());
+    if (!(entetes.includes('JOUEUR') && entetes.includes('A') && entetes.includes('CONTRAT'))) continue;
+    const iNom = entetes.indexOf('JOUEUR'), iA = entetes.indexOf('A'), iC = entetes.indexOf('CONTRAT');
+    const clubEcole = tablesValides > 0; // 1re table = pros, suivantes = club-école
+    for (let i=1;i<lignes.length;i++){
+      const cel = Array.from(lignes[i].querySelectorAll('td,th')).map(c=>c.textContent.trim());
+      const nom = (cel[iNom]||'').replace(/\s+/g,' ').trim();
+      if (!nom) continue;
+      const ct = nombre(cel[iA]);
+      const salaire = nombre(cel[iC]);
+      if (ct===null && salaire===null) continue;
+      contrats.set(normaliserNom(nom), {ct, salaire, clubEcole});
+    }
+    tablesValides++;
+  }
+  return contrats;
+}
+
 
 /* ---------- Parseur : pointage (TeamScoring.php) ----------
    Table à en-têtes variables ; on mappe par nom d'en-tête reconnu. */
@@ -1377,10 +1567,9 @@ function modsEstime(evals){
 const ETAT = {
   roster: SECOURS_ROSTER.map(j=>({...j})),
   scoring: {patineurs:[], gardiens:[]},
-  xtra: SECOURS_Y21.map(x=>({...x})),
-  xtraEstY21: true,
+  xtra: [],          // rempli à l'actualisation depuis USHLxtrastats.html
+  xtraArchive: false,
   xtraDate: null,
-  modeY21: false,   // mode vérification : jamais conservé, retour à la saison courante à l'ouverture
   fiche: 'SANJOSE 0-0-0',
   source: 'données intégrées (' + DATE_SECOURS + ')',
   filtreProg: 'tous',
@@ -1477,7 +1666,7 @@ async function chargerLimites(forcer){
 }
 
 /* XtraStats : archive de la saison précédente ou saison en cours ?
-   Si le club n'a disputé aucun match, c'est forcément l'archive (Y21).
+   Si le club n'a disputé aucun match, c'est forcément l'archive.
    Sinon, on compare le maximum de parties jouées des patineurs du club
    dans XtraStats au nombre de matchs de l'équipe : s'il le dépasse
    nettement, la page est encore l'archive de la saison complète. */
@@ -1509,6 +1698,27 @@ async function actualiserTout(){
       rapport.push('formation ✓ ('+joueurs.length+' joueurs'+((essais||1)>1?', bonne équipe obtenue après réessai':'')+')');
     } else rapport.push('formation : table introuvable, données locales conservées');
   }catch(e){ rapport.push('formation ✗ ('+e.message+')'); }
+  // 1b) Contrats (page Finances — source de vérité des années de contrat)
+  etat.textContent = 'contrats…';
+  try{
+    const {texte, essais} = await chercherSource('finance', validerPageEquipe);
+    const contrats = parseFinance(texte);
+    if (contrats.size >= 5){
+      let maj = 0, echus = 0;
+      for (const j of ETAT.roster){
+        const fin = contrats.get(normaliserNom(j.nom));
+        if (!fin) continue;
+        if (fin.ct !== null) j.ct = fin.ct;
+        if (fin.salaire !== null) j.salaire = fin.salaire;
+        if (fin.clubEcole) j.horsAlignement = true;
+        maj++;
+        if (j.ct === 0 && !j.backup) echus++;
+      }
+      const f = extraireFiche(texte); if (f) ETAT.fiche = f; // la fiche Finances est la plus fraîche
+      rapport.push('contrats ✓ ('+maj+' joueurs synchronisés'+(echus?', '+echus+' à 0 an — prolongeables':'')
+        +((essais||1)>1?', bonne équipe obtenue après réessai':'')+')');
+    } else rapport.push('contrats : tables introuvables, CT de la formation conservés');
+  }catch(e){ rapport.push('contrats ✗ ('+e.message+')'); }
   // 2) Pointage
   etat.textContent = 'production…';
   try{
@@ -1533,11 +1743,11 @@ async function actualiserTout(){
       ETAT.xtra = x;
       const mDate = texte.match(/As of\s+([0-9\/]+)/i);
       ETAT.xtraDate = mDate ? mDate[1] : null;
-      ETAT.xtraEstY21 = xtraEstArchive(x, matchsEquipe());
-      if (!ETAT.xtraEstY21 && !ETAT.scoring.patineurs.length){
+      ETAT.xtraArchive = xtraEstArchive(x, matchsEquipe());
+      if (!ETAT.xtraArchive && !ETAT.scoring.patineurs.length){
         rapport.push('XtraStats ✓ ('+x.length+' patineurs — sert de production, TeamScoring indisponible)');
       } else {
-        rapport.push('XtraStats ✓ ('+x.length+' patineurs'+(ETAT.xtraEstY21?', archive Y21':'')+')');
+        rapport.push('XtraStats ✓ ('+x.length+' patineurs'+(ETAT.xtraArchive?', archive de la saison précédente — ignorée':'')+')');
       }
     } else rapport.push('XtraStats : rien trouvé pour '+CONFIG.equipe);
   }catch(e){ rapport.push('XtraStats ✗ ('+e.message+')'); }
@@ -1564,40 +1774,23 @@ function indexParNom(liste){
 /* production consolidée d'un joueur : scoring courant + xtra (MEÉ, MIN) */
 function productionDe(j){
   const cle = normaliserNom(j.nom);
-  if (ETAT.modeY21){
-    // Mode vérification : totaux complets de la Y21, aucune projection.
-    // Source : données intégrées, sinon l'archive XtraStats téléchargée à l'actualisation.
-    const sourceY21 = SECOURS_Y21.length ? SECOURS_Y21 : (ETAT.xtraEstY21 ? ETAT.xtra : []);
-    const y = indexParNom(sourceY21).get(cle) || null;
-    if (!y) return null;
-    const out = {
-      gp: y.gp ?? null, goals: y.goals ?? null, assists: y.assists ?? null, pts: y.pts ?? null,
-      shots: y.shots ?? null, pim: y.pim ?? null, mp: y.mp ?? null, hits: y.hits ?? null,
-      plusminus: null, ppg: null, gwg: null, w: null, avg: null, svpct: null, qs: null, hs: null,
-      _reference: false, _xtraSource: false, _modeY21: true
-    };
-    out.shotpct = (out.goals!==null && out.shots) ? (out.goals/out.shots*100) : null;
-    return out;
-  }
   const sc = indexParNom(j.po==='G' ? ETAT.scoring.gardiens : ETAT.scoring.patineurs).get(cle) || null;
   const xt = indexParNom(ETAT.xtra).get(cle) || null;
-  const saisonCourante = !!sc;
-  const base = sc || (ETAT.xtraEstY21 ? null : xt);
-  const ref = (!saisonCourante && ETAT.xtraEstY21) ? xt : null; // Y21 comme référence
-  const src = base || ref;
-  if (!src) return null;
+  // Saison courante seulement : TeamScoring d'abord, sinon XtraStats — mais
+  // jamais l'archive de la saison précédente (elle est simplement ignorée).
+  const base = sc || (ETAT.xtraArchive ? null : xt);
+  if (!base) return null;
   const xtraCommeSource = !sc && base === xt;
   const out = {
-    gp: src.gp ?? null,
-    goals: src.goals ?? null, assists: src.assists ?? null, pts: src.pts ?? null,
+    gp: base.gp ?? null,
+    goals: base.goals ?? null, assists: base.assists ?? null, pts: base.pts ?? null,
     plusminus: (sc && sc.plusminus!==undefined) ? sc.plusminus : null,
     ppg: sc?.ppg ?? null, gwg: sc?.gwg ?? null,
-    shots: src.shots ?? null, pim: src.pim ?? null,
+    shots: base.shots ?? null, pim: base.pim ?? null,
     mp: (sc?.mp ?? xt?.mp) ?? null,
     hits: (xt?.hits ?? sc?.hits) ?? null,
     w: sc?.w ?? null, avg: sc?.avg ?? null, svpct: sc?.svpct ?? null, qs: sc?.qs ?? null,
     hs: sc?.hs ?? sc?.so ?? null,
-    _reference: !saisonCourante && !!ref,
     _xtraSource: xtraCommeSource
   };
   if (out.svpct!==null && out.svpct!==undefined && out.svpct>1) out.svpct = out.svpct/100; // «90.5» → 0.905
@@ -1698,12 +1891,12 @@ const PLAFOND = 104000000;
    Un joueur prolongé compte au plafond avec son salaire de prolongation. */
 function calculerMasse(resignMap){
   const r = resignMap || litResignatures();
-  const actifs = ETAT.roster.filter(j=>!j.backup);
   let masse = 0;
-  for (const j of actifs){
+  for (const j of ETAT.roster){
+    if (j.backup) continue;
     const sig = (j.ct === 0) ? r[normaliserNom(j.nom)] : null; // prolongation valable pour les contrats échus seulement
-    if (sig) masse += sig.salaire;
-    else if (j.ct > 0) masse += (j.salaire || 0);
+    if (sig) masse += sig.salaire;                              // un prolongé rentre au plafond, même hors alignement
+    else if (!j.horsAlignement && j.ct > 0) masse += (j.salaire || 0); // hors alignement non prolongé : jamais compté
   }
   return {masse, cap: PLAFOND};
 }
@@ -1713,10 +1906,11 @@ let triAlign = {col:'ov', desc:true};
 function rendreAlignement(){
   $('#ficheEquipe').textContent = ETAT.fiche;
   $('#sourceInfo').textContent = ETAT.source;
-  const actifs = ETAT.roster.filter(j=>!j.backup);
+  const actifs = ETAT.roster.filter(j=>!j.backup && !j.horsAlignement);
+  const horsAlign = ETAT.roster.filter(j=>j.horsAlignement && !j.backup);
   const resign = litResignatures();
   const {masse, cap} = calculerMasse(resign);
-  const nbResignes = actifs.filter(j=>peutProlonger(j) && resign[normaliserNom(j.nom)]).length;
+  const nbResignes = ETAT.roster.filter(j=>peutProlonger(j) && resign[normaliserNom(j.nom)]).length; // alignement + hors alignement
   const moyOV = actifs.length ? (actifs.reduce((s,j)=>s+j.ov,0)/actifs.length) : 0;
   const vedettes = actifs.filter(j=>j.ov>=80).length;
   const expirants = actifs.filter(j=>j.ct===1).length;
@@ -1740,7 +1934,7 @@ function rendreAlignement(){
     ['ex','EX'],['ld','LD'],['ov','OV'],['profil','Profil'],['salaire','Salaire'],['ct','CT'],
     ['resign','Re-signer']
   ];
-  const liste = [...ETAT.roster].sort((a,b)=>{
+  const trieur = (a,b)=>{
     const c = triAlign.col;
     const va = c==='profil' ? a._profil.profil : a[c];
     const vb = c==='profil' ? b._profil.profil : b[c];
@@ -1749,7 +1943,8 @@ function rendreAlignement(){
     if (vb===null||vb===undefined) return -1;
     const r = (typeof va==='string') ? va.localeCompare(vb) : va-vb;
     return triAlign.desc ? -r : r;
-  });
+  };
+  const liste = ETAT.roster.filter(j=>!j.horsAlignement).sort(trieur);
   let html = '<thead><tr>' + cols.map(([c,l])=>
     c==='resign'
       ? `<th class="col-resign">${l}</th>`
@@ -1796,7 +1991,50 @@ function rendreAlignement(){
     });
   });
   attacherProlongations(table);
+
+  // Section «Hors alignement» : joueurs listés dans les tables suivantes de la
+  // page (sans contrat / club-école). Visibles et prolongeables (si contrat échu),
+  // jamais comptés au plafond sauf prolongation.
+  const secHA = $('#horsAlignement');
+  if (!horsAlign.length){
+    secHA.style.display = 'none';
+    $('#tableHorsAlign').innerHTML = '';
+  } else {
+    secHA.style.display = '';
+    let htmlHA = '<thead><tr>' + cols.map(([c,l])=>
+      c==='resign' ? `<th class="col-resign">${l}</th>` : `<th>${l}</th>`).join('') + '</tr></thead><tbody>';
+    for (const j of [...horsAlign].sort(trieur)){
+      const p = j._profil;
+      const badge = j.po==='G' ? 'g' : (j.po==='D' ? 'd' : '');
+      const tag = j.po==='G' ? 'g-tag' : (j.po==='D' ? 'd-tag' : '');
+      htmlHA += `<tr class="${peutProlonger(j) && resign[normaliserNom(j.nom)]?'resigne':''}">`;
+      htmlHA += `<td><span class="pos-badge ${badge}">${j.po}</span>${j.nom}</td>`;
+      htmlHA += `<td>${j.po}</td><td>${j.age}</td>`;
+      for (const c of ['it','sp','st','en','du','di','sk','pa','pc','df','sc','ex','ld']){
+        const v = j[c];
+        const cls = v===null?'':(v>=85?'cote-elite':(v>=78?'cote-forte':''));
+        htmlHA += `<td class="${cls}">${v===null?'—':v}</td>`;
+      }
+      htmlHA += `<td class="${j.ov>=82?'cote-elite':(j.ov>=78?'cote-forte':'')}"><strong>${j.ov}</strong></td>`;
+      htmlHA += `<td style="text-align:left"><span class="profil-tag ${tag}">${p.profil}</span></td>`;
+      const eligible = peutProlonger(j);
+      const rSig = eligible ? resign[normaliserNom(j.nom)] : null;
+      const salAff = rSig ? rSig.salaire : j.salaire;
+      htmlHA += `<td>${fmtArgent(salAff)}${rSig?' <span class="resign-tag">prolongé</span>':''}</td>`;
+      const dSig = rSig ? (rSig.duree || dureeMaxCharte(rSig.statut)) : null;
+      htmlHA += `<td>${rSig ? dSig + ' an' + (dSig>1?'s':'') : (j.ct??'—')}</td>`;
+      htmlHA += eligible
+        ? `<td class="col-resign"><button class="btn-prolong ${rSig?'actif':''}" data-nom="${j.nom.replace(/"/g,'&quot;')}">${rSig?'✓ Prolongé':'Prolonger'}</button></td>`
+        : `<td class="col-resign">—</td>`;
+      htmlHA += `</tr>`;
+    }
+    htmlHA += '</tbody>';
+    const tableHA = $('#tableHorsAlign');
+    tableHA.innerHTML = htmlHA;
+    attacherProlongations(tableHA);
+  }
 }
+
 
 /* Le bouton de la colonne Contrat ouvre la fenêtre «Prolongation de contrat». */
 function attacherProlongations(table){
@@ -1964,6 +2202,550 @@ function ouvrirProlongation(nom){
   inSal.focus();
 }
 
+/* ---------- Composition d'équipe ---------- */
+/* L'équipe en construction pour la saison : signés (ct>0) + prolongés (ct=0
+   re-signés selon la charte), moins les joueurs retirés (transigés ailleurs),
+   plus les ajouts manuels (nom, position, OV, salaire). Persistance locale. */
+function litCompo(){
+  try { const o = JSON.parse(localStorage.getItem(CLES_LS.compo) || '{}');
+        return {retires: o.retires||[], ajouts: o.ajouts||[]}; }
+  catch { return {retires: [], ajouts: []}; }
+}
+function ecritCompo(o){ localStorage.setItem(CLES_LS.compo, JSON.stringify(o)); }
+
+/* Liste des joueurs de la composition, chacun {nom, po, ov, salaire, prov}
+   où prov ∈ 'signe' | 'prolonge' | 'ajout'. */
+function joueursComposition(){
+  const compo = litCompo();
+  const retires = new Set(compo.retires);
+  const resign = litResignatures();
+  const liste = [];
+  for (const j of ETAT.roster){
+    if (j.backup) continue;
+    const cle = normaliserNom(j.nom);
+    if (retires.has(cle)) continue;
+    const sig = (j.ct === 0) ? resign[cle] : null;
+    if (sig) liste.push({nom:j.nom, po:j.po, ov:j.ov, salaire:sig.salaire, prov:'prolonge'});
+    else if (!j.horsAlignement && j.ct > 0) liste.push({nom:j.nom, po:j.po, ov:j.ov, salaire:j.salaire||0, prov:'signe'});
+    // hors alignement non prolongé ou contrat échu non prolongé : pas encore dans l'équipe
+  }
+  for (const a of compo.ajouts){
+    if (retires.has(normaliserNom(a.nom))) continue;
+    liste.push({nom:a.nom, po:a.po, ov:a.ov, salaire:a.salaire, prov:'ajout'});
+  }
+  return liste;
+}
+
+const EST_ATTAQUANT = po => po==='C' || po==='AG' || po==='AD';
+
+function rendreComposition(){
+  const liste = joueursComposition();
+  const compo = litCompo();
+  const nbA = liste.filter(j=>EST_ATTAQUANT(j.po)).length;
+  const nbD = liste.filter(j=>j.po==='D').length;
+  const nbG = liste.filter(j=>j.po==='G').length;
+  const masse = liste.reduce((s,j)=>s+(j.salaire||0),0);
+  const manquants = Math.max(0, 22 - liste.length);
+  $('#compoSommaire').innerHTML = `
+    <div class="stat-carte"><div class="lbl">Attaquants</div><div class="val">${nbA}</div></div>
+    <div class="stat-carte"><div class="lbl">Défenseurs</div><div class="val">${nbD}</div></div>
+    <div class="stat-carte"><div class="lbl">Gardiens</div><div class="val">${nbG}</div></div>
+    <div class="stat-carte ${manquants?'manque':'complet'}">
+      <div class="lbl">Joueurs</div><div class="val">${liste.length}</div>
+      <div class="det">${manquants ? manquants+' manquant'+(manquants>1?'s':'')+' (minimum 22)' : 'minimum de 22 atteint'}</div>
+    </div>
+    <div class="stat-carte ${masse>PLAFOND?'alerte':''}">
+      <div class="lbl">Masse salariale</div><div class="val">${fmtArgent(masse)}</div>
+      <div class="det">plafond ${fmtArgent(PLAFOND)} · ${masse>PLAFOND?'dépassement '+fmtArgent(masse-PLAFOND):'marge '+fmtArgent(PLAFOND-masse)}</div>
+    </div>`;
+
+  const ordrePo = {C:0, AG:1, AD:2, D:3, G:4};
+  const tri = [...liste].sort((a,b)=> (ordrePo[a.po]??9)-(ordrePo[b.po]??9) || b.ov-a.ov);
+  let html = '<thead><tr><th>Nom</th><th>PO</th><th>OV</th><th>Salaire</th><th>Provenance</th><th></th></tr></thead><tbody>';
+  const provLbl = {signe:'signé', prolonge:'prolongé', ajout:'ajout'};
+  for (const j of tri){
+    html += `<tr>`
+      + `<td style="text-align:left">${j.nom}</td><td>${j.po}</td>`
+      + `<td class="${j.ov>=82?'cote-elite':(j.ov>=78?'cote-forte':'')}"><strong>${j.ov??'—'}</strong></td>`
+      + `<td>${fmtArgent(j.salaire)}</td>`
+      + `<td><span class="prov-tag prov-${j.prov}">${provLbl[j.prov]}</span></td>`
+      + `<td><button class="btn-retirer" data-nom="${j.nom.replace(/"/g,'&quot;')}">Retirer</button></td>`
+      + `</tr>`;
+  }
+  html += '</tbody>';
+  const table = $('#tableCompo');
+  table.innerHTML = html;
+  table.querySelectorAll('button.btn-retirer').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const c = litCompo();
+      const cle = normaliserNom(b.dataset.nom);
+      // un ajout manuel retiré est simplement supprimé; un joueur du club part dans «Retirés»
+      const iAjout = c.ajouts.findIndex(a=>normaliserNom(a.nom)===cle);
+      if (iAjout >= 0) c.ajouts.splice(iAjout, 1);
+      else if (!c.retires.includes(cle)) c.retires.push(cle);
+      ecritCompo(c);
+      rendreComposition();
+    });
+  });
+
+  // retirés restaurables
+  const zone = $('#compoRetires');
+  if (!compo.retires.length){ zone.style.display='none'; $('#compoRetiresListe').innerHTML=''; }
+  else {
+    zone.style.display='';
+    const nomDe = cle => (ETAT.roster.find(j=>normaliserNom(j.nom)===cle)?.nom) || cle;
+    $('#compoRetiresListe').innerHTML = compo.retires.map(cle=>
+      `<span class="retire-puce">${nomDe(cle)} <button data-cle="${cle.replace(/"/g,'&quot;')}">restaurer</button></span>`).join('');
+    $('#compoRetiresListe').querySelectorAll('button').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const c = litCompo();
+        c.retires = c.retires.filter(x=>x!==b.dataset.cle);
+        ecritCompo(c);
+        rendreComposition();
+      });
+    });
+  }
+}
+
+function attacherFormulaireCompo(){
+  const err = $('#caErreur');
+  $('#caAjouter').addEventListener('click', ()=>{
+    const nom = $('#caNom').value.trim().replace(/\s+/g,' ');
+    const po = $('#caPo').value;
+    const ov = nombre($('#caOv').value);
+    const salaire = parseArgent($('#caSal').value);
+    let msg = null;
+    if (!nom) msg = 'Le nom est requis.';
+    else if (ov===null || ov<40 || ov>99) msg = 'OV invalide (entre 40 et 99).';
+    else if (salaire===null || salaire<0) msg = 'Salaire invalide (ex. «3,5 M», «900 k» ou un montant en dollars).';
+    else {
+      const cle = normaliserNom(nom);
+      const c = litCompo();
+      if (c.ajouts.some(a=>normaliserNom(a.nom)===cle) || joueursComposition().some(j=>normaliserNom(j.nom)===cle))
+        msg = 'Ce joueur est déjà dans la composition.';
+      else {
+        c.retires = c.retires.filter(x=>x!==cle); // au cas où il avait été retiré
+        c.ajouts.push({nom, po, ov: Math.round(ov), salaire});
+        ecritCompo(c);
+        $('#caNom').value=''; $('#caOv').value=''; $('#caSal').value='';
+        err.style.display='none';
+        rendreComposition();
+        return;
+      }
+    }
+    err.textContent = msg; err.style.display='';
+  });
+}
+
+/* ---------- Feuille d'alignement (règlements 1.1.1 et 1.1.2) ---------- */
+/* 4 trios, 3 duos, 2 gardiens + unités spéciales (AN à 5 et à 4, IN à 4 et
+   à 3, 2 vagues chacune), bâtis à partir des joueurs de la Composition.
+   Art. 1.1.1 : un joueur peut évoluer à une autre position que la sienne,
+   sauf les gardiens; alignement complet = 20 habillés. Art. 1.1.2 : double
+   quart à 5c5 permis uniquement entre la 4e ligne et l'une des trois
+   premières; sur les unités spéciales les positions sont libres, mais un
+   joueur ne peut pas jouer sur les 2 vagues d'un même groupe. */
+const GROUPES_SPECIAUX = [
+  {zone:'an5', nom:'Avantage numérique à 5', n:5},
+  {zone:'an4', nom:'Avantage numérique à 4', n:4},
+  {zone:'in4', nom:'Infériorité numérique à 4', n:4},
+  {zone:'in3', nom:'Infériorité numérique à 3', n:3}
+];
+const TRIOS_VIDES = () => ({
+  trios: [['','',''],['','',''],['','',''],['','','']],
+  duos: [['',''],['',''],['','']],
+  gardiens: ['',''],
+  an5: [['','','','',''],['','','','','']],
+  an4: [['','','',''],['','','','']],
+  in4: [['','','',''],['','','','']],
+  in3: [['',''],['','']].map(v=>[...v,'']) // 2 vagues de 3
+});
+function normaliserSelTrios(o){
+  const v = TRIOS_VIDES();
+  if (!o) return v;
+  for (let i=0;i<4;i++) for (let k=0;k<3;k++) v.trios[i][k] = (o.trios?.[i]?.[k]) || '';
+  for (let i=0;i<3;i++) for (let k=0;k<2;k++) v.duos[i][k] = (o.duos?.[i]?.[k]) || '';
+  for (let k=0;k<2;k++) v.gardiens[k] = (o.gardiens?.[k]) || '';
+  for (const g of GROUPES_SPECIAUX)
+    for (let i=0;i<2;i++) for (let k=0;k<g.n;k++) v[g.zone][i][k] = (o[g.zone]?.[i]?.[k]) || '';
+  return v;
+}
+function litTrios(){
+  try { return normaliserSelTrios(JSON.parse(localStorage.getItem(CLES_LS.trios) || 'null')); }
+  catch { return TRIOS_VIDES(); }
+}
+function ecritTrios(sel){ localStorage.setItem(CLES_LS.trios, JSON.stringify(sel)); }
+
+function validerAlignementTrios(brut, pool){
+  const sel = normaliserSelTrios(brut);
+  const erreurs = [], avertissements = [];
+  const parCle = new Map(pool.map(j=>[normaliserNom(j.nom), j]));
+  const info = nom => parCle.get(normaliserNom(nom)) || null;
+
+  const casesF = sel.trios.flat(), casesD = sel.duos.flat(), casesG = sel.gardiens;
+  const casesES = [...casesF, ...casesD, ...casesG];
+  const casesSpec = GROUPES_SPECIAUX.flatMap(g=>sel[g.zone].flat());
+  const nbRemplis = casesES.filter(Boolean).length;
+  const habilles = new Set(casesES.filter(Boolean).map(normaliserNom));
+  const specRemplis = casesSpec.filter(Boolean).length;
+
+  for (const nom of new Set([...casesES, ...casesSpec].filter(Boolean)))
+    if (!info(nom)) avertissements.push(`${nom} n'est plus dans la composition — remplace-le.`);
+
+  // Gardiens : seuls des gardiens au filet, jamais ailleurs, partant ≠ substitut
+  for (const nom of casesG.filter(Boolean)){
+    const j = info(nom);
+    if (j && j.po !== 'G') erreurs.push(`${nom} n'est pas un gardien : la position des gardiens ne change pas (art. 1.1.1).`);
+  }
+  if (casesG[0] && casesG[1] && normaliserNom(casesG[0]) === normaliserNom(casesG[1]))
+    erreurs.push('Le partant et le substitut doivent être deux gardiens différents.');
+  for (const nom of [...casesF, ...casesD, ...casesSpec].filter(Boolean)){
+    const j = info(nom);
+    if (j && j.po === 'G') erreurs.push(`${nom} est un gardien : il ne peut pas occuper une case de patineur (art. 1.1.1).`);
+  }
+
+  // Même joueur deux fois dans une même unité
+  const dupDans = (liste)=>{ const r = liste.filter(Boolean).map(normaliserNom); return new Set(r).size !== r.length; };
+  sel.trios.forEach((t,i)=>{ if (dupDans(t)) erreurs.push(`Trio ${i+1} : le même joueur y figure deux fois.`); });
+  sel.duos.forEach((d,i)=>{ if (dupDans(d)) erreurs.push(`Duo ${i+1} : le même joueur y figure deux fois.`); });
+
+  // Double quart à 5c5 : uniquement 1-4, 2-4 ou 3-4 (art. 1.1.2)
+  const parTrio = new Map();
+  sel.trios.forEach((t,i)=> new Set(t.filter(Boolean).map(normaliserNom)).forEach(c=>{
+    if (!parTrio.has(c)) parTrio.set(c, []);
+    parTrio.get(c).push(i);
+  }));
+  for (const [cle, idx] of parTrio){
+    if (idx.length === 1) continue;
+    const nom = info(cle)?.nom || sel.trios[idx[0]].find(n=>n && normaliserNom(n)===cle) || cle;
+    if (idx.length > 2)
+      erreurs.push(`${nom} figure dans ${idx.length} trios : le double quart se limite à deux lignes (art. 1.1.2).`);
+    else if (!idx.includes(3))
+      erreurs.push(`${nom} double sur les trios ${idx[0]+1} et ${idx[1]+1} : seules les combinaisons 1-4, 2-4 et 3-4 sont permises (art. 1.1.2).`);
+  }
+  // Duos : avec 3 duos, aucune combinaison «avec la 4e ligne» n'existe → un seul duo par défenseur
+  const parDuo = new Map();
+  sel.duos.forEach((d,i)=> new Set(d.filter(Boolean).map(normaliserNom)).forEach(c=>{
+    if (!parDuo.has(c)) parDuo.set(c, []);
+    parDuo.get(c).push(i);
+  }));
+  for (const [cle, idx] of parDuo)
+    if (idx.length > 1)
+      erreurs.push(`${info(cle)?.nom || cle} figure dans ${idx.length} duos : l'art. 1.1.2 ne permet le double quart qu'avec une 4e ligne — une seule paire par joueur.`);
+
+  // À la fois en attaque et en défense à 5c5 : non couvert par les combinaisons permises
+  const clesF = new Set(casesF.filter(Boolean).map(normaliserNom));
+  for (const cle of new Set(casesD.filter(Boolean).map(normaliserNom)))
+    if (clesF.has(cle))
+      avertissements.push(`${info(cle)?.nom || cle} est utilisé en attaque ET en défense — combinaison non couverte par l'art. 1.1.2, à valider avec la ligue.`);
+
+  // Unités spéciales : positions libres, mais jamais sur les 2 vagues d'un même groupe
+  for (const g of GROUPES_SPECIAUX){
+    sel[g.zone].forEach((vague,i)=>{
+      if (dupDans(vague)) erreurs.push(`${g.nom}, vague ${i+1} : le même joueur y figure deux fois.`);
+    });
+    const v1 = new Set(sel[g.zone][0].filter(Boolean).map(normaliserNom));
+    for (const nom of sel[g.zone][1].filter(Boolean))
+      if (v1.has(normaliserNom(nom)))
+        erreurs.push(`${info(nom)?.nom || nom} est sur les 2 vagues de l'${g.nom.toLowerCase()} : interdit (art. 1.1.2).`);
+    for (const nom of new Set(sel[g.zone].flat().filter(Boolean).map(normaliserNom)))
+      if (!habilles.has(nom) && info(nom))
+        avertissements.push(`${info(nom).nom} est sur l'${g.nom.toLowerCase()} sans être parmi les habillés du 5 contre 5.`);
+  }
+
+  // Hors position naturelle à 5c5 : permis (art. 1.1.1), simple décompte informatif
+  let horsPosition = 0;
+  for (const nom of casesF.filter(Boolean)){ const j = info(nom); if (j && j.po === 'D') horsPosition++; }
+  for (const nom of casesD.filter(Boolean)){ const j = info(nom); if (j && EST_ATTAQUANT(j.po)) horsPosition++; }
+
+  if (nbRemplis === casesES.length && habilles.size < 20 && !erreurs.length)
+    avertissements.push(`Double quart utilisé : ${habilles.size} joueurs distincts occupent les 20 cases — l'envoi à la ligue doit tout de même compter 20 habillés (art. 1.1.1).`);
+
+  return {erreurs, avertissements, nbRemplis, nbCases: casesES.length,
+          nbDistincts: habilles.size, horsPosition,
+          specRemplis, specCases: casesSpec.length};
+}
+
+const CASE_LIBELLES = {
+  trio: (i,k)=>`Trio ${i+1} — case ${['AG','C','AD'][k]}`,
+  duo: (i,k)=>`Duo ${i+1}`,
+  g: (i,k)=> k===0 ? 'Gardien partant' : 'Gardien substitut',
+  an5: (i,k)=>`Avantage numérique à 5 — vague ${i+1}`,
+  an4: (i,k)=>`Avantage numérique à 4 — vague ${i+1}`,
+  in4: (i,k)=>`Infériorité numérique à 4 — vague ${i+1}`,
+  in3: (i,k)=>`Infériorité numérique à 3 — vague ${i+1}`
+};
+function cleZoneTrios(zone){ return zone==='trio' ? 'trios' : zone==='duo' ? 'duos' : zone; }
+function valeurCaseTrios(sel, zone, i, k){
+  return zone==='g' ? sel.gardiens[k] : sel[cleZoneTrios(zone)][i][k];
+}
+function usagesES(sel){
+  const u = new Map();
+  const noter = (nom, tag)=>{ if (!nom) return; const c = normaliserNom(nom);
+    if (!u.has(c)) u.set(c, []); u.get(c).push(tag); };
+  sel.trios.forEach((t,i)=>t.forEach(n=>noter(n, 'T'+(i+1))));
+  sel.duos.forEach((d,i)=>d.forEach(n=>noter(n, 'D'+(i+1))));
+  sel.gardiens.forEach((n,k)=>noter(n, k===0?'G1':'G2'));
+  return u;
+}
+function nomFamille(nom){
+  return (nom || '').replace(/_/g, ' ').trim().split(/\s+/).pop().toUpperCase();
+}
+/* Chandail vu de dos : couleurs tirées des variables CSS de l'équipe
+   (--teal, --teal-dark, --orange), nom sur l'empiècement, OV en numéro. */
+function svgChandail(nomplaque, numero, estVide){
+  const long = nomplaque.length > 9 ? ` textLength="56" lengthAdjust="spacingAndGlyphs"` : '';
+  const corps = estVide ? '#232b2e' : 'var(--teal)';
+  const emp = estVide ? '#1b2124' : 'var(--teal-dark)';
+  const bande = estVide ? '#39464a' : 'var(--orange)';
+  const encre = estVide ? '#8fa6a9' : '#fff';
+  return `<svg class="chandail" viewBox="0 0 100 88" aria-hidden="true">
+    <path d="M2,26 L18,12 L18,52 L6,56 Z" fill="${corps}"/>
+    <path d="M98,26 L82,12 L82,52 L94,56 Z" fill="${corps}"/>
+    <path d="M4,44 L18,39 L18,46 L5,50 Z" fill="${bande}"/>
+    <path d="M96,44 L82,39 L82,46 L95,50 Z" fill="${bande}"/>
+    <path d="M18,11 Q18,8 22,8 L38,8 Q50,17 62,8 L78,8 Q82,8 82,11 L82,83 Q82,86 78,86 L22,86 Q18,86 18,83 Z" fill="${corps}"/>
+    <path d="M18,11 Q18,8 22,8 L38,8 Q50,17 62,8 L78,8 Q82,8 82,11 L82,25 L18,25 Z" fill="${emp}"/>
+    <path d="M38,8 Q50,18 62,8" fill="none" stroke="${encre}" stroke-width="1.4" opacity=".9"/>
+    <rect x="18" y="75" width="64" height="4.5" fill="${bande}"/>
+    <rect x="18" y="80.5" width="64" height="1.8" fill="${encre}" opacity=".8"/>
+    <text x="50" y="20.5" text-anchor="middle" font-size="8.5" font-weight="700" fill="${encre}"
+      font-family="var(--font-data)" letter-spacing=".5"${long}>${nomplaque}</text>
+    <text x="50" y="66" text-anchor="middle" font-size="${estVide ? 30 : 31}" font-weight="800" fill="${encre}"
+      paint-order="stroke" stroke="${estVide ? 'none' : bande}" stroke-width="1.1"
+      font-family="var(--font-data)">${numero}</text>
+  </svg>`;
+}
+function usagesSpeciaux(sel){
+  const u = new Map();
+  const noter = (nom, tag)=>{ if (!nom) return; const c = normaliserNom(nom);
+    if (!u.has(c)) u.set(c, new Set()); u.get(c).add(tag); };
+  for (const g of GROUPES_SPECIAUX)
+    sel[g.zone].forEach(v=>v.forEach(n=>noter(n, g.zone.startsWith('an') ? 'AN' : 'IN')));
+  return u;
+}
+function rendreBanc(pool, sel){
+  const ordrePo = {C:0, AG:1, AD:2, D:3, G:4};
+  const usES = usagesES(sel), usSpec = usagesSpeciaux(sel);
+  const tri = [...pool].sort((a,b)=> (ordrePo[a.po]??9)-(ordrePo[b.po]??9) || b.ov-a.ov);
+  $('#bancJoueurs').innerHTML = tri.map(j=>{
+    const cle = normaliserNom(j.nom);
+    const tags = [...(usES.get(cle)||[]), ...(usSpec.get(cle)||new Set())];
+    return `<div class="banc-joueur${tags.length?' utilise':''}" draggable="true" title="${j.nom} (${j.po} · ${j.ov ?? '—'})"
+      data-nom="${j.nom.replace(/"/g,'&quot;')}">${svgChandail(nomFamille(j.nom), j.ov ?? '—', false)}
+      <span class="bj-info">${j.po}${tags.length ? ' · '+tags.join(' ') : ''}</span></div>`;
+  }).join('') || `<div class="tv-avert" style="padding:6px">Aucun joueur — complète d'abord la Composition.</div>`;
+}
+function rendreTrios(){
+  const pool = joueursComposition();
+  const parCle = new Map(pool.map(j=>[normaliserNom(j.nom), j]));
+  const sel = litTrios();
+  rendreBanc(pool, sel);
+  document.querySelectorAll('#vue-trios button.tuile').forEach(t=>{
+    const zone = t.dataset.zone, i = +t.dataset.i, k = +t.dataset.k;
+    const nom = valeurCaseTrios(sel, zone, i, k);
+    const j = nom ? parCle.get(normaliserNom(nom)) : null;
+    t.classList.toggle('vide', !nom);
+    t.classList.toggle('horscompo', !!nom && !j);
+    t.setAttribute('draggable', nom ? 'true' : 'false');
+    if (!nom){
+      t.innerHTML = svgChandail('CHOISIR', '+', true);
+      t.title = CASE_LIBELLES[zone](i,k);
+    } else if (j){
+      t.innerHTML = svgChandail(nomFamille(j.nom), j.ov ?? '—', false)
+        + `<span class="tu-info">${j.po}</span>`;
+      t.title = `${CASE_LIBELLES[zone](i,k)} — ${j.nom} (${j.po} · ${j.ov ?? '—'})`;
+    } else {
+      t.innerHTML = svgChandail(nomFamille(nom), '?', true)
+        + `<span class="tu-info">hors composition</span>`;
+      t.title = `${CASE_LIBELLES[zone](i,k)} — ${nom} (hors composition)`;
+    }
+  });
+  rendreValidationTrios(sel, pool);
+}
+let tuileCible = null;
+function ouvrirChoixTuile(zone, i, k){
+  tuileCible = {zone, i, k};
+  const pool = joueursComposition();
+  const ordrePo = {C:0, AG:1, AD:2, D:3};
+  const liste = zone==='g'
+    ? pool.filter(j=>j.po==='G').sort((a,b)=>b.ov-a.ov)
+    : pool.filter(j=>j.po!=='G').sort((a,b)=> (ordrePo[a.po]??9)-(ordrePo[b.po]??9) || b.ov-a.ov);
+  const sel = litTrios();
+  const usages = usagesES(sel);
+  const actuel = valeurCaseTrios(sel, zone, i, k);
+  $('#tuileModalTitre').textContent = CASE_LIBELLES[zone](i,k);
+  let html = '';
+  if (actuel)
+    html += `<button type="button" class="choix-joueur liberer" data-nom="">Libérer la case (retirer ${actuel})</button>`;
+  for (const j of liste){
+    const tags = usages.get(normaliserNom(j.nom)) || [];
+    html += `<button type="button" class="choix-joueur" data-nom="${j.nom.replace(/"/g,'&quot;')}">`
+      + `<span>${j.nom}</span><span class="cj-meta">${j.po} · ${j.ov ?? '—'}${tags.length ? ' · '+tags.join(' ') : ''}</span></button>`;
+  }
+  if (!liste.length)
+    html += `<div class="tv-avert" style="padding:10px 6px">Aucun ${zone==='g'?'gardien':'patineur'} dans la Composition — complète-la d'abord.</div>`;
+  $('#tuileModalListe').innerHTML = html;
+  $('#tuileModalFond').hidden = false;
+}
+function fermerChoixTuile(){ $('#tuileModalFond').hidden = true; tuileCible = null; }
+function assignerTuile(nom){
+  if (!tuileCible) return;
+  const {zone, i, k} = tuileCible;
+  const sel = litTrios();
+  if (zone === 'g') sel.gardiens[k] = nom;
+  else sel[cleZoneTrios(zone)][i][k] = nom;
+  ecritTrios(sel);
+  fermerChoixTuile();
+  rendreTrios();
+}
+function rendreValidationTrios(sel, pool){
+  const v = validerAlignementTrios(sel, pool);
+  $('#triosSommaire').innerHTML = `
+    <div class="stat-carte ${v.nbRemplis===v.nbCases?'complet':'manque'}"><div class="lbl">5 contre 5</div>
+      <div class="val">${v.nbRemplis}/${v.nbCases}</div>
+      <div class="det">${v.nbRemplis===v.nbCases ? v.nbDistincts+' joueurs distincts habillés' : (v.nbCases-v.nbRemplis)+' case'+(v.nbCases-v.nbRemplis>1?'s':'')+' à remplir'}</div></div>
+    <div class="stat-carte ${v.specRemplis===v.specCases?'complet':'manque'}"><div class="lbl">Unités spéciales</div>
+      <div class="val">${v.specRemplis}/${v.specCases}</div>
+      <div class="det">AN à 5 et à 4 · IN à 4 et à 3</div></div>
+    <div class="stat-carte"><div class="lbl">Hors position</div><div class="val">${v.horsPosition}</div>
+      <div class="det">permis par l'art. 1.1.1</div></div>
+    <div class="stat-carte ${v.erreurs.length?'alerte':''}"><div class="lbl">Infractions</div><div class="val">${v.erreurs.length}</div></div>`;
+  let html = '';
+  for (const e of v.erreurs) html += `<div class="tv-erreur">✗ ${e}</div>`;
+  for (const a of v.avertissements) html += `<div class="tv-avert">△ ${a}</div>`;
+  if (!v.erreurs.length && v.nbRemplis === v.nbCases && v.specRemplis === v.specCases)
+    html += `<div class="tv-ok">✓ Feuille complète et conforme aux articles 1.1.1 et 1.1.2.</div>`;
+  $('#triosValidation').innerHTML = html;
+}
+function proposerTrios(){
+  const pool = joueursComposition();
+  const pris = new Set();
+  const prendre = pred => {
+    const j = pool.filter(x=>!pris.has(x.nom) && x.po!=='G' && (!pred || pred(x)))
+                  .sort((a,b)=>b.ov-a.ov)[0] || null;
+    if (j) pris.add(j.nom);
+    return j ? j.nom : '';
+  };
+  const sel = TRIOS_VIDES();
+  const poParCase = ['AG','C','AD'];
+  // Position naturelle d'abord (meilleur OV disponible, trio 1 vers 4)
+  for (let k=0; k<3; k++)
+    for (let i=0; i<4; i++)
+      sel.trios[i][k] = prendre(x=>x.po===poParCase[k]) || '';
+  // Case d'attaque sans titulaire naturel : un AUTRE ATTAQUANT non utilisé
+  // (jamais un défenseur); s'il n'en reste plus, la case demeure vide.
+  for (let i=0; i<4; i++)
+    for (let k=0; k<3; k++)
+      if (!sel.trios[i][k]) sel.trios[i][k] = prendre(x=>EST_ATTAQUANT(x.po)) || '';
+  // Duos : défenseurs naturels seulement; case vide plutôt qu'un attaquant.
+  for (let i=0; i<3; i++)
+    for (let k=0; k<2; k++)
+      sel.duos[i][k] = prendre(x=>x.po==='D') || '';
+  const g = pool.filter(x=>x.po==='G').sort((a,b)=>b.ov-a.ov);
+  sel.gardiens = [g[0]?.nom || '', g[1]?.nom || ''];
+
+  // Unités spéciales : à même les habillés (positions libres), sans doubler une vague
+  const habilles = new Set([...sel.trios.flat(), ...sel.duos.flat()].filter(Boolean));
+  const dispo = pool.filter(x=>habilles.has(x.nom));
+  const tri = (avant)=>[...dispo].sort((a,b)=>{
+    const pa = avant(a)?0:1, pb = avant(b)?0:1;
+    return pa-pb || b.ov-a.ov;
+  });
+  const remplirGroupe = (zone, n, prio)=>{
+    const ordre = tri(prio);
+    for (let i=0;i<2;i++)
+      for (let k=0;k<n;k++)
+        sel[zone][i][k] = ordre[i*n+k]?.nom || '';
+  };
+  remplirGroupe('an5', 5, x=>EST_ATTAQUANT(x.po));
+  remplirGroupe('an4', 4, x=>EST_ATTAQUANT(x.po));
+  remplirGroupe('in4', 4, x=>x.po==='D');
+  remplirGroupe('in3', 3, x=>x.po==='D');
+  ecritTrios(sel);
+  rendreTrios();
+}
+let dragEtat = null;
+function fixerCaseTrios(sel, zone, i, k, nom){
+  if (zone === 'g') sel.gardiens[k] = nom;
+  else sel[cleZoneTrios(zone)][i][k] = nom;
+}
+function deposerSurTuile(zone, i, k){
+  if (!dragEtat) return;
+  const pool = joueursComposition();
+  const j = pool.find(x=>x.nom===dragEtat.nom);
+  if (zone === 'g' && (!j || j.po !== 'G')){
+    flash('Seul un gardien peut occuper cette case (art. 1.1.1)'); dragEtat = null; return;
+  }
+  if (zone !== 'g' && j && j.po === 'G'){
+    flash('Un gardien reste devant le filet (art. 1.1.1)'); dragEtat = null; return;
+  }
+  const sel = litTrios();
+  const prec = valeurCaseTrios(sel, zone, i, k);
+  fixerCaseTrios(sel, zone, i, k, dragEtat.nom);
+  const o = dragEtat.origine;
+  if (o && !(o.zone===zone && o.i===i && o.k===k))
+    fixerCaseTrios(sel, o.zone, o.i, o.k, (prec && prec !== dragEtat.nom) ? prec : '');
+  ecritTrios(sel);
+  dragEtat = null;
+  rendreTrios();
+}
+function attacherTrios(){
+  const conteneur = $('#vue-trios');
+  conteneur.addEventListener('dragstart', e=>{
+    const b = e.target.closest?.('.banc-joueur');
+    if (b){ dragEtat = {nom: b.dataset.nom, origine: null};
+      try { e.dataTransfer.setData('text/plain', b.dataset.nom); } catch {}
+      return; }
+    const t = e.target.closest?.('button.tuile');
+    if (t){
+      const sel = litTrios();
+      const nom = valeurCaseTrios(sel, t.dataset.zone, +t.dataset.i, +t.dataset.k);
+      if (!nom){ e.preventDefault(); return; }
+      dragEtat = {nom, origine: {zone: t.dataset.zone, i: +t.dataset.i, k: +t.dataset.k}};
+      try { e.dataTransfer.setData('text/plain', nom); } catch {}
+    }
+  });
+  conteneur.addEventListener('dragover', e=>{
+    if (!dragEtat) return;
+    const t = e.target.closest?.('button.tuile');
+    const banc = e.target.closest?.('#bancJoueurs');
+    if (t || (banc && dragEtat.origine)){
+      e.preventDefault();
+      (t || banc).classList.add('survol');
+    }
+  });
+  conteneur.addEventListener('dragleave', e=>{
+    e.target.closest?.('button.tuile')?.classList.remove('survol');
+    if (!e.target.closest?.('#bancJoueurs')) $('#bancJoueurs').classList.remove('survol');
+  });
+  conteneur.addEventListener('drop', e=>{
+    if (!dragEtat) return;
+    const t = e.target.closest?.('button.tuile');
+    if (t){ e.preventDefault(); deposerSurTuile(t.dataset.zone, +t.dataset.i, +t.dataset.k); return; }
+    if (e.target.closest?.('#bancJoueurs') && dragEtat.origine){
+      e.preventDefault();
+      const sel = litTrios();
+      fixerCaseTrios(sel, dragEtat.origine.zone, dragEtat.origine.i, dragEtat.origine.k, '');
+      ecritTrios(sel); dragEtat = null; rendreTrios();
+    }
+  });
+  conteneur.addEventListener('dragend', ()=>{
+    dragEtat = null;
+    document.querySelectorAll('#vue-trios .survol').forEach(x=>x.classList.remove('survol'));
+  });
+  $('#btnTriosProposer').addEventListener('click', proposerTrios);
+  $('#btnTriosVider').addEventListener('click', ()=>{ ecritTrios(TRIOS_VIDES()); rendreTrios(); });
+  $('#vue-trios').addEventListener('click', e=>{
+    const t = e.target.closest('button.tuile');
+    if (t){ ouvrirChoixTuile(t.dataset.zone, +t.dataset.i, +t.dataset.k); return; }
+    const c = e.target.closest('button.choix-joueur');
+    if (c){ assignerTuile(c.dataset.nom || ''); return; }
+  });
+  $('#tuileModalX').addEventListener('click', fermerChoixTuile);
+  $('#tuileModalFond').addEventListener('click', e=>{ if (e.target === e.currentTarget) fermerChoixTuile(); });
+}
+
 /* ---------- Production ---------- */
 function rendreProduction(){
   const enCours = ETAT.scoring.patineurs.length > 0;
@@ -1976,13 +2758,13 @@ function rendreProduction(){
   const avecDonnees = lignes.filter(l=>l.p);
   $('#prodSous').textContent = enCours
     ? 'Pointage de la saison actuelle (TeamScoring.php) enrichi de XtraStats (minutes, mises en échec)'
-    : 'Aucun match Y22 pour le moment — affichage de la saison de référence Y21 (XtraStats du 21 avril 2026)';
+    : 'Aucun match disputé pour le moment — la production s\'affichera dès les premiers matchs de la saison';
   const totPts = avecDonnees.reduce((s,l)=>s+(l.p.pts||0),0);
   const totB = avecDonnees.reduce((s,l)=>s+(l.p.goals||0),0);
   const totH = avecDonnees.reduce((s,l)=>s+(l.p.hits||0),0);
   $('#prodSommaire').innerHTML = `
-    <div class="stat-carte"><div class="lbl">${enCours?'Saison en cours':'Référence Y21'}</div>
-      <div class="val">${ETAT.fiche}</div><div class="det">${enCours?'données en direct':'en attente des premiers matchs Y22'}</div></div>
+    <div class="stat-carte"><div class="lbl">Saison en cours</div>
+      <div class="val">${ETAT.fiche}</div><div class="det">${enCours?'données en direct':'en attente des premiers matchs'}</div></div>
     <div class="stat-carte"><div class="lbl">Buts</div><div class="val">${totB}</div></div>
     <div class="stat-carte"><div class="lbl">Points</div><div class="val">${totPts}</div></div>
     <div class="stat-carte orange"><div class="lbl">Mises en échec</div><div class="val">${totH}</div></div>`;
@@ -2005,7 +2787,7 @@ function rendreProduction(){
   const gardiens = lignes.filter(l=>l.j.po==='G');
   if (gardiens.length){
     html += `<tr><td colspan="13" style="text-align:left;color:var(--txt-faint);background:var(--teal-deep);
-      text-transform:uppercase;font-size:.65rem;letter-spacing:1px">Gardiens ${enCours?'(saison en cours)':'(matchs Y21)'}</td></tr>`;
+      text-transform:uppercase;font-size:.65rem;letter-spacing:1px">Gardiens (saison en cours)</td></tr>`;
     for (const {j,p} of gardiens){
       html += `<tr><td><span class="pos-badge g">G</span>${j.nom}</td>
         <td>${p?.gp??'—'}</td><td colspan="3">V ${p?.w??'—'} · MOY ${p?.avg!==null&&p?.avg!==undefined?p.avg:'—'} · %A ${p?.svpct??'—'}</td>
@@ -2108,13 +2890,7 @@ function rendreProgression(){
       </div>`;
     }
     html += `</div>`;
-    if (prod && prod._modeY21){
-      html += `<div class="jc-note">Mode vérification Y21 : totaux de la saison complète évalués tels quels. Buts gagnants, buts en avantage numérique, différentiel et production des gardiens ne figurent pas dans les données Y21 intégrées.</div>`;
-    }
-    if (prod && prod._reference && !ETAT.modeY21){
-      html += `<div class="jc-note">Repère : saison Y21 complète (aucun match Y22 encore disputé). Les barres reflètent la Y21 face aux seuils actuels.</div>`;
-    }
-    if (prod && prod._xtraSource && !ETAT.modeY21){
+    if (prod && prod._xtraSource){
       html += `<div class="jc-note">Production tirée de XtraStats${ETAT.xtraDate?` (en date du ${ETAT.xtraDate})`:''} — TeamScoring indisponible. Les buts gagnants, buts en avantage numérique et le différentiel n'y figurent pas.</div>`;
     }
     if (!prod){
@@ -2201,11 +2977,16 @@ document.querySelectorAll('nav button[data-vue]').forEach(b=>{
     document.querySelectorAll('section.vue').forEach(x=>x.classList.remove('actif'));
     b.classList.add('actif');
     document.getElementById('vue-'+b.dataset.vue).classList.add('actif');
+    if (b.dataset.vue==='composition') rendreComposition();
+    if (b.dataset.vue==='trios') rendreTrios();
     if (b.dataset.vue==='progression') rendreProgression();
     if (b.dataset.vue==='ovdetail') peuplerJoueursOvd();
     if (b.dataset.vue==='reglages') rendreMatrice();
   });
 });
+attacherFormulaireCompo();
+attacherTrios();
+rendreTrios();
 document.getElementById('progFiltres').addEventListener('click', e=>{
   const b = e.target.closest('button'); if (!b) return;
   document.querySelectorAll('#progFiltres button').forEach(x=>x.classList.remove('actif'));
@@ -2219,15 +3000,6 @@ $('#btnEffacerCache').addEventListener('click', ()=>{
   localStorage.removeItem(CLES_LS.proxy);   // relais préféré : on repart de la chaîne complète
   flash('Cache effacée — actualisation en direct…');
   actualiserTout();
-});
-$('#btnModeY21').addEventListener('click', ()=>{
-  ETAT.modeY21 = !ETAT.modeY21;
-  const b = $('#btnModeY21');
-  b.classList.toggle('actif', ETAT.modeY21);
-  b.textContent = ETAT.modeY21 ? 'Revenir à la saison en cours' : 'Vérifier avec la Y21';
-  $('#bandeauY21').style.display = ETAT.modeY21 ? '' : 'none';
-  toutRendre();
-  flash(ETAT.modeY21 ? 'Mode vérification Y21 activé' : 'Retour à la saison en cours');
 });
 $('#selMatrice').addEventListener('change', ()=>{ rendreSelectStat(); rendreMatrice(); });
 $('#selStat').addEventListener('change', rendreMatrice);
@@ -2362,11 +3134,13 @@ if (typeof window !== 'undefined'){
   window.__SJS__ = {parseRoster, parseScoring, parseXtra, determinerProfil, evaluerStat,
     normaliserNom, seuilsPour, seuilsMatrice, statutSelonSeuils, valeurStat, calculerPmRangs,
     modA, convertirJet, fourchetteRecote, modsEstime, matchsEquipe, xtraEstArchive, productionDe, ETAT,
-    extraireFiche, validerPageEquipe, CONFIG,
+    extraireFiche, validerPageEquipe, CONFIG, CLES_LS, parseFinance,
+    litCompo, ecritCompo, joueursComposition, rendreComposition,
+    litTrios, ecritTrios, validerAlignementTrios, rendreTrios, proposerTrios, TRIOS_VIDES,
     CHARTE_SALAIRE, salaireMinimum, statutResignature, cleCharte, dureeMaxCharte,
     fmtArgentCourt, parseArgent, litResignatures, ecritResignatures,
     ouvrirProlongation, fermerProlongation, calculerMasse, PLAFOND, echelonEffectif, peutProlonger,
-    MATRICES, STATS_PAR_MATRICE, NIVEAUX, SECOURS_ROSTER, SECOURS_Y21, PROFILS, STATS_DEF,
+    MATRICES, STATS_PAR_MATRICE, NIVEAUX, SECOURS_ROSTER, PROFILS, STATS_DEF,
     ovDetaille, OV_POIDS, OV_ORDRE, peuplerJoueursOvd, calculerOvd};
 }
 </script>
