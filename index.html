@@ -161,17 +161,6 @@
   .tuile.vide svg.chandail{filter:none; opacity:.8;}
   .tuile.horscompo{border-color:var(--bad);}
   .tuile.horscompo .tu-info{color:var(--bad);}
-  .banc-bloc{margin-bottom:16px;}
-  #bancJoueurs{display:flex; flex-wrap:wrap; gap:8px; padding:10px 12px; min-height:56px;}
-  #bancJoueurs.survol{outline:2px dashed var(--orange); outline-offset:-4px;}
-  .banc-joueur{width:60px; cursor:grab; display:flex; flex-direction:column; align-items:center; gap:2px;
-    user-select:none;}
-  .banc-joueur:active{cursor:grabbing;}
-  .banc-joueur svg.chandail{width:100%; height:auto; display:block; filter:drop-shadow(0 2px 2px rgba(0,0,0,.4));}
-  .banc-joueur .bj-info{font-size:.53rem; color:#8fa6a9; letter-spacing:.4px; text-align:center; line-height:1.3;}
-  .banc-joueur.utilise{opacity:.5;}
-  .tuile[draggable="true"]{cursor:grab;}
-  .tuile.survol{border-color:var(--orange); background:rgba(255,255,255,.05);}
   .choix-liste{max-height:min(58vh,420px); overflow:auto; padding:8px 12px 14px;}
   .choix-joueur{display:flex; justify-content:space-between; align-items:baseline; gap:10px; width:100%;
     text-align:left; background:none; border:none; border-bottom:1px solid rgba(255,255,255,.06);
@@ -411,10 +400,6 @@
     </div>
     <div id="triosSommaire" class="sommaire"></div>
     <div id="triosValidation"></div>
-    <div class="uni-bloc banc-bloc">
-      <div class="uni-titre">Banc des joueurs <small>glisse un chandail sur une case · reprends-le du banc pour un double quart ou une unité spéciale · redépose une tuile ici pour libérer sa case</small></div>
-      <div id="bancJoueurs"></div>
-    </div>
     <div class="trios-colonnes">
     <div>
       <div class="uni-bloc">
@@ -2516,38 +2501,16 @@ function svgChandail(nomplaque, numero, estVide){
       font-family="var(--font-data)">${numero}</text>
   </svg>`;
 }
-function usagesSpeciaux(sel){
-  const u = new Map();
-  const noter = (nom, tag)=>{ if (!nom) return; const c = normaliserNom(nom);
-    if (!u.has(c)) u.set(c, new Set()); u.get(c).add(tag); };
-  for (const g of GROUPES_SPECIAUX)
-    sel[g.zone].forEach(v=>v.forEach(n=>noter(n, g.zone.startsWith('an') ? 'AN' : 'IN')));
-  return u;
-}
-function rendreBanc(pool, sel){
-  const ordrePo = {C:0, AG:1, AD:2, D:3, G:4};
-  const usES = usagesES(sel), usSpec = usagesSpeciaux(sel);
-  const tri = [...pool].sort((a,b)=> (ordrePo[a.po]??9)-(ordrePo[b.po]??9) || b.ov-a.ov);
-  $('#bancJoueurs').innerHTML = tri.map(j=>{
-    const cle = normaliserNom(j.nom);
-    const tags = [...(usES.get(cle)||[]), ...(usSpec.get(cle)||new Set())];
-    return `<div class="banc-joueur${tags.length?' utilise':''}" draggable="true" title="${j.nom} (${j.po} · ${j.ov ?? '—'})"
-      data-nom="${j.nom.replace(/"/g,'&quot;')}">${svgChandail(nomFamille(j.nom), j.ov ?? '—', false)}
-      <span class="bj-info">${j.po}${tags.length ? ' · '+tags.join(' ') : ''}</span></div>`;
-  }).join('') || `<div class="tv-avert" style="padding:6px">Aucun joueur — complète d'abord la Composition.</div>`;
-}
 function rendreTrios(){
   const pool = joueursComposition();
   const parCle = new Map(pool.map(j=>[normaliserNom(j.nom), j]));
   const sel = litTrios();
-  rendreBanc(pool, sel);
   document.querySelectorAll('#vue-trios button.tuile').forEach(t=>{
     const zone = t.dataset.zone, i = +t.dataset.i, k = +t.dataset.k;
     const nom = valeurCaseTrios(sel, zone, i, k);
     const j = nom ? parCle.get(normaliserNom(nom)) : null;
     t.classList.toggle('vide', !nom);
     t.classList.toggle('horscompo', !!nom && !j);
-    t.setAttribute('draggable', nom ? 'true' : 'false');
     if (!nom){
       t.innerHTML = svgChandail('CHOISIR', '+', true);
       t.title = CASE_LIBELLES[zone](i,k);
@@ -2665,75 +2628,7 @@ function proposerTrios(){
   ecritTrios(sel);
   rendreTrios();
 }
-let dragEtat = null;
-function fixerCaseTrios(sel, zone, i, k, nom){
-  if (zone === 'g') sel.gardiens[k] = nom;
-  else sel[cleZoneTrios(zone)][i][k] = nom;
-}
-function deposerSurTuile(zone, i, k){
-  if (!dragEtat) return;
-  const pool = joueursComposition();
-  const j = pool.find(x=>x.nom===dragEtat.nom);
-  if (zone === 'g' && (!j || j.po !== 'G')){
-    flash('Seul un gardien peut occuper cette case (art. 1.1.1)'); dragEtat = null; return;
-  }
-  if (zone !== 'g' && j && j.po === 'G'){
-    flash('Un gardien reste devant le filet (art. 1.1.1)'); dragEtat = null; return;
-  }
-  const sel = litTrios();
-  const prec = valeurCaseTrios(sel, zone, i, k);
-  fixerCaseTrios(sel, zone, i, k, dragEtat.nom);
-  const o = dragEtat.origine;
-  if (o && !(o.zone===zone && o.i===i && o.k===k))
-    fixerCaseTrios(sel, o.zone, o.i, o.k, (prec && prec !== dragEtat.nom) ? prec : '');
-  ecritTrios(sel);
-  dragEtat = null;
-  rendreTrios();
-}
 function attacherTrios(){
-  const conteneur = $('#vue-trios');
-  conteneur.addEventListener('dragstart', e=>{
-    const b = e.target.closest?.('.banc-joueur');
-    if (b){ dragEtat = {nom: b.dataset.nom, origine: null};
-      try { e.dataTransfer.setData('text/plain', b.dataset.nom); } catch {}
-      return; }
-    const t = e.target.closest?.('button.tuile');
-    if (t){
-      const sel = litTrios();
-      const nom = valeurCaseTrios(sel, t.dataset.zone, +t.dataset.i, +t.dataset.k);
-      if (!nom){ e.preventDefault(); return; }
-      dragEtat = {nom, origine: {zone: t.dataset.zone, i: +t.dataset.i, k: +t.dataset.k}};
-      try { e.dataTransfer.setData('text/plain', nom); } catch {}
-    }
-  });
-  conteneur.addEventListener('dragover', e=>{
-    if (!dragEtat) return;
-    const t = e.target.closest?.('button.tuile');
-    const banc = e.target.closest?.('#bancJoueurs');
-    if (t || (banc && dragEtat.origine)){
-      e.preventDefault();
-      (t || banc).classList.add('survol');
-    }
-  });
-  conteneur.addEventListener('dragleave', e=>{
-    e.target.closest?.('button.tuile')?.classList.remove('survol');
-    if (!e.target.closest?.('#bancJoueurs')) $('#bancJoueurs').classList.remove('survol');
-  });
-  conteneur.addEventListener('drop', e=>{
-    if (!dragEtat) return;
-    const t = e.target.closest?.('button.tuile');
-    if (t){ e.preventDefault(); deposerSurTuile(t.dataset.zone, +t.dataset.i, +t.dataset.k); return; }
-    if (e.target.closest?.('#bancJoueurs') && dragEtat.origine){
-      e.preventDefault();
-      const sel = litTrios();
-      fixerCaseTrios(sel, dragEtat.origine.zone, dragEtat.origine.i, dragEtat.origine.k, '');
-      ecritTrios(sel); dragEtat = null; rendreTrios();
-    }
-  });
-  conteneur.addEventListener('dragend', ()=>{
-    dragEtat = null;
-    document.querySelectorAll('#vue-trios .survol').forEach(x=>x.classList.remove('survol'));
-  });
   $('#btnTriosProposer').addEventListener('click', proposerTrios);
   $('#btnTriosVider').addEventListener('click', ()=>{ ecritTrios(TRIOS_VIDES()); rendreTrios(); });
   $('#vue-trios').addEventListener('click', e=>{
