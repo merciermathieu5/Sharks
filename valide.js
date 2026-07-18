@@ -957,8 +957,27 @@ const ATTENDU = {
   const banc = doc.getElementById('bancJoueurs');
   ok(!!banc, 'Banc des joueurs présent');
   egal(banc.querySelectorAll('.banc-joueur').length, poolTrios.length, 'Le banc offre tous les joueurs de la Composition');
-  ok([...banc.querySelectorAll('.banc-joueur')].every(b=>b.getAttribute('draggable')==='true' && b.querySelector('svg.chandail')),
-     'Chaque joueur du banc : chandail glissable');
+  ok([...banc.querySelectorAll('.banc-joueur')].every(b=>b.getAttribute('draggable')==='true' && !b.querySelector('svg')),
+     'Chaque joueur du banc : libellé texte glissable, sans chandail');
+  ok([...banc.querySelectorAll('.banc-joueur')].every(b=>{
+      const j = poolTrios.find(p=>p.nom===b.dataset.nom);
+      return j && b.textContent.trim().startsWith(j.nom) && b.textContent.includes(`(${j.ov})`);
+    }), 'Banc : chaque libellé = Nom (OV)');
+  // le chandail n'apparaît qu'une fois le joueur déposé sur une case
+  console.log('— Mise en page : attaque | défense+gardiens, unités spéciales plus bas');
+  const rangees5c5 = doc.querySelectorAll('#vue-trios .trios-colonnes');
+  egal(rangees5c5.length, 2, 'Deux rangées de colonnes (5c5 en haut, spéciales en bas)');
+  const [rang5c5, rangSpec] = rangees5c5;
+  ok(rang5c5.children[0].textContent.includes('Attaque') && !rang5c5.children[0].textContent.includes('Défense'),
+     'Colonne de gauche : les trios d\'attaque');
+  ok(rang5c5.children[1].textContent.includes('Défense') && rang5c5.children[1].textContent.includes('Gardiens'),
+     'Colonne de droite : duos de défenseurs et gardiens');
+  egal(rangSpec.id, 'uniteSpeciales', 'Les unités spéciales forment la rangée du bas');
+  ok(rangSpec.children[0].textContent.includes('Avantage numérique à 5') && rangSpec.children[0].textContent.includes('Avantage numérique à 4'),
+     'AN à 5 et à 4 regroupés à gauche des spéciales');
+  ok(rangSpec.children[1].textContent.includes('Infériorité numérique à 4') && rangSpec.children[1].textContent.includes('Infériorité numérique à 3'),
+     'IN à 4 et à 3 regroupés à droite des spéciales');
+  ok(rang5c5.compareDocumentPosition(rangSpec) & 4, 'Les spéciales viennent après le 5 contre 5');
   const evt = (type)=>new W.Event(type, {bubbles:true, cancelable:true});
   const bancDe = nom => [...banc.querySelectorAll('.banc-joueur')].find(b=>b.dataset.nom===nom);
   const tuileDe = (zone,i,k)=>doc.querySelector(`#vue-trios button.tuile[data-zone="${zone}"][data-i="${i}"][data-k="${k}"]`);
@@ -968,8 +987,9 @@ const ATTENDU = {
   glisser(bancDe(at1), tuileDe('trio',0,0));
   egal(S.litTrios().trios[0][0], at1, 'Banc → T1 : joueur placé et sauvegardé');
   ok(tuileDe('trio',0,0).getAttribute('draggable')==='true', 'Tuile occupée : glissable');
-  ok(bancDe(at1).classList.contains('utilise') && bancDe(at1).textContent.includes('T1'),
-     'Banc : le joueur placé est marqué utilisé (T1)');
+  ok(bancDe(at1).classList.contains('utilise') && bancDe(at1).title.includes('T1'),
+     'Banc : le joueur placé est estompé et son infobulle indique T1');
+  ok(tuileDe('trio',0,0).querySelector('svg.chandail'), 'Le chandail apparaît sur la case après le dépôt');
 
   glisser(bancDe(at1), tuileDe('trio',3,0));
   egal(S.litTrios().trios[3][0], at1, 'Reprise du banc → T4 : double quart posé');
@@ -978,7 +998,7 @@ const ATTENDU = {
 
   glisser(bancDe(at1), tuileDe('an5',0,0));
   egal(S.litTrios().an5[0][0], at1, 'Reprise du banc → AN à 5 : joueur posé sur la vague');
-  ok(bancDe(at1).textContent.includes('AN'), 'Banc : étiquette AN ajoutée');
+  ok(bancDe(at1).title.includes('AN'), 'Banc : infobulle enrichie de l\'étiquette AN');
 
   const at2 = attq[1];
   glisser(bancDe(at2), tuileDe('trio',0,1));

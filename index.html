@@ -164,12 +164,13 @@
   .banc-bloc{margin-bottom:16px;}
   #bancJoueurs{display:flex; flex-wrap:wrap; gap:8px; padding:10px 12px; min-height:56px;}
   #bancJoueurs.survol{outline:2px dashed var(--orange); outline-offset:-4px;}
-  .banc-joueur{width:60px; cursor:grab; display:flex; flex-direction:column; align-items:center; gap:2px;
-    user-select:none;}
+  .banc-joueur{cursor:grab; user-select:none; background:var(--ink); border:1px solid var(--line);
+    padding:5px 10px; font-family:var(--font-data); font-size:.73rem; letter-spacing:.3px;
+    transition:border-color .12s;}
+  .banc-joueur b{color:var(--teal-bright); font-weight:700;}
+  .banc-joueur:hover{border-color:var(--teal-bright);}
   .banc-joueur:active{cursor:grabbing;}
-  .banc-joueur svg.chandail{width:100%; height:auto; display:block; filter:drop-shadow(0 2px 2px rgba(0,0,0,.4));}
-  .banc-joueur .bj-info{font-size:.53rem; color:#8fa6a9; letter-spacing:.4px; text-align:center; line-height:1.3;}
-  .banc-joueur.utilise{opacity:.5;}
+  .banc-joueur.utilise{opacity:.45;}
   .tuile[draggable="true"]{cursor:grab;}
   .tuile.survol{border-color:var(--orange); background:rgba(255,255,255,.05);}
   .choix-liste{max-height:min(58vh,420px); overflow:auto; padding:8px 12px 14px;}
@@ -425,6 +426,8 @@
       <div class="dfo-ligne"><div class="ur-lbl">T3</div><button type="button" class="tuile" data-zone="trio" data-i="2" data-k="0"></button><button type="button" class="tuile" data-zone="trio" data-i="2" data-k="1"></button><button type="button" class="tuile" data-zone="trio" data-i="2" data-k="2"></button></div>
       <div class="dfo-ligne"><div class="ur-lbl">T4</div><button type="button" class="tuile" data-zone="trio" data-i="3" data-k="0"></button><button type="button" class="tuile" data-zone="trio" data-i="3" data-k="1"></button><button type="button" class="tuile" data-zone="trio" data-i="3" data-k="2"></button></div>
       </div>
+    </div>
+    <div>
       <div class="uni-bloc">
       <div class="uni-titre">Défense <small>3 duos</small></div>
       <div class="dfo-ligne"><div class="ur-lbl">D1</div><button type="button" class="tuile" data-zone="duo" data-i="0" data-k="0"></button><button type="button" class="tuile" data-zone="duo" data-i="0" data-k="1"></button></div>
@@ -437,6 +440,8 @@
       <div class="dfo-ligne"><div class="ur-lbl">Subst.</div><button type="button" class="tuile" data-zone="g" data-i="0" data-k="1"></button></div>
       </div>
     </div>
+    </div>
+    <div class="trios-colonnes" id="uniteSpeciales">
     <div>
       <div class="uni-bloc">
       <div class="uni-titre">Avantage numérique à 5 <small>2 vagues de 5 — positions libres</small></div>
@@ -448,6 +453,8 @@
       <div class="dfo-ligne"><div class="ur-lbl">V1</div><button type="button" class="tuile" data-zone="an4" data-i="0" data-k="0"></button><button type="button" class="tuile" data-zone="an4" data-i="0" data-k="1"></button><button type="button" class="tuile" data-zone="an4" data-i="0" data-k="2"></button><button type="button" class="tuile" data-zone="an4" data-i="0" data-k="3"></button></div>
       <div class="dfo-ligne"><div class="ur-lbl">V2</div><button type="button" class="tuile" data-zone="an4" data-i="1" data-k="0"></button><button type="button" class="tuile" data-zone="an4" data-i="1" data-k="1"></button><button type="button" class="tuile" data-zone="an4" data-i="1" data-k="2"></button><button type="button" class="tuile" data-zone="an4" data-i="1" data-k="3"></button></div>
       </div>
+    </div>
+    <div>
       <div class="uni-bloc">
       <div class="uni-titre">Infériorité numérique à 4 <small>2 vagues de 4 — positions libres</small></div>
       <div class="dfo-ligne"><div class="ur-lbl">V1</div><button type="button" class="tuile" data-zone="in4" data-i="0" data-k="0"></button><button type="button" class="tuile" data-zone="in4" data-i="0" data-k="1"></button><button type="button" class="tuile" data-zone="in4" data-i="0" data-k="2"></button><button type="button" class="tuile" data-zone="in4" data-i="0" data-k="3"></button></div>
@@ -2531,9 +2538,9 @@ function rendreBanc(pool, sel){
   $('#bancJoueurs').innerHTML = tri.map(j=>{
     const cle = normaliserNom(j.nom);
     const tags = [...(usES.get(cle)||[]), ...(usSpec.get(cle)||new Set())];
-    return `<div class="banc-joueur${tags.length?' utilise':''}" draggable="true" title="${j.nom} (${j.po} · ${j.ov ?? '—'})"
-      data-nom="${j.nom.replace(/"/g,'&quot;')}">${svgChandail(nomFamille(j.nom), j.ov ?? '—', false)}
-      <span class="bj-info">${j.po}${tags.length ? ' · '+tags.join(' ') : ''}</span></div>`;
+    const bulle = `${j.nom} (${j.po} · ${j.ov ?? '—'})${tags.length ? ' — ' + tags.join(' ') : ''}`;
+    return `<div class="banc-joueur${tags.length?' utilise':''}" draggable="true" title="${bulle.replace(/"/g,'&quot;')}"
+      data-nom="${j.nom.replace(/"/g,'&quot;')}">${j.nom} <b>(${j.ov ?? '—'})</b></div>`;
   }).join('') || `<div class="tv-avert" style="padding:6px">Aucun joueur — complète d'abord la Composition.</div>`;
 }
 function rendreTrios(){
