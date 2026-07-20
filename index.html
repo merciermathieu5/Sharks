@@ -196,6 +196,46 @@
   .ha-titre{margin:26px 0 4px; font-size:.8rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--teal-bright);}
   .ha-note{margin:0 0 10px; font-size:.7rem; color:var(--txt-faint); max-width:70ch;}
 
+  /* ---------- Vue Charte salariale ---------- */
+  .cs-panneau{background:var(--panel); border:1px solid var(--line); padding:18px 20px; margin-bottom:18px;}
+  .cs-ligne{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end; margin-bottom:14px;}
+  .cs-ligne label{display:flex; flex-direction:column; gap:5px; font-size:.7rem; text-transform:uppercase; letter-spacing:1px; color:var(--txt-faint);}
+  .cs-ligne select{background:var(--teal-deep); border:1px solid var(--line); color:var(--txt); font-family:var(--font-data);
+    font-size:.85rem; padding:7px 10px; min-width:200px;}
+  .cs-ligne select:focus{outline:none; border-color:var(--orange);}
+  .cs-fiche{display:flex; gap:26px; flex-wrap:wrap; margin-bottom:14px; font-family:var(--font-data); font-size:.85rem;}
+  .cs-fiche .cs-champ{display:flex; flex-direction:column; gap:3px;}
+  .cs-fiche .cs-champ .lib{font-size:.64rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--txt-faint);}
+  .cs-fiche .cs-champ .val{font-size:1.05rem; color:var(--txt);}
+  .cs-verdict{display:inline-block; padding:6px 14px; font-size:.8rem; letter-spacing:1px; text-transform:uppercase; font-weight:700;}
+  .cs-verdict.charte{background:var(--teal); color:#fff;}
+  .cs-verdict.surpaye{background:var(--bad); color:#fff;}
+  .cs-verdict.aubaine{background:var(--orange); color:#fff;}
+  .cs-verdict.indef{background:transparent; border:1px solid var(--txt-faint); color:var(--txt-faint);}
+  .cs-note{font-size:.78rem; color:var(--txt-dim); margin-top:10px; line-height:1.45;}
+  .cs-tableau-cadre{overflow-x:auto;}
+  table.cs-tableau{border-collapse:collapse; width:100%; font-family:var(--font-data); font-size:.8rem;}
+  table.cs-tableau th, table.cs-tableau td{border:1px solid var(--line); padding:5px 9px; text-align:right; white-space:nowrap;}
+  table.cs-tableau th{text-align:center; font-size:.66rem; text-transform:uppercase; letter-spacing:1px;}
+  table.cs-tableau th.cs-ov, table.cs-tableau td.cs-ov{text-align:center; color:var(--txt-dim); background:var(--panel2); font-weight:700;}
+  table.cs-tableau th.g-rfa{background:#1d5c31; color:#dff5e4;}
+  table.cs-tableau th.g-ufa{background:#174b78; color:#ddecfb;}
+  table.cs-tableau th.g-ufar2{background:#6e2b68; color:#f6ddf3;}
+  table.cs-tableau th.g-sans{background:#7a3c05; color:#ffe8d1;}
+  table.cs-tableau td{color:var(--txt);}
+  table.cs-tableau td.cs-actif{background:var(--teal); color:#fff; font-weight:700; outline:2px solid var(--orange); outline-offset:-2px;}
+  table.cs-tableau tr.cs-rang-actif td{background:rgba(0,160,172,.12);}
+  table.cs-tableau tr.cs-rang-actif td.cs-actif{background:var(--teal);}
+  table.cs-apercu{border-collapse:collapse; width:100%; font-family:var(--font-data); font-size:.8rem;}
+  table.cs-apercu th, table.cs-apercu td{border-bottom:1px solid var(--line); padding:6px 10px; text-align:left; white-space:nowrap;}
+  table.cs-apercu th{font-size:.64rem; text-transform:uppercase; letter-spacing:1.2px; color:var(--txt-faint); cursor:default;}
+  table.cs-apercu td.num, table.cs-apercu th.num{text-align:right;}
+  table.cs-apercu .mini{display:inline-block; padding:2px 8px; font-size:.66rem; letter-spacing:.8px; text-transform:uppercase; font-weight:700;}
+  table.cs-apercu .mini.charte{background:var(--teal); color:#fff;}
+  table.cs-apercu .mini.surpaye{background:var(--bad); color:#fff;}
+  table.cs-apercu .mini.aubaine{background:var(--orange); color:#fff;}
+  table.cs-apercu td.dim{color:var(--txt-faint);}
+
   /* ---------- Fenêtre Prolongation de contrat ---------- */
   .modal-fond{position:fixed; inset:0; background:rgba(0,0,0,.72); display:flex; align-items:center; justify-content:center;
     z-index:100; padding:20px;}
@@ -350,6 +390,7 @@
   <button data-vue="production">Production</button>
   <button data-vue="progression">Progression</button>
   <button data-vue="ovdetail">OV détaillé</button>
+  <button data-vue="charte">Charte salariale</button>
   <button data-vue="reglages">Réglages</button>
   <div class="maj-zone">
     <button id="btnMaj">Actualiser depuis ushl.ca</button>
@@ -523,6 +564,44 @@
   </section>
 
   <!-- ================= RÉGLAGES ================= -->
+  <section class="vue" id="vue-charte">
+    <h2>Charte salariale officielle Y22</h2>
+    <div class="h2-sous">Salaires minimums selon l'OV, le statut et l'âge — cap salarial à 104 M$. Sélectionne un joueur de l'alignement pour situer son contrat sur la charte : la cellule applicable s'allume dans le tableau et le verdict s'affiche (Sur la charte, Surpayé ou Aubaine salariale).</div>
+
+    <div class="cs-panneau">
+      <div class="cs-ligne">
+        <label>Joueur de l'alignement
+          <select id="csJoueur"><option value="">— choisir un joueur —</option></select>
+        </label>
+        <label>Charte applicable
+          <select id="csStatut">
+            <option value="RFA">RFA — 6.4.1 (1 à 7 ans)</option>
+            <option value="UFA">UFA — 6.4.2 (1 à 4 ans)</option>
+            <option value="UFAR2">UFA Ronde 2 — 6.4.3 (1 à 2 ans)</option>
+            <option value="SANS">Joueur sans contrat — 6.4.4 (1 an)</option>
+          </select>
+        </label>
+        <label>Durée signée
+          <select id="csDuree"></select>
+        </label>
+      </div>
+      <div class="cs-fiche" id="csFiche"></div>
+      <div><span class="cs-verdict indef" id="csVerdict">Aucun joueur sélectionné</span></div>
+      <div class="cs-note" id="csNote">La charte applicable est proposée d'après l'âge (28 ans et moins → RFA, 29 ans et plus → UFA) et reste modifiable. N.B. : les gardiens peuvent signer à une valeur d'un échelon plus bas que leur overall, peu importe la charte utilisée. Pour les RFA, chaque année de contrat au-delà de 3 monte l'échelon de 1.</div>
+    </div>
+
+    <div class="cs-panneau">
+      <h3 class="ha-titre">Charte des salaires minimums (en milliers de dollars)</h3>
+      <div class="cs-tableau-cadre" id="csTableau"></div>
+    </div>
+
+    <div class="cs-panneau">
+      <h3 class="ha-titre">Alignement face à la charte</h3>
+      <p class="ha-note">Lecture rapide de chaque contrat au statut présumé selon l'âge, sur une durée de référence de 1 an (sans bonus d'échelon RFA). Utilise le sélecteur ci-dessus pour raffiner un cas particulier. Les gardiens sont évalués à l'échelon inférieur (OV −1).</p>
+      <div class="cs-tableau-cadre" id="csApercu"></div>
+    </div>
+  </section>
+
   <section class="vue" id="vue-reglages">
     <h2>Réglages</h2>
     <div class="h2-sous">Matrices d'attentes, sauvegarde et sources de données</div>
@@ -1832,7 +1911,7 @@ const CHARTE_SALAIRE = {
   UFAR2_34:         [  900,  900,  950, 1150, 1500, 2500, 3500, 5000, 6250,  7500,  8750, 10250, 12000, 13500],
   UFAR2_35:         [  900,  900,  900, 1000, 1100, 1750, 2250, 3250, 4250,  5000,  6000,  7250,  8750, 10000],
   SANS_34:          [  900,  900,  900,  950, 1150, 1500, 2500, 3500, 5000,  6250,  7500,  8750, 10250, 12000],
-  SANS_35:          [  900,  900,  900, 1000, 1000, 1100, 1750, 2250, 3250,  4250,  5000,  6000,  7250,  9000]
+  SANS_35:          [  900,  900,  900,  900, 1000, 1100, 1750, 2250, 3250,  4250,  5000,  6000,  7250,  8750]
 };
 
 /* Statut de re-signature déduit de l'âge (règle simple retenue) :
@@ -2973,11 +3052,191 @@ function rendreMatrice(){
   });
 }
 
+/* =====================================================================
+   VUE CHARTE SALARIALE : tableau dynamique et analyse des contrats
+   ===================================================================== */
+/* Colonnes du tableau, dans l'ordre de la charte officielle. */
+const CS_COLONNES = [
+  {cle:'RFA',      groupe:'RFA',   classe:'g-rfa',   age:'28 ans et -'},
+  {cle:'UFA_34',   groupe:'UFA',   classe:'g-ufa',   age:'34 ans et -'},
+  {cle:'UFA_35',   groupe:'UFA',   classe:'g-ufa',   age:'35 et +'},
+  {cle:'UFAR2_34', groupe:'UFAR2', classe:'g-ufar2', age:'34 ans et -'},
+  {cle:'UFAR2_35', groupe:'UFAR2', classe:'g-ufar2', age:'35 et +'},
+  {cle:'SANS_34',  groupe:'SANS',  classe:'g-sans',  age:'34 ans et -'},
+  {cle:'SANS_35',  groupe:'SANS',  classe:'g-sans',  age:'35 et +'}
+];
+function etiquetteOvCharte(i){
+  const ov = CHARTE_OV_MIN + i;
+  return ov === CHARTE_OV_MIN ? CHARTE_OV_MIN + '-' : ov === CHARTE_OV_MAX ? CHARTE_OV_MAX + '+' : String(ov);
+}
+function rangCharte(ovEff){
+  return Math.max(0, Math.min(CHARTE_OV_MAX - CHARTE_OV_MIN, ovEff - CHARTE_OV_MIN));
+}
+function fmtMilliers(v){ return v.toLocaleString('fr-CA').replace(/,/g,' ') + ' $'; }
+
+/* Verdict d'un contrat face à la charte. Retourne {code, libelle, ecart, minEff,
+   minPlein, detail} ou null si le joueur est inanalysable (backup, salaire nul).
+   - minEff : minimum de la charte à l'échelon effectif (rabais gardien OV −1
+     et bonus d'échelon RFA au-delà de 3 ans inclus);
+   - minPlein : même minimum sans le rabais gardien (échelon plein). */
+function verdictCharte(j, statut, duree){
+  if (!j || j.backup || !isFinite(j.salaire) || j.salaire <= 0) return null;
+  const minEff = salaireMinimum(j.ov, statut, j.age, duree, j.po);
+  const minPlein = salaireMinimum(j.ov, statut, j.age, duree, 'P');
+  if (minEff === null) return null;
+  const gardien = j.po === 'G';
+  if (j.salaire === minEff){
+    return {code:'charte', libelle:'Sur la charte', ecart:0, minEff, minPlein,
+            detail: gardien && minEff !== minPlein ? 'rabais gardien appliqué (échelon OV −1)' : ''};
+  }
+  if (gardien && j.salaire === minPlein){
+    return {code:'charte', libelle:'Sur la charte', ecart:0, minEff, minPlein,
+            detail:'échelon plein — le rabais gardien (OV −1) n\'a pas été utilisé'};
+  }
+  if (j.salaire > minEff){
+    return {code:'surpaye', libelle:'Surpayé', ecart:j.salaire - minEff, minEff, minPlein,
+            detail: gardien ? 'écart mesuré contre l\'échelon gardien (OV −1)' : ''};
+  }
+  return {code:'aubaine', libelle:'Aubaine salariale', ecart:minEff - j.salaire, minEff, minPlein,
+          detail: gardien ? 'écart mesuré contre l\'échelon gardien (OV −1)' : ''};
+}
+
+/* Tableau dynamique de la charte. surbrillance = {cle, rang} ou null. */
+function rendreCharteTableau(surbrillance){
+  const cadre = document.getElementById('csTableau');
+  if (!cadre) return;
+  const groupes = [
+    {classe:'g-rfa',   nom:'RFAs',                col:1, duree:'1 à 7 ans',      art:'CHARTE 6.4.1'},
+    {classe:'g-ufa',   nom:'UFAs',                col:2, duree:'1 à 4 ans',      art:'CHARTE 6.4.2'},
+    {classe:'g-ufar2', nom:'UFAs Ronde 2',        col:2, duree:'1 à 2 ans',      art:'CHARTE 6.4.3'},
+    {classe:'g-sans',  nom:'Joueurs sans contrat', col:2, duree:'1 an seulement', art:'CHARTE 6.4.4'}
+  ];
+  let h = '<table class="cs-tableau"><thead>';
+  h += '<tr><th class="cs-ov" rowspan="4">OV</th>' +
+       groupes.map(g=>`<th class="${g.classe}" colspan="${g.col}">${g.nom}</th>`).join('') + '</tr>';
+  h += '<tr>' + CS_COLONNES.map(c=>`<th class="${c.classe}">${c.age}</th>`).join('') + '</tr>';
+  h += '<tr>' + groupes.map(g=>`<th class="${g.classe}" colspan="${g.col}">${g.duree}</th>`).join('') + '</tr>';
+  h += '<tr>' + groupes.map(g=>`<th class="${g.classe}" colspan="${g.col}">${g.art}</th>`).join('') + '</tr>';
+  h += '</thead><tbody>';
+  for (let i = 0; i <= CHARTE_OV_MAX - CHARTE_OV_MIN; i++){
+    const rangActif = surbrillance && surbrillance.rang === i;
+    h += `<tr${rangActif ? ' class="cs-rang-actif"' : ''}><td class="cs-ov">${etiquetteOvCharte(i)}</td>`;
+    for (const c of CS_COLONNES){
+      const actif = rangActif && surbrillance.cle === c.cle;
+      h += `<td${actif ? ' class="cs-actif"' : ''}>${fmtMilliers(CHARTE_SALAIRE[c.cle][i])}</td>`;
+    }
+    h += '</tr>';
+  }
+  h += '</tbody></table>';
+  cadre.innerHTML = h;
+}
+
+function joueursCharte(){
+  return ETAT.roster.filter(j => !j.backup && isFinite(j.salaire) && j.salaire > 0);
+}
+function peuplerJoueursCharte(){
+  const sel = document.getElementById('csJoueur');
+  if (!sel) return;
+  const courant = sel.value;
+  const liste = joueursCharte();
+  sel.innerHTML = '<option value="">— choisir un joueur —</option>' +
+    liste.map(j => `<option value="${j.nom}">${j.nom} (${j.po} · OV ${j.ov} · ${fmtArgent(j.salaire)})</option>`).join('');
+  if (courant && liste.some(j => j.nom === courant)) sel.value = courant;
+}
+function peuplerDureeCharte(statut, valeur){
+  const sel = document.getElementById('csDuree');
+  if (!sel) return;
+  const max = dureeMaxCharte(statut);
+  const v = Math.max(1, Math.min(max, valeur || Number(sel.value) || 1));
+  sel.innerHTML = Array.from({length:max}, (_,i)=>`<option value="${i+1}">${i+1} an${i ? 's' : ''}</option>`).join('');
+  sel.value = String(v);
+}
+function chargerJoueurCharte(){
+  const nom = document.getElementById('csJoueur').value;
+  const j = ETAT.roster.find(x => x.nom === nom);
+  if (j){
+    const statut = statutResignature(j);
+    document.getElementById('csStatut').value = statut;
+    peuplerDureeCharte(statut, Math.max(1, Math.min(dureeMaxCharte(statut), j.ct || 1)));
+  }
+  calculerCharte();
+}
+function calculerCharte(){
+  const nom = document.getElementById('csJoueur').value;
+  const statut = document.getElementById('csStatut').value;
+  const duree = Number(document.getElementById('csDuree').value) || 1;
+  const j = ETAT.roster.find(x => x.nom === nom);
+  const fiche = document.getElementById('csFiche');
+  const badge = document.getElementById('csVerdict');
+  if (!j){
+    fiche.innerHTML = '';
+    badge.className = 'cs-verdict indef';
+    badge.textContent = 'Aucun joueur sélectionné';
+    rendreCharteTableau(null);
+    return;
+  }
+  const v = verdictCharte(j, statut, duree);
+  const ovEff = echelonEffectif(j.ov, statut, duree, j.po);
+  const cle = cleCharte(statut, j.age);
+  const champs = [
+    ['Position', j.po], ['Âge', j.age + ' ans'], ['OV', j.ov],
+    ['Échelon appliqué', etiquetteOvCharte(rangCharte(ovEff)) + (ovEff !== j.ov ? ' (OV ' + (ovEff > j.ov ? '+' : '') + (ovEff - j.ov) + ')' : '')],
+    ['Salaire actuel', fmtArgent(j.salaire)],
+    ['Salaire de la charte', v ? fmtArgent(v.minEff) : '—']
+  ];
+  if (v && v.code !== 'charte'){
+    champs.push(['Écart', (v.code === 'surpaye' ? '+' : '−') + fmtArgent(v.ecart)]);
+  }
+  fiche.innerHTML = champs.map(([l, x]) =>
+    `<div class="cs-champ"><span class="lib">${l}</span><span class="val">${x}</span></div>`).join('');
+  badge.className = 'cs-verdict ' + (v ? v.code : 'indef');
+  badge.textContent = v ? v.libelle + (v.detail ? ' — ' + v.detail : '') : 'Contrat inanalysable';
+  rendreCharteTableau({cle, rang: rangCharte(ovEff)});
+}
+function rendreApercuCharte(){
+  const cadre = document.getElementById('csApercu');
+  if (!cadre) return;
+  const lignes = joueursCharte().map(j => {
+    const statut = statutResignature(j);
+    const v = verdictCharte(j, statut, 1);
+    if (!v) return '';
+    const ecart = v.code === 'charte' ? '<td class="num dim">—</td>' :
+      `<td class="num">${v.code === 'surpaye' ? '+' : '−'}${fmtArgent(v.ecart)}</td>`;
+    return `<tr><td>${j.nom}</td><td>${j.po}</td><td class="num">${j.age}</td><td class="num">${j.ov}</td>` +
+      `<td>${statut}</td><td class="${j.ct > 0 ? 'num' : 'num dim'}">${j.ct > 0 ? j.ct + ' an' + (j.ct > 1 ? 's' : '') : 'échu'}</td>` +
+      `<td class="num">${fmtArgent(j.salaire)}</td><td class="num">${fmtArgent(v.minEff)}</td>` + ecart +
+      `<td><span class="mini ${v.code}">${v.libelle}</span></td></tr>`;
+  }).join('');
+  cadre.innerHTML = '<table class="cs-apercu"><thead><tr>' +
+    '<th>Joueur</th><th>PO</th><th class="num">Âge</th><th class="num">OV</th><th>Statut</th><th class="num">Contrat</th>' +
+    '<th class="num">Salaire</th><th class="num">Charte</th><th class="num">Écart</th><th>Verdict</th>' +
+    '</tr></thead><tbody>' + lignes + '</tbody></table>';
+}
+function rendreCharte(){
+  peuplerJoueursCharte();
+  peuplerDureeCharte(document.getElementById('csStatut').value);
+  calculerCharte();
+  rendreApercuCharte();
+}
+function construireCharte(){
+  const selJ = document.getElementById('csJoueur');
+  if (!selJ) return;
+  selJ.addEventListener('change', chargerJoueurCharte);
+  document.getElementById('csStatut').addEventListener('change', () => {
+    peuplerDureeCharte(document.getElementById('csStatut').value);
+    calculerCharte();
+  });
+  document.getElementById('csDuree').addEventListener('change', calculerCharte);
+  rendreCharte();
+}
+construireCharte();
+
 /* ---------- Navigation et initialisation ---------- */
 function toutRendre(){
   rendreAlignement();
   rendreProduction();
   rendreProgression();
+  rendreCharte();
 }
 document.querySelectorAll('nav button[data-vue]').forEach(b=>{
   b.addEventListener('click', ()=>{
@@ -2989,6 +3248,7 @@ document.querySelectorAll('nav button[data-vue]').forEach(b=>{
     if (b.dataset.vue==='trios') rendreTrios();
     if (b.dataset.vue==='progression') rendreProgression();
     if (b.dataset.vue==='ovdetail') peuplerJoueursOvd();
+    if (b.dataset.vue==='charte') rendreCharte();
     if (b.dataset.vue==='reglages') rendreMatrice();
   });
 });
@@ -3137,6 +3397,7 @@ function construireOvd(){
 }
 construireOvd();
 
+
 /* exposition pour le harnais de tests (jsdom) */
 if (typeof window !== 'undefined'){
   window.__SJS__ = {parseRoster, parseScoring, parseXtra, determinerProfil, evaluerStat,
@@ -3149,7 +3410,9 @@ if (typeof window !== 'undefined'){
     fmtArgentCourt, parseArgent, litResignatures, ecritResignatures,
     ouvrirProlongation, fermerProlongation, calculerMasse, PLAFOND, echelonEffectif, peutProlonger,
     MATRICES, STATS_PAR_MATRICE, NIVEAUX, SECOURS_ROSTER, PROFILS, STATS_DEF,
-    ovDetaille, OV_POIDS, OV_ORDRE, peuplerJoueursOvd, calculerOvd};
+    ovDetaille, OV_POIDS, OV_ORDRE, peuplerJoueursOvd, calculerOvd,
+    CS_COLONNES, CHARTE_OV_MIN, CHARTE_OV_MAX, verdictCharte, rendreCharte,
+    peuplerJoueursCharte, calculerCharte, rendreApercuCharte, rangCharte, etiquetteOvCharte};
 }
 </script>
 </body>

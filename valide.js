@@ -361,7 +361,7 @@ const ATTENDU = {
   egal(S.salaireMinimum(80, 'UFA', 30), 5000000, 'UFA OV80 34- = 5 000 000 $');
   egal(S.salaireMinimum(80, 'UFA', 36), 3250000, 'UFA OV80 35+ = 3 250 000 $ (tranche d\'âge)');
   egal(S.salaireMinimum(83, 'UFAR2', 32), 7500000, 'UFA Ronde 2 OV83 34- = 7 500 000 $');
-  egal(S.salaireMinimum(85, 'SANS', 37), 6000000, 'Sans contrat OV85 35+ = 6 000 000 $');
+  egal(S.salaireMinimum(85, 'SANS', 37), 6000000, 'Sans contrat OV85 35+ = 6 000 000 $ (coquille de la charte publiée corrigée : 5 000 → 6 000)');
   egal(S.salaireMinimum(70, 'RFA', 25), 700000, 'OV sous 74 → clamp au plancher (700 000 $)');
   // Statut déduit de l'âge (règle retenue : 28- = RFA, sinon UFA)
   egal(S.statutResignature({age:28}), 'RFA', '28 ans → RFA');
@@ -1019,6 +1019,105 @@ const ATTENDU = {
 
   W.localStorage.removeItem(S.CLES_LS.compo);
   W.localStorage.removeItem(S.CLES_LS.trios);
+
+  console.log('— Charte salariale officielle Y22 (transcription fidèle de la charte publiée, cap 104 M)');
+  tableauEgal(S.CHARTE_SALAIRE.RFA,
+    [700,775,825,950,2250,3750,5750,7500,8750,10500,12250,13750,15500,17500],
+    'Colonne RFA 28 ans et - (6.4.1)');
+  tableauEgal(S.CHARTE_SALAIRE.UFA_34,
+    [900,950,1150,1500,2250,3500,5000,6250,7500,8750,10250,12000,13500,15500],
+    'Colonne UFA 34 ans et - (6.4.2)');
+  tableauEgal(S.CHARTE_SALAIRE.UFA_35,
+    [900,900,1000,1100,1750,2250,3250,4250,5000,6000,7250,8750,10000,11500],
+    'Colonne UFA 35 et + (6.4.2)');
+  tableauEgal(S.CHARTE_SALAIRE.UFAR2_34,
+    [900,900,950,1150,1500,2500,3500,5000,6250,7500,8750,10250,12000,13500],
+    'Colonne UFA Ronde 2 34 ans et - (6.4.3)');
+  tableauEgal(S.CHARTE_SALAIRE.UFAR2_35,
+    [900,900,900,1000,1100,1750,2250,3250,4250,5000,6000,7250,8750,10000],
+    'Colonne UFA Ronde 2 35 et + (6.4.3)');
+  tableauEgal(S.CHARTE_SALAIRE.SANS_34,
+    [900,900,900,950,1150,1500,2500,3500,5000,6250,7500,8750,10250,12000],
+    'Colonne Sans contrat 34 ans et - (6.4.4)');
+  tableauEgal(S.CHARTE_SALAIRE.SANS_35,
+    [900,900,900,900,1000,1100,1750,2250,3250,4250,5000,6000,7250,8750],
+    'Colonne Sans contrat 35 et + (6.4.4) — OV 77 et 87+ selon la charte officielle, OV 85 à 6 000 (coquille du document corrigée)');
+
+  console.log('— Verdicts face à la charte');
+  const vEk = S.verdictCharte(S.ETAT.roster.find(j=>j.nom==='Joel ErikssonEk'), 'UFA', 1);
+  egal(vEk.code, 'surpaye', 'Joel ErikssonEk (OV 81, 29 ans, 7,5 M, UFA) → Surpayé');
+  egal(vEk.minEff, 6250000, 'Charte ErikssonEk : 6 250 000 $');
+  egal(vEk.ecart, 1250000, 'Écart ErikssonEk : +1 250 000 $');
+  const vLam = S.verdictCharte(S.ETAT.roster.find(j=>j.nom==='Brad Lambert'), 'RFA', 1);
+  egal(vLam.code, 'aubaine', 'Brad Lambert (OV 77, 23 ans, 900 k, RFA) → Aubaine salariale');
+  egal(vLam.ecart, 50000, 'Écart Lambert : −50 000 $ sous la charte (950 k)');
+  const vExact = S.verdictCharte({nom:'Témoin', po:'C', ov:80, age:26, salaire:5750000, ct:1}, 'RFA', 1);
+  egal(vExact.code, 'charte', 'Patineur au salaire exact de sa case (OV 80 RFA, 5,75 M) → Sur la charte');
+  egal(vExact.ecart, 0, 'Aucun écart pour un contrat sur la charte');
+
+  console.log('— Règle des gardiens : échelon OV −1, peu importe la charte');
+  const vPet = S.verdictCharte(S.ETAT.roster.find(j=>j.nom==='Cal Petersen'), 'UFA', 1);
+  egal(vPet.minEff, 1500000, 'Cal Petersen (G, OV 78, 32 ans) évalué à l\'échelon 77 : 1 500 000 $');
+  egal(vPet.code, 'aubaine', 'Cal Petersen à 1,25 M → Aubaine salariale');
+  const gRabais = {nom:'G témoin', po:'G', ov:80, age:30, salaire:3500000, ct:1};
+  const vRab = S.verdictCharte(gRabais, 'UFA', 1);
+  egal(vRab.code, 'charte', 'Gardien payé à l\'échelon OV −1 (3,5 M pour OV 80 UFA) → Sur la charte');
+  ok(vRab.detail.includes('rabais gardien'), 'Note du rabais gardien affichée');
+  const vPlein = S.verdictCharte({...gRabais, salaire:5000000}, 'UFA', 1);
+  egal(vPlein.code, 'charte', 'Gardien payé à l\'échelon plein (5 M pour OV 80 UFA) → Sur la charte');
+  ok(vPlein.detail.includes('échelon plein'), 'Note de l\'échelon plein affichée');
+  egal(S.verdictCharte({...gRabais, salaire:5100000}, 'UFA', 1).code, 'surpaye',
+    'Gardien au-dessus de l\'échelon plein → Surpayé');
+  egal(S.verdictCharte({...gRabais, salaire:3400000}, 'UFA', 1).code, 'aubaine',
+    'Gardien sous l\'échelon gardien → Aubaine salariale');
+  egal(S.salaireMinimum(74, 'UFA', 32, 1, 'G'), 900000,
+    'Gardien OV 74 : échelon 73 borné à la ligne 74- (900 k)');
+
+  console.log('— Bornes et bonus d\'échelon');
+  egal(S.salaireMinimum(90, 'RFA', 24, 1, 'C'), 17500000, 'OV 90 borné à la ligne 87+ (RFA : 17,5 M)');
+  egal(S.salaireMinimum(78, 'RFA', 24, 5, 'C'), 5750000, 'RFA 5 ans : échelon 78+2=80 (5,75 M)');
+  egal(S.rangCharte(74), 0, 'Rang de la ligne 74-');
+  egal(S.rangCharte(87), 13, 'Rang de la ligne 87+');
+  egal(S.etiquetteOvCharte(0), '74-', 'Étiquette de la première ligne');
+  egal(S.etiquetteOvCharte(13), '87+', 'Étiquette de la dernière ligne');
+  egal(S.verdictCharte(S.ETAT.roster.find(j=>j.nom==='Backup_C'), 'RFA', 1), null,
+    'Les joueurs de remplacement (backup) sont inanalysables');
+
+  console.log('— Vue Charte salariale (DOM)');
+  const btnCharte = doc.querySelector('nav button[data-vue="charte"]');
+  ok(!!btnCharte, 'Bouton de navigation «Charte salariale» présent');
+  ok(!!doc.getElementById('vue-charte'), 'Section vue-charte présente');
+  btnCharte.click();
+  ok(doc.getElementById('vue-charte').classList.contains('actif'), 'La vue Charte s\'active au clic');
+  egal(doc.querySelectorAll('#csTableau tbody tr').length, 14, '14 lignes d\'OV (74- à 87+) dans le tableau');
+  egal(doc.querySelectorAll('#csTableau tbody tr:first-child td').length, 8, '8 cellules par ligne (OV + 7 colonnes)');
+  const nbAnalysables = S.ETAT.roster.filter(j=>!j.backup && j.salaire>0).length;
+  egal(doc.querySelectorAll('#csApercu tbody tr').length, nbAnalysables,
+    'Aperçu de l\'alignement : ' + nbAnalysables + ' contrats analysés');
+
+  const selJoueur = doc.getElementById('csJoueur');
+  selJoueur.value = 'Joel ErikssonEk';
+  selJoueur.dispatchEvent(new W.Event('change'));
+  ok(doc.getElementById('csVerdict').classList.contains('surpaye'), 'ErikssonEk sélectionné : badge Surpayé');
+  ok(doc.getElementById('csVerdict').textContent.includes('Surpayé'), 'Libellé «Surpayé» affiché');
+  const celluleActive = doc.querySelector('#csTableau td.cs-actif');
+  ok(!!celluleActive, 'Cellule applicable mise en surbrillance dans le tableau');
+  egal(celluleActive.textContent.replace(/[\s\u00a0\u202f]/g,''), '6250$',
+    'Cellule active : 6 250 $ (UFA 34-, OV 81)');
+  egal(doc.getElementById('csStatut').value, 'UFA', 'Charte UFA proposée d\'après l\'âge (29 ans)');
+
+  doc.getElementById('csStatut').value = 'UFAR2';
+  doc.getElementById('csStatut').dispatchEvent(new W.Event('change'));
+  egal(doc.querySelectorAll('#csDuree option').length, 2, 'UFA Ronde 2 : durées limitées à 1-2 ans');
+  doc.getElementById('csStatut').value = 'SANS';
+  doc.getElementById('csStatut').dispatchEvent(new W.Event('change'));
+  egal(doc.querySelectorAll('#csDuree option').length, 1, 'Sans contrat : 1 an seulement');
+
+  selJoueur.value = 'Cal Petersen';
+  selJoueur.dispatchEvent(new W.Event('change'));
+  ok(doc.getElementById('csVerdict').classList.contains('aubaine'), 'Cal Petersen : badge Aubaine salariale');
+  ok(doc.querySelector('#csFiche').textContent.includes('77'), 'Échelon gardien (OV −1 → 77) affiché dans la fiche');
+  ok(doc.querySelectorAll('#csTableau tr.cs-rang-actif').length === 1, 'Une seule ligne d\'OV en surbrillance');
 
   console.log(`\n${total - echecs}/${total} vérifications réussies`);
   process.exit(echecs ? 1 : 0);
