@@ -93,7 +93,7 @@ const ATTENDU = {
     else ok(!/goalie/i.test(p.profil), j.nom + ' : profil de patineur');
   }
 
-  console.log('— Matrices Y17 (article 6.2.6) : consultation par overall');
+  console.log('— Matrices des profils (article 6.2.6) : consultation par overall');
   egal(Object.keys(S.MATRICES).length, 15, '15 matrices de profils');
   const nbStats = Object.values(S.MATRICES).reduce((a,m)=>a+Object.keys(m).length,0);
   egal(nbStats, 40, '40 tableaux de seuils au total');
@@ -105,6 +105,22 @@ const ATTENDU = {
   tableauEgal(S.seuilsMatrice('BACKUP','psv',78), [908,899,890,881,872,-1], 'Backup Psv OV 78');
   tableauEgal(S.seuilsMatrice('GRINDER','hits20',77), [2.55,2.35,2.15,1.95,1.75,-1], 'Grinder MEÉ/20 OV 77');
   egal(S.seuilsMatrice('ELITE','inexistante',80), null, 'Statistique inconnue → null');
+
+  /* Confrontation à la page officielle (24 juillet 2026) : la rangée «À oublier» des
+     tirs du Power Forward remonte de −1 à 3 entre les OV 86 et 90, comme celle des buts
+     et des mises en échec du même profil. */
+  tableauEgal(S.seuilsMatrice('POWERFWD','shots',86), [267,236,205,175,103,-1], 'Power Forward tirs OV 86');
+  tableauEgal(S.seuilsMatrice('POWERFWD','shots',87), [267,236,205,175,103,0],  'Power Forward tirs OV 87');
+  tableauEgal(S.seuilsMatrice('POWERFWD','shots',88), [267,236,205,175,103,1],  'Power Forward tirs OV 88');
+  tableauEgal(S.seuilsMatrice('POWERFWD','shots',89), [267,236,205,175,103,2],  'Power Forward tirs OV 89');
+  tableauEgal(S.seuilsMatrice('POWERFWD','shots',90), [267,236,205,175,103,3],  'Power Forward tirs OV 90');
+  tableauEgal(S.seuilsMatrice('POWERFWD','goals',90), [38,34,29,25,15,3], 'Power Forward buts OV 90 (même palier)');
+  tableauEgal(S.seuilsMatrice('POWERFWD','hits',90),  [301,266,231,197,116,3], 'Power Forward MEÉ OV 90 (même palier)');
+  /* Le Backup Goalie n'existe pas au-delà de l'OV 79 : les trois tableaux s'arrêtent là. */
+  tableauEgal(S.seuilsMatrice('BACKUP','mp',79), [991,743,495,372,248,-1], 'Backup minutes OV 79');
+  egal(S.seuilsMatrice('BACKUP','mp',80), null, 'Backup minutes OV 80 → hors matrice');
+  egal(S.seuilsMatrice('BACKUP','qggp',80), null, 'Backup DQ/match OV 80 → hors matrice');
+  egal(S.seuilsMatrice('BACKUP','psv',80), null, 'Backup Psv OV 80 → hors matrice');
 
   console.log('— Statuts (tableau 18) : un degré exige de DÉPASSER STRICTEMENT son seuil');
   const sE82 = S.seuilsMatrice('ELITE','pts',82); // [97,86,74,63,37,-1]
