@@ -1177,6 +1177,13 @@ const ATTENDU = {
       return k && k.ov===j.ov && k.salaire===j.salaire && k.ct===j.ct && k.po===j.po && k.age===j.age;
     }), 'OV, salaire, contrat, position et âge concordent entre les deux sources');
   egal(S.ligueNom('DALLAS'), 'Stars de Dallas', 'Nom français d\'une équipe');
+  egal(S.ligueVille('DALLAS'), 'Dallas', 'Ville d\'une équipe');
+  egal(S.ligueVille('PHILLY'), 'Philadelphie', 'Ville de Philadelphie');
+  egal(S.ligueVille('NYRANGERS'), 'New York (Rangers)', 'Les deux clubs new-yorkais restent distincts');
+  egal(S.ligueVille('ISLANDERS'), 'New York (Islanders)', 'Islanders désambiguïsés');
+  egal(S.ligueVille('XYZ'), 'XYZ', 'Code inconnu : renvoyé tel quel');
+  ok(S.LIGUE.every(e=>e.v && e.v.length>2), 'Chaque équipe porte un nom de ville');
+  egal(new Set(S.LIGUE.map(e=>e.v)).size, 32, 'Aucune ville en double dans le menu');
   egal(S.ligueNom('XYZ'), 'XYZ', 'Code inconnu : renvoyé tel quel');
   egal(S.ligueJoueurs('XYZ').length, 0, 'Code inconnu : aucune fiche');
   const f0 = S.ligueFiche(S.LIGUE[0].j[0]);
@@ -1252,6 +1259,47 @@ const ATTENDU = {
   ok(som.includes('plafond') || som.includes('Plafond'), 'Le sommaire rappelle le plafond');
   egal(S.txSommaireTexte(null), '', 'Aucun bilan : sommaire vide');
 
+  console.log('— Comparatif des cotes');
+  tableauEgal(S.TX_COTES.map(c=>c[1]),
+    ['IN','SP','ST','EN','DU','DI','SK','PA','PC','DF','OF','EX','LD'],
+    'Les 13 cotes dans l\'ordre de ushl.ca');
+  egal(S.txComparatif(null).length, 0, 'Aucun bilan : aucun comparatif');
+  egal(S.txComparatif(vide).length, 0, 'Échange vide : aucun comparatif');
+
+  const cmp1 = S.txComparatif(ech1);
+  egal(cmp1.length, 1, 'Fleury contre Dach : un seul groupe (patineurs)');
+  egal(cmp1[0].titre, 'Patineurs', 'Groupe des patineurs');
+  egal(cmp1[0].lignes.length, 16, '13 cotes + OV + âge + salaire');
+  const ligneOV = cmp1[0].lignes.find(l=>l.cle==='ov');
+  tableauEgal(ligneOV.partent, [83], 'OV du joueur cédé (Fleury 83)');
+  tableauEgal(ligneOV.arrivent, [82], 'OV du joueur acquis (Dach 82)');
+  egal(ligneOV.ecart, -1, 'Écart d\'OV : −1 pour San Jose');
+  const ligneSal = cmp1[0].lignes.find(l=>l.cle==='salaire');
+  egal(ligneSal.ecart, 8750000 - 12200000, 'Écart de salaire : −3 450 000 $');
+  const ligneAge = cmp1[0].lignes.find(l=>l.cle==='age');
+  egal(ligneAge.ecart, -5, 'Écart d\'âge : San Jose rajeunit de 5 ans');
+  ok(cmp1[0].lignes.some(l=>l.cle==='df'), 'La cote DF est comparée entre patineurs');
+
+  const ech2 = S.txCalculer({partenaire:'DALLAS', sj:['Philippe Desrosiers','Adam Fox'], part:['Kirby Dach']});
+  const cmp2 = S.txComparatif(ech2);
+  egal(cmp2.length, 2, 'Échange mixte : un groupe de patineurs, un de gardiens');
+  egal(cmp2[1].titre, 'Gardiens', 'Deuxième groupe : gardiens');
+  ok(!cmp2[1].lignes.some(l=>l.cle==='df' || l.cle==='sc'),
+    'DF et OF sont écartés du comparatif des gardiens');
+  egal(cmp2[1].lignes.find(l=>l.cle==='ov').ecart, null,
+    'Aucun gardien acquis : écart non calculable');
+  egal(cmp2[0].partent.length, 1, 'Un seul patineur cédé dans le groupe des patineurs');
+
+  const deuxUn = S.txCalculer({partenaire:'DALLAS', sj:['Adam Fox','Braden Schneider'], part:['Kirby Dach']});
+  const lOV = S.txComparatif(deuxUn)[0].lignes.find(l=>l.cle==='ov');
+  proche(lOV.moyP, 81.5, 0.001, 'Moyenne d\'OV des deux défenseurs cédés');
+  egal(lOV.moyA, 82, 'OV du seul joueur acquis');
+  proche(lOV.ecart, 0.5, 0.001, 'Écart moyen d\'OV : +0,5');
+  egal(S.txComparatif(deuxUn)[0].lignes.find(l=>l.cle==='salaire').moyP, 8750000 + 5950000,
+    'La ligne salaire additionne au lieu de moyenner');
+  egal(S.txMoyenneCote([{a:null},{a:80},{a:90}], 'a'), 85, 'Les cotes absentes sont écartées de la moyenne');
+  egal(S.txMoyenneCote([{a:null}], 'a'), null, 'Aucune valeur : moyenne nulle');
+
   console.log('— Vue Transactions (DOM)');
   const btnTx = doc.querySelector('nav button[data-vue="transactions"]');
   ok(!!btnTx, 'Bouton de navigation «Transactions» présent');
@@ -1268,6 +1316,23 @@ const ATTENDU = {
   egal(doc.querySelectorAll('#txListeSJ button.tx-j').length, ATTENDU.taille, 'Colonne San Jose peuplée');
   egal(doc.querySelectorAll('#txListePart button.tx-j').length, 19, 'Colonne Dallas peuplée');
   egal(doc.querySelectorAll('#txBilan .stat-carte').length, 2, 'Deux cartes de bilan');
+  egal(selTx.options[1].textContent, 'Anaheim', 'Le menu ne donne que le nom de la ville');
+  ok(!Array.from(selTx.options).some(o=>/\(|Ducks|Stars|Sharks/.test(o.textContent)) ||
+     Array.from(selTx.options).filter(o=>/\(/.test(o.textContent)).length === 2,
+    'Seuls les deux clubs de New York portent une précision entre parenthèses');
+  const premLigne = doc.querySelector('#txListeSJ button.tx-j');
+  ok(!!premLigne.querySelector('.cotes'), 'Les cotes sont affichées sous chaque joueur');
+  ok(premLigne.querySelector('.cotes').textContent.includes('IN'), 'Libellé IN présent dans la ligne de cotes');
+  ok(premLigne.querySelector('.cotes').textContent.includes('LD'), 'Libellé LD présent dans la ligne de cotes');
+  const ligneGardien = Array.from(doc.querySelectorAll('#txListeSJ button.tx-j'))
+    .find(b=>b.dataset.nom === 'Philippe Desrosiers');
+  ok(ligneGardien.querySelector('.cotes').textContent.includes('DF—'),
+    'Un gardien affiche un tiret pour DF');
+  doc.getElementById('txCotes').click();
+  ok(doc.getElementById('txListeSJ').classList.contains('sans-cotes'), 'Le bouton Cotes masque les cotes');
+  egal(S.litTransac().cotes, false, 'Préférence d\'affichage des cotes conservée');
+  doc.getElementById('txCotes').click();
+  ok(!doc.getElementById('txListeSJ').classList.contains('sans-cotes'), 'Deuxième clic : les cotes reviennent');
   ok(doc.querySelector('#txVerdict').textContent.includes('Aucun joueur'), 'Verdict initial : rien de sélectionné');
 
   const tuileFleury = Array.from(doc.querySelectorAll('#txListeSJ button.tx-j'))
@@ -1287,8 +1352,17 @@ const ATTENDU = {
   ok(doc.querySelector('#txVerdict .tx-verdict').classList.contains('attention') ||
      !doc.querySelector('#txVerdict .tx-verdict').classList.contains('refus'),
     'Aucun refus : les deux équipes respectent le plafond');
-  tableauEgal(S.litTransac(), {partenaire:'DALLAS', sj:['Haydn Fleury'], part:['Kirby Dach']},
+  tableauEgal(S.litTransac(), {partenaire:'DALLAS', sj:['Haydn Fleury'], part:['Kirby Dach'], cotes:true},
     'Échange conservé dans le stockage local');
+  const tabCmp = doc.querySelector('#txComparatif table.tx-tableau');
+  ok(!!tabCmp, 'Tableau comparatif rendu');
+  egal(tabCmp.querySelectorAll('thead th').length, 4, 'Un pour un : cote, cédé, acquis, écart (aucune colonne de moyenne)');
+  egal(tabCmp.querySelectorAll('tbody tr').length, 16, '16 rangées comparées');
+  ok(tabCmp.querySelector('thead').textContent.includes('Haydn Fleury'), 'Le joueur cédé est en en-tête');
+  ok(tabCmp.querySelector('thead').textContent.includes('Kirby Dach'), 'Le joueur acquis est en en-tête');
+  ok(tabCmp.querySelector('thead').textContent.includes('Écart'), 'Colonne Écart présente');
+  ok(doc.querySelectorAll('#txComparatif td.tx-ecart.gain').length > 0, 'Au moins un gain coloré');
+  ok(doc.querySelectorAll('#txComparatif td.tx-ecart.perte').length > 0, 'Au moins une perte colorée');
 
   Array.from(doc.querySelectorAll('#txListeSJ button.tx-j'))
     .find(b=>b.dataset.nom==='Haydn Fleury').click();
@@ -1297,7 +1371,8 @@ const ATTENDU = {
     'Acquisition sèche de Kirby Dach : dépassement refusé');
 
   doc.getElementById('txVider').click();
-  tableauEgal(S.litTransac(), {partenaire:'DALLAS', sj:[], part:[]}, 'Le bouton Vider remet l\'échange à zéro');
+  egal(doc.getElementById('txComparatif').innerHTML, '', 'Le comparatif disparaît avec l\'échange');
+  tableauEgal(S.litTransac(), {partenaire:'DALLAS', sj:[], part:[], cotes:true}, 'Le bouton Vider remet l\'échange à zéro');
   ok(doc.querySelector('#txVerdict').textContent.includes('Aucun joueur'), 'Verdict revenu à l\'état vide');
 
   selTx.value = 'MONTREAL';
