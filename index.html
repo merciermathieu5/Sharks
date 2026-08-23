@@ -196,45 +196,113 @@
   .ha-titre{margin:26px 0 4px; font-size:.8rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--teal-bright);}
   .ha-note{margin:0 0 10px; font-size:.7rem; color:var(--txt-faint); max-width:70ch;}
   /* ---- Constructeur de transaction ---- */
-  .tx-barre{display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:16px;}
+  .tx-barre{display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:18px;}
   .tx-barre label{font-size:.7rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--txt-faint);}
   .tx-barre select{background:var(--panel2); color:var(--txt); border:1px solid var(--line);
     padding:6px 9px; font-family:var(--font-data); font-size:.78rem; max-width:100%;}
   .tx-copie-etat{font-family:var(--font-data); font-size:.68rem; color:var(--ok);}
-  .tx-colonnes{display:grid; grid-template-columns:1fr; gap:16px;}
-  @media(min-width:860px){ .tx-colonnes{grid-template-columns:1fr 1fr;} }
-  .tx-liste{max-height:460px; overflow-y:auto;}
-  .tx-j{display:grid; grid-template-columns:22px 2.6rem 1fr auto; align-items:center; gap:8px;
-    width:100%; text-align:left; background:none; border:0; border-bottom:1px solid var(--line);
-    padding:7px 12px; cursor:pointer; color:var(--txt); font:inherit;}
-  .tx-j:last-child{border-bottom:0;}
-  .tx-j:hover{background:var(--panel2);}
-  .tx-j .coche{font-family:var(--font-data); font-size:.9rem; color:var(--txt-faint);}
-  .tx-j .po{font-family:var(--font-data); font-size:.62rem; letter-spacing:1px; color:var(--txt-faint);}
-  .tx-j .nom{font-size:.82rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .tx-j .nom em{font-style:normal; color:var(--txt-dim); font-size:.68rem;}
-  .tx-j .chiffres{font-family:var(--font-data); font-size:.68rem; color:var(--txt-dim); text-align:right; white-space:nowrap;}
-  .tx-j.pris{background:#12252a;}
-  .tx-j.pris .coche{color:var(--orange-bright);}
-  .tx-j.pris .nom{color:var(--orange-bright);}
-  .tx-j .cotes{grid-column:2 / -1; font-family:var(--font-data); font-size:.58rem; line-height:1.7;
-    color:var(--txt-faint); white-space:normal; margin-top:3px;}
-  .tx-j .cotes i{font-style:normal; color:#5f7a7e; margin-right:2px;}
-  .tx-j .cotes i:not(:first-child){margin-left:0;}
-  .tx-j.pris .cotes{color:#b98a52;}
-  .tx-liste.sans-cotes .cotes{display:none;}
+  .tx-section{margin-bottom:18px;}
+  .tx-vide{padding:14px 12px; font-size:.78rem; color:var(--txt-faint);}
+
+  /* Sélecteurs du comparateur */
+  .duel-choix{display:grid; grid-template-columns:1fr 1fr; gap:10px 12px; padding:14px 12px;
+    border-bottom:1px solid var(--line);}
+  .duel-choix label{display:block; font-family:var(--font-data); font-size:.6rem; letter-spacing:1.5px;
+    text-transform:uppercase; color:var(--txt-faint); margin-bottom:4px;}
+  .duel-choix select{width:100%; background:var(--panel2); color:var(--txt); border:1px solid var(--line);
+    padding:7px 8px; font-family:var(--font-data); font-size:.76rem;}
+  .duel-sep{grid-column:1 / -1; text-align:center; font-family:var(--font-data); font-size:.7rem;
+    letter-spacing:3px; color:var(--txt-faint); padding:2px 0;}
+  @media(min-width:820px){
+    .duel-choix{grid-template-columns:1fr 1.4fr auto 1fr 1.4fr; align-items:end;}
+    .duel-sep{grid-column:auto; padding:0 6px 8px;}
+  }
+
+  /* Fiches des deux joueurs */
+  .duel-fiches{display:grid; grid-template-columns:1fr auto 1fr; gap:10px; padding:16px 12px 4px;}
+  .duel-vs{align-self:center; font-family:var(--font-data); font-size:.7rem; letter-spacing:2px; color:var(--txt-faint);}
+  .duel-fiche{min-width:0;}
+  .duel-fiche.b{text-align:right;}
+  .duel-nom{font-size:1rem; font-weight:600; line-height:1.2; overflow-wrap:anywhere;}
+  .duel-fiche.a .duel-nom{color:var(--teal-bright);}
+  .duel-fiche.b .duel-nom{color:var(--orange-bright);}
+  .duel-ov{font-family:var(--font-data); font-size:2.1rem; line-height:1.1; margin:2px 0 4px;}
+  .duel-ov small{font-size:.7rem; color:var(--txt-faint); margin-left:6px;}
+  .duel-meta{font-family:var(--font-data); font-size:.62rem; color:var(--txt-dim); line-height:1.7;}
+  .duel-btn{margin-top:9px; background:none; border:1px solid var(--line); color:var(--txt-dim);
+    font-family:var(--font-data); font-size:.64rem; letter-spacing:.8px; padding:6px 10px; cursor:pointer;}
+  .duel-btn.ajoute:hover{border-color:var(--teal-bright); color:var(--teal-bright);}
+  .duel-btn.retire{border-color:var(--orange); color:var(--orange-bright);}
+  .duel-btn[disabled]{opacity:.4; cursor:not-allowed;}
+  .duel-note{font-size:.62rem; color:var(--txt-faint); margin-top:5px; line-height:1.5;}
+  .duel-fiche.dedans .duel-ov{color:var(--orange-bright);}
+  .duel-vide-fiche{font-size:.78rem; color:var(--txt-faint); padding:10px 0;}
+
+  /* Jauges en miroir */
+  .duel-jauges{padding:10px 12px 16px;}
+  .duel-ligne{display:grid; grid-template-columns:1fr 2rem 4.2rem 2rem 1fr; align-items:center;
+    gap:6px; padding:3px 0;}
+  @media(min-width:720px){ .duel-ligne{grid-template-columns:1fr 2.4rem 12rem 2.4rem 1fr;} }
+  .duel-cote-a{display:flex; justify-content:flex-end;}
+  .duel-jauge{width:100%; height:9px; background:var(--panel2); display:flex;}
+  .duel-jauge.a{justify-content:flex-end;}
+  .duel-jauge i{display:block; height:100%; background:#2c4046;}
+  .duel-jauge.gagne.a i{background:var(--teal-bright);}
+  .duel-jauge.gagne.b i{background:var(--orange-bright);}
+  .duel-vide{width:100%; height:9px; text-align:center; font-family:var(--font-data);
+    font-size:.6rem; color:var(--txt-faint); line-height:9px;}
+  .duel-val{font-family:var(--font-data); font-size:.74rem; color:var(--txt-dim); text-align:center;}
+  .duel-val.gagne-a{color:var(--teal-bright); font-weight:700;}
+  .duel-val.gagne-b{color:var(--orange-bright); font-weight:700;}
+  .duel-lbl{text-align:center; font-family:var(--font-data); font-size:.58rem; letter-spacing:.8px; color:var(--txt-faint);}
+  .duel-lbl b{color:var(--txt-dim); font-weight:600;}
+  .duel-lbl span{display:none;}
+  @media(min-width:720px){ .duel-lbl span{display:inline;} .duel-lbl span::before{content:' — ';} }
+  .duel-stats{border-top:1px solid var(--line); padding:10px 12px; font-family:var(--font-data);
+    font-size:.6rem; color:var(--txt-faint); line-height:1.9;}
+
+  /* Ce que chaque club met sur la table */
+  .ech-grille{display:grid; grid-template-columns:1fr; }
+  @media(min-width:760px){ .ech-grille{grid-template-columns:1fr 1fr;} }
+  .ech-cote{padding:12px; min-width:0;}
+  .ech-cote + .ech-cote{border-top:1px solid var(--line);}
+  @media(min-width:760px){ .ech-cote + .ech-cote{border-top:0; border-left:1px solid var(--line);} }
+  .ech-titre{font-family:var(--font-data); font-size:.62rem; letter-spacing:1.5px; text-transform:uppercase;
+    margin-bottom:9px;}
+  .ech-cote.sj .ech-titre{color:var(--teal-bright);}
+  .ech-cote.part .ech-titre{color:var(--orange-bright);}
+  .ech-j{position:relative; border:1px solid var(--line); border-left-width:3px; padding:8px 34px 8px 10px;
+    margin-bottom:7px; background:var(--panel2);}
+  .ech-cote.sj .ech-j{border-left-color:var(--teal-bright);}
+  .ech-cote.part .ech-j{border-left-color:var(--orange-bright);}
+  .ech-nom{font-size:.85rem; font-weight:600;}
+  .ech-det{font-family:var(--font-data); font-size:.63rem; color:var(--txt-dim); line-height:1.7;}
+  .ech-x{position:absolute; top:6px; right:6px; background:none; border:0; color:var(--txt-faint);
+    font-size:.8rem; cursor:pointer; padding:4px 6px;}
+  .ech-x:hover{color:var(--bad);}
+  .ech-total{font-family:var(--font-data); font-size:.65rem; color:var(--txt-faint);
+    border-top:1px solid var(--line); padding-top:8px;}
+
+  /* Verdict et tableau d'impact */
+  .tx-delta{font-family:var(--font-data); font-size:.72rem;}
+  .tx-delta.plus{color:var(--ok);} .tx-delta.moins{color:var(--bad);}
+  .tx-verdict{border:1px solid var(--line); border-left:3px solid var(--ok); background:var(--panel);
+    padding:12px 14px; margin-bottom:18px; font-size:.82rem;}
+  .tx-verdict.refus{border-left-color:var(--bad);}
+  .tx-verdict.attention{border-left-color:var(--warn);}
+  .tx-verdict ul{margin:8px 0 0; padding-left:20px;}
+  .tx-verdict li{margin:3px 0; font-size:.76rem; color:var(--txt-dim);}
+  .tx-verdict b{font-family:var(--font-data);}
   .tx-tableau thead th{position:static; cursor:default; text-align:center; padding:7px 6px; font-size:.6rem;}
   .tx-tableau thead th:first-child{text-align:left;}
-  .tx-tableau thead th small{display:block; font-size:.55rem; letter-spacing:.5px; color:var(--txt-faint); font-weight:400;}
-  .tx-tableau thead th.tx-part{color:var(--orange-bright);}
-  .tx-tableau thead th.tx-arr{color:var(--teal-bright);}
   .tx-tableau tbody td{text-align:center; font-size:.72rem;}
-  .tx-tableau tbody td:first-child{text-align:left; font-family:var(--font-data); font-size:.65rem;
-    letter-spacing:1px; color:var(--txt-faint); font-weight:400;}
-  .tx-tableau td.tx-moy{color:var(--txt-dim); border-left:1px solid var(--line); border-right:1px solid var(--line);}
   .tx-tableau td.tx-ecart{font-weight:600;}
+  .tx-tableau td.tx-ecart.gain{color:var(--ok);}
+  .tx-tableau td.tx-ecart.perte{color:var(--bad);}
+  .tx-tableau td.tx-ecart.tx-neutre{color:var(--txt-dim); font-weight:400;}
+  .tx-tableau td.tx-nul{color:var(--txt-faint);}
   .tx-tableau th.tx-nom, .tx-tableau td.tx-nom{position:sticky; left:0; z-index:2; text-align:left;
-    min-width:10rem; background:var(--panel); border-right:1px solid var(--line);}
+    min-width:8.5rem; background:var(--panel); border-right:1px solid var(--line);}
   .tx-tableau thead th.tx-nom{background:var(--teal-deep); z-index:3;}
   .tx-tableau td.tx-nom b{font-family:var(--font-body); font-weight:600; font-size:.8rem; color:var(--txt);}
   .tx-tableau td.tx-nom small{display:block; font-family:var(--font-data); font-size:.58rem;
@@ -242,13 +310,8 @@
   .tx-tableau tbody.tx-paire + tbody.tx-paire tr:first-child td{border-top:2px solid var(--line);}
   .tx-tableau tr.tx-r-titre td{background:var(--panel2); font-family:var(--font-data); font-size:.6rem;
     letter-spacing:1.5px; text-transform:uppercase; color:var(--txt-faint); padding:6px 8px; text-align:left;}
-  .tx-tableau tr.tx-r-sort td.tx-nom{border-left:3px solid var(--orange);}
-  .tx-tableau tr.tx-r-entre td.tx-nom{border-left:3px solid var(--teal-bright);}
-  .tx-tableau tr.tx-r-moy td.tx-nom{border-left:3px solid var(--txt-faint);}
   .tx-tableau tr.tx-r-ecart td{background:#0a1214;}
-  .tx-tableau tr.tx-r-ecart td.tx-nom{border-left:3px solid var(--line); background:#0a1214;}
-  .tx-tableau td.tx-ecart.tx-neutre{color:var(--txt-dim); font-weight:400;}
-  .tx-tableau td.tx-nul{color:var(--txt-faint);}
+  .tx-tableau tr.tx-r-ecart td.tx-nom{background:#0a1214;}
   .tx-tableau tbody tr:hover{background:none;}
   .tx-tableau td.tx-ecart.gain{color:var(--ok);}
   .tx-tableau td.tx-ecart.perte{color:var(--bad);}
@@ -587,30 +650,38 @@
   <!-- ================= TRANSACTIONS ================= -->
   <section class="vue" id="vue-transactions">
     <h2>Constructeur de transaction</h2>
-    <div class="h2-sous">Compose un échange entre San Jose et une autre équipe de la ligue, puis mesure l'effet
-    sur les deux masses salariales et sur les deux effectifs. Les 31 autres formations proviennent du fichier
+    <div class="h2-sous">Compare deux joueurs cote à cote, ajoute-les à l'échange, puis mesure l'effet sur les
+    deux masses salariales et sur les deux effectifs. Les 31 autres formations proviennent du fichier
     <span id="txDateFichier">USHL22.ros</span>.</div>
     <div class="tx-barre">
       <label for="txEquipe">Équipe partenaire</label>
       <select id="txEquipe"></select>
-      <button id="txCotes" class="btn-prolong actif">Cotes</button>
       <button id="txVider" class="btn-prolong">Vider l'échange</button>
       <button id="txCopier" class="btn-prolong">Copier le sommaire</button>
       <span id="txCopieEtat" class="tx-copie-etat"></span>
     </div>
+
+    <div class="uni-bloc tx-section">
+      <div class="uni-titre">Comparateur <small>choisis deux joueurs, puis ajoute-les à l'échange</small></div>
+      <div class="duel-choix">
+        <div><label for="txEqA">Équipe A</label><select id="txEqA"></select></div>
+        <div><label for="txJoA">Joueur A</label><select id="txJoA"></select></div>
+        <div class="duel-sep">VS</div>
+        <div><label for="txEqB">Équipe B</label><select id="txEqB"></select></div>
+        <div><label for="txJoB">Joueur B</label><select id="txJoB"></select></div>
+      </div>
+      <div id="txDuel"></div>
+    </div>
+
+    <div class="uni-bloc tx-section">
+      <div class="uni-titre">L'échange <small>ce que chaque club met sur la table</small></div>
+      <div id="txEchange" class="ech-grille"></div>
+    </div>
+
     <div id="txVerdict"></div>
     <div id="txBilan" class="sommaire"></div>
     <div id="txComparatif"></div>
-    <div class="tx-colonnes">
-      <div class="uni-bloc">
-        <div class="uni-titre"><span id="txTitreSJ">Sharks de San Jose</span> <small>clique un joueur pour l'envoyer</small></div>
-        <div class="tx-liste" id="txListeSJ"></div>
-      </div>
-      <div class="uni-bloc">
-        <div class="uni-titre"><span id="txTitrePart">—</span> <small>clique un joueur pour l'obtenir</small></div>
-        <div class="tx-liste" id="txListePart"></div>
-      </div>
-    </div>
+
     <p class="ha-note">Le seul verdict automatique porte sur le plafond de 104 M$ : un contrat à 0 an non prolongé
     n'y compte pas, exactement comme dans la vue Alignement. Les avertissements sur l'effectif rappellent qu'il faut
     12 attaquants, 6 défenseurs et 2 gardiens pour habiller 20 joueurs; ils n'ont pas valeur de règlement.
@@ -4278,10 +4349,13 @@ function ovGardien(cotes){
    contre une des 31 autres formations lues dans LIGUE (fichier .ros).
    ===================================================================== */
 const TX_ORDRE = {C:0, AG:1, AD:2, D:3, G:4};
-const TX_ETAT = {partenaire:'', sj:[], part:[], cotes:true};
+const TX_ETAT = {partenaire:'', sj:[], part:[], eqA:'SANJOSE', joA:'', eqB:'', joB:''};
 /* Les 13 cotes, dans l'ordre et avec les libellés de ushl.ca (OF = SC à l'interne). */
 const TX_COTES = [['it','IN'],['sp','SP'],['st','ST'],['en','EN'],['du','DU'],['di','DI'],['sk','SK'],
                   ['pa','PA'],['pc','PC'],['df','DF'],['sc','OF'],['ex','EX'],['ld','LD']];
+const TX_NOMS_COTES = {it:'Intensité', sp:'Vitesse', st:'Force', en:'Endurance', du:'Robustesse',
+  di:'Discipline', sk:'Coup de patin', pa:'Passes', pc:'Contrôle', df:'Jeu défensif',
+  sc:'Tir', ex:'Expérience', ld:'Leadership', ov:'Overall'};
 
 /* Convertit une fiche compacte de LIGUE en objet joueur du même format que le roster. */
 function ligueFiche(t){
@@ -4387,8 +4461,8 @@ function txAvertissements(b){
 function litTransac(){
   try { const o = JSON.parse(localStorage.getItem(CLES_LS.transac) || '{}');
         return {partenaire: o.partenaire || '', sj: o.sj || [], part: o.part || [],
-                cotes: o.cotes !== false}; }
-  catch { return {partenaire:'', sj:[], part:[], cotes:true}; }
+                eqA: o.eqA || 'SANJOSE', joA: o.joA || '', eqB: o.eqB || '', joB: o.joB || ''}; }
+  catch { return {partenaire:'', sj:[], part:[], eqA:'SANJOSE', joA:'', eqB:'', joB:''}; }
 }
 function ecritTransac(o){
   try { localStorage.setItem(CLES_LS.transac, JSON.stringify(o)); } catch(e){ /* quota */ }
@@ -4408,31 +4482,6 @@ function txArgent(n){
     return signe + String(m).replace('.', ',') + ' M';
   }
   return signe + Math.round(a/1000) + ' k';
-}
-function txCotesTexte(j){
-  return TX_COTES.map(([k,lbl]) =>
-    `<i>${lbl}</i>${(j[k]===null || j[k]===undefined) ? '—' : j[k]}`).join(' ');
-}
-function txLigneJoueur(j, pris){
-  const sal = j.ct > 0 ? txArgent(j.salaire) : '0 an';
-  const ct  = j.ct > 0 ? `${j.ct} an${j.ct>1?'s':''}` : 'échu';
-  return `<button type="button" class="tx-j${pris?' pris':''}" data-nom="${j.nom.replace(/"/g,'&quot;')}">
-    <span class="coche">${pris?'✕':'+'}</span>
-    <span class="po">${j.po}</span>
-    <span class="nom">${j.nom} <em>${j.age} ans</em></span>
-    <span class="chiffres">OV ${j.ov} · ${sal} · ${ct}</span>
-    <span class="cotes">${txCotesTexte(j)}</span>
-  </button>`;
-}
-function txRendreListe(id, joueurs, choisis){
-  const el = document.getElementById(id);
-  if (!el) return;
-  if (!joueurs.length){ el.innerHTML = '<div class="tx-vide">Choisis une équipe partenaire.</div>'; return; }
-  const pris = new Set(choisis.map(normaliserNom));
-  el.classList.toggle('sans-cotes', !TX_ETAT.cotes);
-  el.innerHTML = joueurs.slice()
-    .sort((a,b)=> (TX_ORDRE[a.po]-TX_ORDRE[b.po]) || (b.ov-a.ov) || a.nom.localeCompare(b.nom,'fr'))
-    .map(j => txLigneJoueur(j, pris.has(normaliserNom(j.nom)))).join('');
 }
 function txCarte(b){
   const dM = b.masseApres - b.masseAvant;
@@ -4504,7 +4553,7 @@ function txResume(r){
 }
 
 /* ---------- Rendu ---------- */
-/* Teinte continue du rouge (45 et moins) au vert (95 et plus), comme sur ushl.ca. */
+/* Teinte continue du rouge (45 et moins) au vert (95 et plus). */
 function txTeinte(v){
   if (v === null || v === undefined || !isFinite(v)) return '';
   const t = Math.max(0, Math.min(1, (v - 45) / 50));
@@ -4516,6 +4565,154 @@ function txNombre(v, cle){
   if (cle === 'salaire') return txArgent(v);
   const arrondi = Math.round(v * 10) / 10;
   return Number.isInteger(arrondi) ? String(arrondi) : arrondi.toFixed(1).replace('.', ',');
+}
+
+/* ===== Comparateur tête-à-tête ===== */
+/* OV avec sa décimale : formule des patineurs ou formule estimée des gardiens. */
+function txOvPrecis(j){
+  if (!j) return null;
+  const r = (j.po === 'G') ? ovGardien(j) : ovDetaille(j, j.po === 'D' ? 'D' : 'F');
+  return r ? r.valeur : null;
+}
+function txJoueurDe(code, nom){
+  if (!code || !nom) return null;
+  const source = (code === 'SANJOSE') ? txRosterSJ() : ligueJoueurs(code);
+  return source.find(j => normaliserNom(j.nom) === normaliserNom(nom)) || null;
+}
+function txTriRoster(joueurs){
+  return joueurs.slice().sort((a,b)=>
+    (TX_ORDRE[a.po]-TX_ORDRE[b.po]) || (b.ov-a.ov) || a.nom.localeCompare(b.nom,'fr'));
+}
+/* Où ce joueur irait-il dans l'échange ? */
+function txRoleJoueur(code){
+  if (code === 'SANJOSE') return 'sj';
+  if (code && code === TX_ETAT.partenaire) return 'part';
+  return null;
+}
+function txDansEchange(code, nom){
+  const role = txRoleJoueur(code);
+  return !!role && TX_ETAT[role].some(n => normaliserNom(n) === normaliserNom(nom));
+}
+function txPeuplerEquipes(id, valeur){
+  const sel = document.getElementById(id);
+  if (!sel) return;
+  sel.innerHTML = LIGUE.slice()
+    .sort((a,b)=>a.v.localeCompare(b.v,'fr'))
+    .map(e=>`<option value="${e.c}">${e.v}${e.c==='SANJOSE'?' (mon club)':''}</option>`).join('');
+  sel.value = valeur;
+}
+function txPeuplerJoueurs(id, code, valeur){
+  const sel = document.getElementById(id);
+  if (!sel) return;
+  const source = (code === 'SANJOSE') ? txRosterSJ() : ligueJoueurs(code);
+  sel.innerHTML = txTriRoster(source)
+    .map(j=>`<option value="${j.nom.replace(/"/g,'&quot;')}">${j.nom} (${j.po} · OV ${j.ov})</option>`).join('');
+  if (valeur && source.some(j=>j.nom===valeur)) sel.value = valeur;
+  else if (sel.options.length) sel.value = sel.options[0].value;
+  return sel.value;
+}
+function txBarre(v, cote, gagne, coteVs){
+  if (v === null || v === undefined)
+    return `<div class="duel-vide">—</div>`;
+  const pct = Math.max(4, Math.min(100, Math.round(v / 99 * 100)));
+  return `<div class="duel-jauge ${gagne ? 'gagne' : ''} ${coteVs}"><i style="width:${pct}%"></i></div>`;
+}
+function txFiche(j, code, cote){
+  if (!j) return `<div class="duel-fiche ${cote}"><div class="duel-vide-fiche">Aucun joueur</div></div>`;
+  const precis = txOvPrecis(j);
+  const prof = determinerProfil(j);
+  const role = txRoleJoueur(code);
+  const dedans = txDansEchange(code, j.nom);
+  let btn;
+  if (!role){
+    btn = `<button type="button" class="duel-btn" disabled>Hors de l'échange</button>
+      <div class="duel-note">Choisis ${ligueVille(code)} comme équipe partenaire pour pouvoir l'inclure.</div>`;
+  } else {
+    const cible = role === 'sj' ? 'aux joueurs cédés' : 'aux joueurs reçus';
+    btn = `<button type="button" class="duel-btn ${dedans?'retire':'ajoute'}"
+      data-role="${role}" data-nom="${j.nom.replace(/"/g,'&quot;')}">
+      ${dedans ? '\u2715 Retirer de l\'échange' : '+ Ajouter ' + cible}</button>`;
+  }
+  return `<div class="duel-fiche ${cote}${dedans?' dedans':''}">
+    <div class="duel-nom">${j.nom}</div>
+    <div class="duel-ov">${j.ov}<small>${precis===null?'':'('+precis.toFixed(2).replace('.',',')+')'}</small></div>
+    <div class="duel-meta">${ligueVille(code)} · ${j.po} · ${j.hd||'—'} · ${j.age} ans</div>
+    <div class="duel-meta">${prof.profil}</div>
+    <div class="duel-meta">${j.ct>0?txArgent(j.salaire):'sans contrat'} · ${j.ct>0?j.ct+' an'+(j.ct>1?'s':''):'0 an'}</div>
+    ${btn}</div>`;
+}
+function rendreDuel(){
+  const zone = document.getElementById('txDuel');
+  if (!zone) return;
+  const a = txJoueurDe(TX_ETAT.eqA, TX_ETAT.joA);
+  const b = txJoueurDe(TX_ETAT.eqB, TX_ETAT.joB);
+  const lignes = TX_COTES.concat([['ov','OV']]).map(([k,lbl]) => {
+    const va = a ? a[k] : null, vb = b ? b[k] : null;
+    const cmp = (va===null||va===undefined||vb===null||vb===undefined) ? 0 : va-vb;
+    return `<div class="duel-ligne">
+      <div class="duel-cote-a">${txBarre(va, k, cmp>0, 'a')}</div>
+      <div class="duel-val ${cmp>0?'gagne-a':''}">${va===null||va===undefined?'—':va}</div>
+      <div class="duel-lbl"><b>${lbl}</b><span>${TX_NOMS_COTES[k]}</span></div>
+      <div class="duel-val ${cmp<0?'gagne-b':''}">${vb===null||vb===undefined?'—':vb}</div>
+      <div class="duel-cote-b">${txBarre(vb, k, cmp<0, 'b')}</div>
+    </div>`;
+  }).join('');
+  const stats = [a,b].filter(Boolean).map(j => {
+    const p = determinerProfil(j);
+    return `<div>${j.nom} · ${p.profil} — ${p.stats.map(s=>STATS_DEF[s] ? STATS_DEF[s].nom : s).join(', ')}</div>`;
+  }).join('');
+  zone.innerHTML = `<div class="duel-fiches">${txFiche(a, TX_ETAT.eqA, 'a')}
+    <div class="duel-vs">VS</div>${txFiche(b, TX_ETAT.eqB, 'b')}</div>
+    <div class="duel-jauges">${lignes}</div>
+    <div class="duel-stats">${stats}</div>`;
+}
+
+/* ===== Ce qui est mis de chaque côté ===== */
+function txCarteEchange(j, role){
+  return `<div class="ech-j">
+    <button type="button" class="ech-x" data-role="${role}" data-nom="${j.nom.replace(/"/g,'&quot;')}"
+      aria-label="Retirer ${j.nom}">\u2715</button>
+    <div class="ech-nom">${j.nom}</div>
+    <div class="ech-det">${j.po} · OV ${j.ov} · ${j.age} ans</div>
+    <div class="ech-det">${j.ct>0?txArgent(j.salaire):'sans contrat'} · ${j.ct} an${j.ct>1?'s':''}</div>
+  </div>`;
+}
+function rendreEchange(r){
+  const el = document.getElementById('txEchange');
+  if (!el) return;
+  if (!r){ el.innerHTML = '<div class="tx-vide">Choisis une équipe partenaire pour commencer.</div>'; return; }
+  const cote = (titre, joueurs, role) => {
+    const total = joueurs.reduce((s,j)=>s+(j.ct>0?j.salaire:0),0);
+    return `<div class="ech-cote ${role}">
+      <div class="ech-titre">${titre} cède</div>
+      <div class="ech-liste">${joueurs.length ? joueurs.map(j=>txCarteEchange(j, role)).join('')
+        : '<div class="tx-vide">Aucun joueur pour l\'instant.</div>'}</div>
+      <div class="ech-total">${joueurs.length} joueur${joueurs.length>1?'s':''} · ${total ? txArgent(total)+' de masse' : 'aucune masse'}</div>
+    </div>`;
+  };
+  el.innerHTML = cote(ligueVille('SANJOSE'), r.sortSJ, 'sj')
+    + cote(ligueVille(r.part.code), r.sortPart, 'part');
+}
+
+/* ===== Impact ===== */
+function txCarte(b){
+  const dM = b.masseApres - b.masseAvant;
+  const dN = b.nApres - b.nAvant;
+  const dOV = (b.ovApres!==null && b.ovAvant!==null) ? b.ovApres - b.ovAvant : null;
+  const signe = v => (v>0?'+':'') + v;
+  const cls = v => v>0 ? 'plus' : (v<0 ? 'moins' : '');
+  return `<div class="stat-carte ${b.depasse?'alerte':''}">
+    <div class="lbl">${b.nom}</div>
+    <div class="val">${fmtArgent(b.masseApres)}</div>
+    <div class="det">masse ${dM===0?'inchangée':fmtArgent(b.masseAvant)+' → '+fmtArgent(b.masseApres)}
+      <span class="tx-delta ${cls(-dM)}">${dM===0?'':'('+signe(Math.round(dM/1000))+' k$)'}</span></div>
+    <div class="det">${b.depasse ? 'dépassement de '+fmtArgent(b.masseApres-PLAFOND) : 'marge '+fmtArgent(b.margeApres)}</div>
+    <div class="det">${b.nApres} joueurs <span class="tx-delta ${cls(dN)}">${dN===0?'':'('+signe(dN)+')'}</span>
+      · ${b.effectif.C}C ${b.effectif.AG}AG ${b.effectif.AD}AD ${b.effectif.D}D ${b.effectif.G}G</div>
+    <div class="det">OV moyen ${b.ovApres===null?'—':b.ovApres.toFixed(1).replace('.',',')}
+      <span class="tx-delta ${cls(dOV)}">${(dOV===null||Math.abs(dOV)<0.05)?'':'('+(dOV>0?'+':'')+dOV.toFixed(1).replace('.',',')+')'}</span>
+      · âge moyen ${b.ageApres===null?'—':b.ageApres.toFixed(1).replace('.',',')}</div>
+  </div>`;
 }
 function txCellule(j, cle, teinte){
   const v = j[cle];
@@ -4533,98 +4730,29 @@ function txCelluleEcart(v, cle){
   return `<td class="tx-ecart ${cls}">${txt}</td>`;
 }
 function txEnteteComp(libelle){
-  return `<tr><th class="tx-nom">${libelle || 'Joueur'}</th><th>PO</th><th>HD</th>`
+  return `<tr><th class="tx-nom">${libelle || 'Équipe'}</th>`
     + TX_COLS_COMP.map(([k,lbl]) => `<th>${lbl}</th>`).join('') + '</tr>';
 }
-function txRangeeJoueur(j, sens, villeA, villeB){
-  return `<tr class="tx-r-${sens}">
-    <td class="tx-nom"><b>${j.nom}</b><small>${villeA} \u2192 ${villeB}</small></td>
-    <td>${j.po}</td><td>${j.hd || '—'}</td>`
-    + TX_COLS_COMP.map(([k]) => txCellule(j, k, true)).join('') + '</tr>';
-}
-function txRangeeProfil(libelle, detail, profil, cls){
-  return `<tr class="${cls}">
-    <td class="tx-nom"><b>${libelle}</b>${detail ? `<small>${detail}</small>` : ''}</td>
-    <td></td><td></td>`
-    + TX_COLS_COMP.map(([k]) => txCellule(profil, k, cls === 'tx-r-moy')).join('') + '</tr>';
+function txRangeeProfil(libelle, detail, profil, teinte){
+  return `<tr class="tx-r-moy"><td class="tx-nom"><b>${libelle}</b>${detail?`<small>${detail}</small>`:''}</td>`
+    + TX_COLS_COMP.map(([k]) => txCellule(profil, k, teinte)).join('') + '</tr>';
 }
 function txRangeeEcart(libelle, ecart){
-  return `<tr class="tx-r-ecart"><td class="tx-nom"><b>${libelle}</b></td><td></td><td></td>`
+  return `<tr class="tx-r-ecart"><td class="tx-nom"><b>${libelle}</b></td>`
     + TX_COLS_COMP.map(([k]) => txCelluleEcart(ecart[k], k)).join('') + '</tr>';
 }
-function rendreComparatif(r){
-  const el = document.getElementById('txComparatif');
-  if (!el) return;
-  const c = txComparatif(r);
-  if (!c){ el.innerHTML = ''; return; }
-  const vSJ = ligueVille('SANJOSE'), vP = ligueVille(r.part.code);
-  const corps = c.paires.map(p => {
-    let t = `<tbody class="tx-paire"><tr class="tx-r-titre"><td class="tx-nom" colspan="${3 + TX_COLS_COMP.length}">Duel ${p.rang}</td></tr>`;
-    if (p.cede)   t += txRangeeJoueur(p.cede,   'sort', vSJ, vP);
-    if (p.acquis) t += txRangeeJoueur(p.acquis, 'entre', vP, vSJ);
-    if (p.ecart)  t += txRangeeEcart('Écart', p.ecart);
-    return t + '</tbody>';
-  }).join('');
-  const totaux = c.multiple ? `<tbody class="tx-paire tx-totaux">
-      <tr class="tx-r-titre"><td class="tx-nom" colspan="${3 + TX_COLS_COMP.length}">Moyennes du bloc</td></tr>`
-      + txRangeeProfil('Cédés', `${vSJ} \u2192 ${vP}`, c.moyCede, 'tx-r-moy')
-      + txRangeeProfil('Acquis', `${vP} \u2192 ${vSJ}`, c.moyAcquis, 'tx-r-moy')
-      + (c.ecart ? txRangeeEcart('Écart', c.ecart) : '')
-      + '</tbody>' : '';
-  const comp = `<div class="uni-bloc"><div class="uni-titre">Comparateur des cotes
-      <small>1<sup>er</sup> cédé contre 1<sup>er</sup> acquis, 2<sup>e</sup> contre 2<sup>e</sup> — l'écart est celui de San Jose, l'âge et le salaire restent neutres</small></div>
-      <div class="table-wrap"><table class="tx-tableau"><thead>${txEnteteComp()}</thead>${corps}${totaux}</table></div></div>`;
-
-  const resume = txResume(r).map(e => `<tbody class="tx-paire">
-      <tr class="tx-r-titre"><td class="tx-nom" colspan="${3 + TX_COLS_COMP.length}">${e.nom}</td></tr>`
-      + txRangeeProfil('Avant', `${e.nAvant} joueurs`, e.avant, 'tx-r-moy')
-      + txRangeeProfil('Après', `${e.nApres} joueurs`, e.apres, 'tx-r-moy')
-      + txRangeeEcart('Écart', e.ecart)
-      + '</tbody>').join('');
-  const res = `<div class="uni-bloc"><div class="uni-titre">Résumé des changements par équipe
-      <small>profil moyen de l'effectif avant et après l'échange — la colonne SALAIRE donne la masse qui compte au plafond</small></div>
-      <div class="table-wrap"><table class="tx-tableau"><thead>${txEnteteComp('Équipe')}</thead>${resume}</table></div></div>`;
-  el.innerHTML = comp + res;
-}
-
-function txSommaireTexte(r){
-  if (!r) return '';
-  const l = j => `${j.nom} (${j.po}, OV ${j.ov}, ${j.age} ans, ${txArgent(j.salaire)}, ${j.ct} an${j.ct>1?'s':''})`;
-  const bloc = (b, sort) => `${b.nom}\n  cède : ${sort.length ? sort.map(l).join('\n         ') : 'rien'}\n`
-    + `  masse ${fmtArgent(b.masseAvant)} → ${fmtArgent(b.masseApres)} (marge ${fmtArgent(b.margeApres)})\n`
-    + `  effectif ${b.nApres} joueurs · ${b.effectif.C}C ${b.effectif.AG}AG ${b.effectif.AD}AD ${b.effectif.D}D ${b.effectif.G}G`;
-  return `PROPOSITION DE TRANSACTION — USHL Y22\n\n`
-    + bloc(r.sj, r.sortSJ) + '\n\n' + bloc(r.part, r.sortPart)
-    + `\n\nPlafond ${fmtArgent(PLAFOND)}. `
-    + (r.sj.depasse || r.part.depasse ? 'ATTENTION : dépassement du plafond.' : 'Les deux équipes respectent le plafond.');
-}
-function rendreTransactions(){
-  const sel = document.getElementById('txEquipe');
-  if (!sel) return;
-  if (!sel.options.length){
-    sel.innerHTML = '<option value="">— choisir —</option>' + LIGUE
-      .filter(e=>e.c!=='SANJOSE')
-      .slice().sort((a,b)=>a.v.localeCompare(b.v,'fr'))
-      .map(e=>`<option value="${e.c}">${e.v}</option>`).join('');
-  }
-  sel.value = TX_ETAT.partenaire;
-  const r = txCalculer(TX_ETAT);
-  document.getElementById('txTitrePart').textContent = TX_ETAT.partenaire ? ligueNom(TX_ETAT.partenaire) : '—';
-  txRendreListe('txListeSJ',  TX_ETAT.partenaire ? txRosterSJ() : [], TX_ETAT.sj);
-  txRendreListe('txListePart', TX_ETAT.partenaire ? ligueJoueurs(TX_ETAT.partenaire) : [], TX_ETAT.part);
+function rendreImpact(r){
   const elB = document.getElementById('txBilan');
   const elV = document.getElementById('txVerdict');
+  const elC = document.getElementById('txComparatif');
   if (!r){
-    elB.innerHTML = ''; elV.innerHTML = '';
-    const elC = document.getElementById('txComparatif');
-    if (elC) elC.innerHTML = '';
+    if (elB) elB.innerHTML = ''; if (elV) elV.innerHTML = ''; if (elC) elC.innerHTML = '';
     return;
   }
   elB.innerHTML = txCarte(r.sj) + txCarte(r.part);
-  rendreComparatif(r);
   const avert = [...txAvertissements(r.sj), ...txAvertissements(r.part)];
   let cls = 'tx-verdict', titre;
-  if (r.vide){ titre = 'Aucun joueur sélectionné. Clique un nom dans une des deux colonnes.'; cls += ' attention'; }
+  if (r.vide){ titre = 'Aucun joueur dans l\'échange. Compare deux joueurs, puis ajoute-les.'; cls += ' attention'; }
   else if (r.sj.depasse || r.part.depasse){
     cls += ' refus';
     const fautifs = [r.sj, r.part].filter(b=>b.depasse).map(b=>b.nom).join(' et ');
@@ -4636,6 +4764,59 @@ function rendreTransactions(){
   elV.innerHTML = `<div class="${cls}"><b>${titre}</b>`
     + (avert.length ? '<ul>' + avert.map(a=>`<li>${a}</li>`).join('') + '</ul>' : '')
     + '</div>';
+
+  const c = txComparatif(r);
+  const vSJ = ligueVille('SANJOSE'), vP = ligueVille(r.part.code);
+  const blocEchange = c ? `<tbody class="tx-paire">
+      <tr class="tx-r-titre"><td class="tx-nom" colspan="${1 + TX_COLS_COMP.length}">Ce qui change de mains</td></tr>`
+      + txRangeeProfil('Cédés', `${vSJ} \u2192 ${vP}`, c.moyCede, true)
+      + txRangeeProfil('Acquis', `${vP} \u2192 ${vSJ}`, c.moyAcquis, true)
+      + (c.ecart ? txRangeeEcart('Écart', c.ecart) : '') + '</tbody>' : '';
+  const blocsEquipes = txResume(r).map(e => `<tbody class="tx-paire">
+      <tr class="tx-r-titre"><td class="tx-nom" colspan="${1 + TX_COLS_COMP.length}">${e.nom}</td></tr>`
+      + txRangeeProfil('Avant', `${e.nAvant} joueurs`, e.avant, true)
+      + txRangeeProfil('Après', `${e.nApres} joueurs`, e.apres, true)
+      + txRangeeEcart('Écart', e.ecart) + '</tbody>').join('');
+  elC.innerHTML = `<div class="uni-bloc"><div class="uni-titre">Impact sur les cotes
+      <small>moyennes des cotes, somme des salaires pour l'échange, masse au plafond pour les équipes</small></div>
+      <div class="table-wrap"><table class="tx-tableau">
+      <thead>${txEnteteComp()}</thead>${blocEchange}${blocsEquipes}</table></div></div>`;
+}
+
+/* ===== Sommaire copiable ===== */
+function txSommaireTexte(r){
+  if (!r) return '';
+  const l = j => `${j.nom} (${j.po}, OV ${j.ov}, ${j.age} ans, ${txArgent(j.salaire)}, ${j.ct} an${j.ct>1?'s':''})`;
+  const bloc = (b, sort) => `${b.nom}\n  cède : ${sort.length ? sort.map(l).join('\n         ') : 'rien'}\n`
+    + `  masse ${fmtArgent(b.masseAvant)} → ${fmtArgent(b.masseApres)} (marge ${fmtArgent(b.margeApres)})\n`
+    + `  effectif ${b.nApres} joueurs · ${b.effectif.C}C ${b.effectif.AG}AG ${b.effectif.AD}AD ${b.effectif.D}D ${b.effectif.G}G`;
+  return `PROPOSITION DE TRANSACTION — USHL Y22\n\n`
+    + bloc(r.sj, r.sortSJ) + '\n\n' + bloc(r.part, r.sortPart)
+    + `\n\nPlafond ${fmtArgent(PLAFOND)}. `
+    + (r.sj.depasse || r.part.depasse ? 'ATTENTION : dépassement du plafond.' : 'Les deux équipes respectent le plafond.');
+}
+
+function rendreTransactions(){
+  const sel = document.getElementById('txEquipe');
+  if (!sel) return;
+  if (!sel.options.length){
+    sel.innerHTML = '<option value="">— choisir —</option>' + LIGUE
+      .filter(e=>e.c!=='SANJOSE')
+      .slice().sort((a,b)=>a.v.localeCompare(b.v,'fr'))
+      .map(e=>`<option value="${e.c}">${e.v}</option>`).join('');
+  }
+  sel.value = TX_ETAT.partenaire;
+  const r = txCalculer(TX_ETAT);
+  /* Sélecteurs du comparateur : l'équipe A reste San Jose, l'équipe B suit le partenaire. */
+  if (!TX_ETAT.eqA) TX_ETAT.eqA = 'SANJOSE';
+  if (!TX_ETAT.eqB) TX_ETAT.eqB = TX_ETAT.partenaire || 'SANJOSE';
+  txPeuplerEquipes('txEqA', TX_ETAT.eqA);
+  txPeuplerEquipes('txEqB', TX_ETAT.eqB);
+  TX_ETAT.joA = txPeuplerJoueurs('txJoA', TX_ETAT.eqA, TX_ETAT.joA);
+  TX_ETAT.joB = txPeuplerJoueurs('txJoB', TX_ETAT.eqB, TX_ETAT.joB);
+  rendreDuel();
+  rendreEchange(r);
+  rendreImpact(r);
 }
 function txBasculer(cote, nom){
   const liste = TX_ETAT[cote];
@@ -4648,26 +4829,32 @@ function attacherTransactions(){
   const sel = document.getElementById('txEquipe');
   if (!sel) return;
   Object.assign(TX_ETAT, litTransac());
-  const bt0 = document.getElementById('txCotes');
-  if (bt0) bt0.classList.toggle('actif', TX_ETAT.cotes);
   sel.addEventListener('change', ()=>{
     TX_ETAT.partenaire = sel.value; TX_ETAT.part = [];
+    TX_ETAT.eqB = sel.value || 'SANJOSE'; TX_ETAT.joB = '';
     ecritTransac(TX_ETAT); rendreTransactions();
   });
-  const brancher = (id, cote) => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('click', e=>{
-      const b = e.target.closest('button.tx-j');
-      if (b) txBasculer(cote, b.dataset.nom);
+  const lier = (idEq, idJo, cleEq, cleJo) => {
+    const e = document.getElementById(idEq), j = document.getElementById(idJo);
+    if (e) e.addEventListener('change', ()=>{
+      TX_ETAT[cleEq] = e.value; TX_ETAT[cleJo] = '';
+      ecritTransac(TX_ETAT); rendreTransactions();
+    });
+    if (j) j.addEventListener('change', ()=>{
+      TX_ETAT[cleJo] = j.value; ecritTransac(TX_ETAT); rendreDuel();
     });
   };
-  brancher('txListeSJ', 'sj');
-  brancher('txListePart', 'part');
-  const bt = document.getElementById('txCotes');
-  if (bt) bt.addEventListener('click', ()=>{
-    TX_ETAT.cotes = !TX_ETAT.cotes;
-    bt.classList.toggle('actif', TX_ETAT.cotes);
-    ecritTransac(TX_ETAT); rendreTransactions();
+  lier('txEqA','txJoA','eqA','joA');
+  lier('txEqB','txJoB','eqB','joB');
+  const duel = document.getElementById('txDuel');
+  if (duel) duel.addEventListener('click', e=>{
+    const b = e.target.closest('button.duel-btn[data-role]');
+    if (b) txBasculer(b.dataset.role, b.dataset.nom);
+  });
+  const ech = document.getElementById('txEchange');
+  if (ech) ech.addEventListener('click', e=>{
+    const b = e.target.closest('button.ech-x[data-role]');
+    if (b) txBasculer(b.dataset.role, b.dataset.nom);
   });
   const bv = document.getElementById('txVider');
   if (bv) bv.addEventListener('click', ()=>{
@@ -4700,8 +4887,9 @@ if (typeof window !== 'undefined'){
     litCompo, ecritCompo, joueursComposition, rendreComposition,
     litTrios, ecritTrios, validerAlignementTrios, rendreTrios, proposerTrios, TRIOS_VIDES,
     LIGUE, LIGUE_COLS, ligueFiche, ligueJoueurs, ligueNom, ligueVille, ovGardien, OV_ORDRE_G,
-    TX_COTES, TX_COLS_COMP, txComparatif, txMoyenneCote, txProfil, txEcartProfil,
-    txResume, txTeinte, txNombre, rendreComparatif,
+    TX_COTES, TX_COLS_COMP, TX_NOMS_COTES, txComparatif, txMoyenneCote, txProfil, txEcartProfil,
+    txResume, txTeinte, txNombre, txOvPrecis, txJoueurDe, txRoleJoueur, txDansEchange,
+    rendreDuel, rendreEchange, rendreImpact,
     TX_ETAT, txMasse, txEffectif, txCalculer, txAvertissements, txSommaireTexte,
     txRosterSJ, txAppliquer, rendreTransactions, litTransac, ecritTransac, txBasculer,
     CHARTE_SALAIRE, salaireMinimum, statutResignature, cleCharte, dureeMaxCharte,
