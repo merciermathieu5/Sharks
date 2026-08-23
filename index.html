@@ -195,6 +195,38 @@
   .stat-carte.complet{border-left:3px solid #3f9d4f;}
   .ha-titre{margin:26px 0 4px; font-size:.8rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--teal-bright);}
   .ha-note{margin:0 0 10px; font-size:.7rem; color:var(--txt-faint); max-width:70ch;}
+  /* ---- Constructeur de transaction ---- */
+  .tx-barre{display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:16px;}
+  .tx-barre label{font-size:.7rem; text-transform:uppercase; letter-spacing:1.5px; color:var(--txt-faint);}
+  .tx-barre select{background:var(--panel2); color:var(--txt); border:1px solid var(--line);
+    padding:6px 9px; font-family:var(--font-data); font-size:.78rem; max-width:100%;}
+  .tx-copie-etat{font-family:var(--font-data); font-size:.68rem; color:var(--ok);}
+  .tx-colonnes{display:grid; grid-template-columns:1fr; gap:16px;}
+  @media(min-width:860px){ .tx-colonnes{grid-template-columns:1fr 1fr;} }
+  .tx-liste{max-height:460px; overflow-y:auto;}
+  .tx-j{display:grid; grid-template-columns:22px 2.6rem 1fr auto; align-items:center; gap:8px;
+    width:100%; text-align:left; background:none; border:0; border-bottom:1px solid var(--line);
+    padding:7px 12px; cursor:pointer; color:var(--txt); font:inherit;}
+  .tx-j:last-child{border-bottom:0;}
+  .tx-j:hover{background:var(--panel2);}
+  .tx-j .coche{font-family:var(--font-data); font-size:.9rem; color:var(--txt-faint);}
+  .tx-j .po{font-family:var(--font-data); font-size:.62rem; letter-spacing:1px; color:var(--txt-faint);}
+  .tx-j .nom{font-size:.82rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .tx-j .nom em{font-style:normal; color:var(--txt-dim); font-size:.68rem;}
+  .tx-j .chiffres{font-family:var(--font-data); font-size:.68rem; color:var(--txt-dim); text-align:right; white-space:nowrap;}
+  .tx-j.pris{background:#12252a;}
+  .tx-j.pris .coche{color:var(--orange-bright);}
+  .tx-j.pris .nom{color:var(--orange-bright);}
+  .tx-vide{padding:16px 12px; font-size:.78rem; color:var(--txt-faint);}
+  .tx-verdict{border:1px solid var(--line); border-left:3px solid var(--ok); background:var(--panel);
+    padding:12px 14px; margin-bottom:18px; font-size:.82rem;}
+  .tx-verdict.refus{border-left-color:var(--bad);}
+  .tx-verdict.attention{border-left-color:var(--warn);}
+  .tx-verdict ul{margin:8px 0 0; padding-left:20px;}
+  .tx-verdict li{margin:3px 0; font-size:.76rem; color:var(--txt-dim);}
+  .tx-verdict b{font-family:var(--font-data);}
+  .tx-delta{font-family:var(--font-data); font-size:.72rem;}
+  .tx-delta.plus{color:var(--ok);} .tx-delta.moins{color:var(--bad);}
 
   /* ---------- Vue Charte salariale ---------- */
   .cs-panneau{background:var(--panel); border:1px solid var(--line); padding:18px 20px; margin-bottom:18px;}
@@ -387,6 +419,7 @@
   <button class="actif" data-vue="alignement">Alignement</button>
   <button data-vue="composition">Composition</button>
   <button data-vue="trios">Trios</button>
+  <button data-vue="transactions">Transactions</button>
   <button data-vue="production">Production</button>
   <button data-vue="progression">Progression</button>
   <button data-vue="ovdetail">OV détaillé</button>
@@ -514,6 +547,38 @@
         <div class="choix-liste" id="tuileModalListe"></div>
       </div>
     </div>
+  </section>
+
+  <!-- ================= TRANSACTIONS ================= -->
+  <section class="vue" id="vue-transactions">
+    <h2>Constructeur de transaction</h2>
+    <div class="h2-sous">Compose un échange entre San Jose et une autre équipe de la ligue, puis mesure l'effet
+    sur les deux masses salariales et sur les deux effectifs. Les 31 autres formations proviennent du fichier
+    <span id="txDateFichier">USHL22.ros</span>.</div>
+    <div class="tx-barre">
+      <label for="txEquipe">Équipe partenaire</label>
+      <select id="txEquipe"></select>
+      <button id="txVider" class="btn-prolong">Vider l'échange</button>
+      <button id="txCopier" class="btn-prolong">Copier le sommaire</button>
+      <span id="txCopieEtat" class="tx-copie-etat"></span>
+    </div>
+    <div id="txVerdict"></div>
+    <div id="txBilan" class="sommaire"></div>
+    <div class="tx-colonnes">
+      <div class="uni-bloc">
+        <div class="uni-titre"><span id="txTitreSJ">Sharks de San Jose</span> <small>clique un joueur pour l'envoyer</small></div>
+        <div class="tx-liste" id="txListeSJ"></div>
+      </div>
+      <div class="uni-bloc">
+        <div class="uni-titre"><span id="txTitrePart">—</span> <small>clique un joueur pour l'obtenir</small></div>
+        <div class="tx-liste" id="txListePart"></div>
+      </div>
+    </div>
+    <p class="ha-note">Le seul verdict automatique porte sur le plafond de 104 M$ : un contrat à 0 an non prolongé
+    n'y compte pas, exactement comme dans la vue Alignement. Les avertissements sur l'effectif rappellent qu'il faut
+    12 attaquants, 6 défenseurs et 2 gardiens pour habiller 20 joueurs; ils n'ont pas valeur de règlement.
+    Les autres conditions de la ligue (approbation, gel des transactions, choix au repêchage) restent à vérifier
+    à la main.</p>
   </section>
 
   <section class="vue" id="vue-production">
@@ -687,7 +752,8 @@ const CLES_LS = {
   cache: 'sjs_cache_v1',
   resign: 'sjs_resignatures_v1',
   compo: 'sjs_compo_v1',
-  trios: 'sjs_trios_v1'
+  trios: 'sjs_trios_v1',
+  transac: 'sjs_transac_v1'
 };
 
 /* ------------------ DÉFINITION DES STATS ------------------ */
@@ -1296,34 +1362,774 @@ function seuilsMatrice(matCle, statCle, ov){
    mercredi 8 juillet 2026 — TeamRosters.php, cotes vérifiées contre
    USHL22Rosters.html, salaires et contrats contre USHL22Finance.html).
    Sert de base hors-ligne et de fixture de tests. */
-const DATE_SECOURS = '8 juillet 2026';
+const DATE_SECOURS = '22 août 2026';
 const SECOURS_ROSTER = [
- {nom:'Jesperi Kotkaniemi', po:'C', hd:'G', it:69,sp:83,st:77,en:90,du:87,di:83,sk:83,pa:82,pc:78,df:60,sc:78,ex:64,ld:51,ov:81,age:26,salaire:9075000,ct:2},
- {nom:'Brad Lambert',       po:'C', hd:'D', it:69,sp:87,st:71,en:80,du:81,di:76,sk:85,pa:71,pc:73,df:57,sc:74,ex:51,ld:38,ov:77,age:23,salaire:900000, ct:1},
- {nom:'Backup_C',           po:'C', hd:'G', it:50,sp:50,st:50,en:50,du:50,di:50,sk:50,pa:50,pc:50,df:50,sc:50,ex:50,ld:50,ov:55,age:25,salaire:0,      ct:0, backup:true},
- {nom:'Jaden Schwartz',     po:'C', hd:'G', it:60,sp:81,st:64,en:90,du:83,di:99,sk:91,pa:86,pc:84,df:63,sc:67,ex:99,ld:99,ov:81,age:34,salaire:7200000,ct:1},
- {nom:'Ryan Johansen',      po:'C', hd:'D', it:59,sp:80,st:76,en:84,du:92,di:84,sk:81,pa:78,pc:74,df:66,sc:74,ex:98,ld:91,ov:80,age:34,salaire:5950000,ct:1},
- {nom:'Joel ErikssonEk',    po:'AG',hd:'G', it:76,sp:71,st:82,en:80,du:81,di:78,sk:74,pa:78,pc:73,df:73,sc:77,ex:80,ld:65,ov:81,age:29,salaire:7500000,ct:1},
- {nom:'Travis Konecny',     po:'AG',hd:'D', it:86,sp:78,st:75,en:82,du:78,di:70,sk:80,pa:77,pc:72,df:66,sc:80,ex:81,ld:72,ov:81,age:29,salaire:7500000,ct:2},
- {nom:'Nathan Legare',      po:'AG',hd:'D', it:82,sp:70,st:94,en:84,du:98,di:79,sk:70,pa:72,pc:69,df:65,sc:88,ex:60,ld:69,ov:82,age:25,salaire:3750000,ct:0},
- {nom:'Oskar Olausson',     po:'AG',hd:'G', it:66,sp:81,st:73,en:77,du:75,di:80,sk:77,pa:71,pc:71,df:67,sc:73,ex:53,ld:41,ov:76,age:24,salaire:1000000,ct:0},
- {nom:'Akil Thomas',        po:'AD',hd:'D', it:63,sp:87,st:73,en:90,du:80,di:87,sk:86,pa:80,pc:71,df:71,sc:81,ex:61,ld:64,ov:82,age:26,salaire:5950000,ct:2},
- {nom:'Kent Johnson',       po:'AD',hd:'G', it:66,sp:80,st:74,en:79,du:78,di:80,sk:79,pa:78,pc:82,df:62,sc:77,ex:58,ld:44,ov:79,age:24,salaire:1875000,ct:0},
- {nom:'Alexander Nylander', po:'AD',hd:'D', it:64,sp:88,st:78,en:88,du:81,di:85,sk:91,pa:69,pc:74,df:60,sc:84,ex:70,ld:63,ov:81,age:28,salaire:5950000,ct:0},
- {nom:'Brandon Saad',       po:'AD',hd:'G', it:59,sp:74,st:74,en:76,du:78,di:80,sk:75,pa:68,pc:72,df:59,sc:75,ex:93,ld:75,ov:76,age:34,salaire:1000000,ct:0},
- {nom:'Samu Tuomaala',      po:'AD',hd:'G', it:67,sp:80,st:67,en:77,du:72,di:77,sk:77,pa:76,pc:72,df:67,sc:73,ex:48,ld:40,ov:76,age:23,salaire:1000000,ct:0},
- {nom:'Tyler Myers',        po:'D', hd:'D', it:70,sp:72,st:81,en:93,du:76,di:89,sk:79,pa:67,pc:68,df:76,sc:54,ex:99,ld:78,ov:78,age:36,salaire:3125000,ct:0},
- {nom:'Ryan Graves',        po:'D', hd:'G', it:63,sp:72,st:81,en:78,du:76,di:78,sk:74,pa:69,pc:70,df:75,sc:59,ex:71,ld:65,ov:76,age:31,salaire:1000000,ct:0},
- {nom:'Haydn Fleury',       po:'D', hd:'G', it:80,sp:70,st:91,en:89,du:87,di:76,sk:85,pa:73,pc:68,df:82,sc:65,ex:72,ld:61,ov:83,age:30,salaire:12200000,ct:1},
- {nom:'Jonas Brodin',       po:'D', hd:'G', it:66,sp:68,st:77,en:83,du:68,di:82,sk:71,pa:70,pc:72,df:80,sc:60,ex:87,ld:78,ov:77,age:32,salaire:7625000,ct:0},
- {nom:'Adam Fox',           po:'D', hd:'D', it:64,sp:84,st:69,en:88,du:83,di:82,sk:85,pa:85,pc:76,df:77,sc:70,ex:62,ld:65,ov:82,age:28,salaire:9075000,ct:0},
- {nom:'Nate Schmidt',       po:'D', hd:'G', it:64,sp:73,st:74,en:74,du:73,di:80,sk:74,pa:68,pc:70,df:75,sc:59,ex:82,ld:73,ov:75,age:35,salaire:1575000,ct:1},
- {nom:'Braden Schneider',   po:'D', hd:'D', it:82,sp:73,st:87,en:94,du:91,di:80,sk:77,pa:65,pc:71,df:79,sc:56,ex:54,ld:58,ov:81,age:25,salaire:5950000,ct:2},
- {nom:'Backup_D_SanJose',   po:'D', hd:'G', it:50,sp:50,st:50,en:50,du:50,di:50,sk:50,pa:50,pc:50,df:50,sc:50,ex:50,ld:50,ov:55,age:25,salaire:0,      ct:0, backup:true},
- {nom:'Alexandar Georgiev', po:'G', hd:'G', it:83,sp:88,st:81,en:87,du:89,di:87,sk:90,pa:71,pc:81,df:null,sc:null,ex:84,ld:78,ov:81,age:30,salaire:3750000,ct:0},
- {nom:'Cal Petersen',       po:'G', hd:'D', it:82,sp:84,st:82,en:82,du:74,di:83,sk:83,pa:73,pc:84,df:null,sc:null,ex:62,ld:52,ov:78,age:32,salaire:1250000,ct:0},
- {nom:'Chris Driedger',     po:'G', hd:'G', it:80,sp:78,st:85,en:76,du:74,di:78,sk:80,pa:72,pc:77,df:null,sc:null,ex:52,ld:46,ov:74,age:32,salaire:1000000,ct:0}
+ {nom:'Jesperi Kotkaniemi',   po:'C', hd:'G', it:70,sp:83,st:77,en:89,du:86,di:83,sk:83,pa:83,pc:79,df:62,sc:79,ex:61,ld:51,ov:82,age:26,salaire:9075000,ct:2},
+ {nom:'Jaden Schwartz',       po:'C', hd:'G', it:60,sp:81,st:64,en:90,du:83,di:99,sk:91,pa:86,pc:84,df:63,sc:67,ex:99,ld:99,ov:81,age:34,salaire:7200000,ct:1},
+ {nom:'Nico Hischier',        po:'C', hd:'G', it:65,sp:87,st:72,en:92,du:88,di:87,sk:89,pa:80,pc:78,df:57,sc:76,ex:64,ld:48,ov:81,age:27,salaire:7500000,ct:1},
+ {nom:'Ryan O\'Reilly',       po:'C', hd:'G', it:74,sp:73,st:70,en:84,du:86,di:80,sk:74,pa:79,pc:79,df:72,sc:79,ex:98,ld:95,ov:81,age:35,salaire:6000000,ct:1},
+ {nom:'Brad Lambert',         po:'C', hd:'D', it:69,sp:87,st:71,en:80,du:81,di:76,sk:85,pa:71,pc:73,df:57,sc:74,ex:51,ld:38,ov:77,age:23,salaire:900000,ct:1},
+ {nom:'Zachary Bolduc',       po:'C', hd:'G', it:64,sp:80,st:75,en:76,du:74,di:70,sk:79,pa:77,pc:74,df:63,sc:74,ex:48,ld:43,ov:77,age:23,salaire:950000,ct:3},
+ {nom:'Nathan Legare',        po:'AG', hd:'D', it:82,sp:70,st:94,en:84,du:98,di:79,sk:70,pa:72,pc:69,df:65,sc:88,ex:60,ld:69,ov:82,age:25,salaire:8750000,ct:3},
+ {nom:'Brendan Brisson',      po:'AG', hd:'G', it:74,sp:85,st:70,en:89,du:76,di:88,sk:82,pa:85,pc:83,df:57,sc:69,ex:59,ld:57,ov:80,age:25,salaire:5950000,ct:2},
+ {nom:'Akil Thomas',          po:'AD', hd:'D', it:63,sp:87,st:73,en:90,du:80,di:87,sk:86,pa:80,pc:71,df:71,sc:81,ex:61,ld:64,ov:82,age:26,salaire:5950000,ct:2},
+ {nom:'Kent Johnson',         po:'AD', hd:'G', it:66,sp:80,st:74,en:79,du:78,di:80,sk:79,pa:78,pc:82,df:62,sc:77,ex:58,ld:44,ov:79,age:24,salaire:3750000,ct:3},
+ {nom:'Miko Matikka',         po:'AD', hd:'D', it:69,sp:76,st:83,en:68,du:83,di:80,sk:74,pa:69,pc:68,df:63,sc:77,ex:54,ld:43,ov:76,age:23,salaire:800000,ct:1},
+ {nom:'Haydn Fleury',         po:'D', hd:'G', it:80,sp:70,st:91,en:89,du:87,di:76,sk:85,pa:73,pc:68,df:82,sc:65,ex:72,ld:61,ov:83,age:30,salaire:12200000,ct:1},
+ {nom:'Adam Fox',             po:'D', hd:'D', it:64,sp:84,st:69,en:88,du:83,di:82,sk:85,pa:85,pc:76,df:77,sc:70,ex:62,ld:65,ov:82,age:28,salaire:8750000,ct:3},
+ {nom:'Braden Schneider',     po:'D', hd:'D', it:82,sp:73,st:87,en:94,du:91,di:80,sk:77,pa:65,pc:71,df:79,sc:56,ex:54,ld:58,ov:81,age:25,salaire:5950000,ct:2},
+ {nom:'Shea Theodore',        po:'D', hd:'G', it:60,sp:79,st:76,en:94,du:83,di:81,sk:80,pa:82,pc:80,df:64,sc:72,ex:75,ld:74,ov:81,age:31,salaire:6250000,ct:0},
+ {nom:'Gianni Fairbrother',   po:'D', hd:'G', it:74,sp:74,st:80,en:77,du:71,di:69,sk:75,pa:65,pc:68,df:78,sc:65,ex:61,ld:47,ov:77,age:26,salaire:950000,ct:2},
+ {nom:'Xavier Bernard',       po:'D', hd:'G', it:75,sp:73,st:90,en:74,du:81,di:68,sk:77,pa:62,pc:53,df:79,sc:58,ex:61,ld:47,ov:77,age:26,salaire:950000,ct:2},
+ {nom:'Artyom Grushnikov',    po:'D', hd:'G', it:77,sp:69,st:80,en:77,du:81,di:76,sk:77,pa:64,pc:62,df:75,sc:58,ex:54,ld:44,ov:76,age:23,salaire:825000,ct:3},
+ {nom:'Philippe Desrosiers',  po:'G', hd:'D', it:85,sp:93,st:63,en:96,du:98,di:93,sk:91,pa:63,pc:90,df:null,sc:null,ex:81,ld:60,ov:83,age:31,salaire:7500000,ct:4},
+ {nom:'Rasmus Korhonen',      po:'G', hd:'G', it:77,sp:82,st:89,en:91,du:93,di:85,sk:85,pa:73,pc:80,df:null,sc:null,ex:66,ld:56,ov:78,age:24,salaire:775000,ct:2},
+ {nom:'Tyler Wall',           po:'G', hd:'G', it:79,sp:82,st:88,en:79,du:77,di:82,sk:78,pa:67,pc:79,df:null,sc:null,ex:73,ld:58,ov:76,age:28,salaire:700000,ct:1}
 ];
+
+/* =====================================================================
+   FORMATIONS DE LA LIGUE — fichier USHL22.ros (32 équipes, 668 joueurs)
+   Sert au constructeur de transaction. Colonnes de chaque fiche : voir
+   LIGUE_COLS. L'OV des patineurs est celui de ovDetaille(); celui des
+   gardiens vient de OV_POIDS_G (voir plus bas).
+   ===================================================================== */
+/* Colonnes : nom, po, hd, it, sp, st, en, du, di, sk, pa, pc, df, sc, ex, ld, ov, age, salaire, ct */
+const LIGUE_COLS = ["nom", "po", "hd", "it", "sp", "st", "en", "du", "di", "sk", "pa", "pc", "df", "sc", "ex", "ld", "ov", "age", "salaire", "ct"];
+const LIGUE = [
+ {c:'NEWJERSEY', n:'Devils du New Jersey', j:[
+  ["Morgan Frost","C","G",72,98,60,80,73,85,97,90,83,57,68,64,76,82,27,5950000,1],
+  ["Jakub Lauko","C","G",84,81,77,77,85,75,82,62,69,74,69,64,57,77,26,2200000,1],
+  ["Aleksanteri Kaskimaki","C","G",68,76,74,79,77,78,72,75,64,68,72,48,37,75,22,750000,2],
+  ["Gavin Brindley","C","D",79,78,60,77,75,73,76,71,70,65,72,47,37,75,22,800000,2],
+  ["Kirill Kaprizov","AG","G",68,83,72,87,79,81,87,85,81,57,84,80,67,83,29,10625000,1],
+  ["Joel Farabee","AG","G",68,90,69,86,77,79,85,74,79,62,87,58,50,82,26,7500000,1],
+  ["Cole Sillinger","AG","G",67,81,75,81,78,76,82,74,80,57,83,56,47,80,23,7500000,4],
+  ["Luke Tuch","AG","G",83,69,90,82,92,74,71,70,67,59,82,59,60,79,24,1875000,1],
+  ["Topi Ronni","AG","G",67,63,73,77,77,69,69,71,67,71,71,45,36,74,22,700000,2],
+  ["Matthew Tkachuk","AD","G",83,73,82,82,70,68,76,84,80,66,81,86,76,83,29,12000000,1],
+  ["Lias Andersson","AD","G",89,77,95,89,95,88,75,71,63,76,73,70,57,81,28,7500000,2],
+  ["Keegan Kolesar","AD","D",89,75,93,87,93,92,79,64,67,77,64,68,68,79,29,3125000,1],
+  ["Frank Nazar","AD","D",65,83,67,78,77,76,82,81,78,62,73,50,36,78,22,975000,1],
+  ["Gleb Trikozov","AD","D",60,73,72,74,68,76,77,72,76,59,70,47,34,74,22,800000,2],
+  ["Aaron Ekblad","D","D",77,75,86,92,84,80,85,73,78,76,67,65,74,83,30,8750000,3],
+  ["Dante Fabbro","D","D",72,86,79,94,88,95,76,79,80,64,75,75,61,82,28,8750000,2],
+  ["Noah Juulsen","D","D",74,74,85,85,83,77,82,68,72,76,58,78,62,80,29,5000000,0],
+  ["Tobias Bjornfot","D","G",73,77,84,88,85,85,77,66,75,79,56,61,47,79,25,3750000,3],
+  ["Maveric Lamoureux","D","D",84,70,85,77,74,64,71,60,66,79,58,48,51,77,22,90000,1],
+  ["Olen Zellweger","D","G",70,77,66,77,69,76,80,77,71,64,71,52,39,77,23,950000,3],
+  ["Hunter Brzustewicz","D","D",66,75,63,72,73,72,74,74,72,59,66,46,42,74,22,750000,2],
+  ["Hugo Hanefelt","G","G",78,90,82,89,84,89,88,60,80,null,null,68,66,80,25,3750000,3],
+  ["Samuel Ersson","G","G",79,84,87,90,80,84,86,68,85,null,null,66,59,79,27,2250000,1],
+  ["Topias Leinonen","G","G",80,83,90,87,82,75,85,72,81,null,null,54,50,78,22,800000,2]
+ ]},
+ {c:'NYRANGERS', n:'Rangers de New York', j:[
+  ["Alex Turcotte","C","G",72,80,72,84,77,77,83,80,83,64,79,56,58,81,25,7500000,3],
+  ["Will Smith","C","D",65,79,71,80,77,75,84,86,77,60,75,45,45,79,21,7500000,5],
+  ["Josh Doan","C","D",70,81,76,81,79,78,78,73,71,67,76,55,49,78,24,2250000,3],
+  ["Calum Ritchie","C","D",64,76,74,75,73,75,77,77,73,61,72,41,40,76,21,900000,2],
+  ["Konsta Helenius","C","D",74,72,67,75,71,76,71,72,71,70,72,39,38,75,20,900000,2],
+  ["David Pastrnak","AG","D",75,78,74,87,84,76,82,87,83,62,84,90,84,84,30,13500000,1],
+  ["Yakov Trenin","AG","G",67,91,79,87,82,78,89,70,72,57,86,73,61,81,29,7500000,2],
+  ["Jeremy Gregoire","AG","D",96,80,96,78,88,99,78,61,53,93,61,93,99,80,31,4700000,1],
+  ["Nils Hoglander","AG","G",71,76,66,79,79,75,77,74,72,64,72,71,70,76,25,1400000,3],
+  ["Gabriel Landeskog","AD","G",81,72,87,81,72,72,73,75,67,61,82,95,99,81,34,6250000,1],
+  ["Brendan Gallagher","AD","D",90,73,72,80,99,77,73,68,69,67,80,85,99,79,34,4700000,2],
+  ["Nolan Foote","AD","G",76,70,93,81,89,75,74,68,69,63,81,56,58,79,25,3750000,3],
+  ["Chase Stillman","AD","D",77,77,81,79,83,72,75,72,68,65,74,50,46,77,23,950000,3],
+  ["K'Andre Miller","D","G",85,80,95,89,78,76,87,66,70,77,64,58,58,83,26,12200000,2],
+  ["Olli Juolevi","D","G",68,80,77,89,90,82,84,75,76,65,74,65,54,80,28,5750000,3],
+  ["Roland McKeown","D","D",81,70,87,89,76,67,77,67,69,78,53,74,69,80,30,5950000,1],
+  ["Jackson LaCombe","D","G",61,84,70,82,79,71,82,76,73,63,76,58,48,79,25,3750000,2],
+  ["William Wallinder","D","G",72,82,82,76,82,73,82,64,69,79,58,53,46,78,24,3750000,1],
+  ["Matthew Schaefer","D","G",67,76,67,77,68,78,79,76,75,69,68,34,32,76,19,975000,2],
+  ["Shai Buium","D","G",69,69,80,76,80,75,70,69,71,74,64,48,37,76,23,950000,4],
+  ["Daniil Tarasov","G","G",77,85,87,96,94,84,90,67,83,null,null,68,69,80,27,3125000,1],
+  ["Igor Shestyorkin","G","G",82,86,79,84,83,81,86,76,84,null,null,75,64,79,31,4700000,2],
+  ["Remi Poirier","G","G",77,85,90,91,89,72,81,62,74,null,null,66,56,77,25,775000,1]
+ ]},
+ {c:'ISLANDERS', n:'Islanders de New York', j:[
+  ["Jack Hughes","C","G",62,88,66,91,92,91,95,81,85,58,84,56,45,83,25,10500000,1],
+  ["Nick Schmaltz","C","D",58,79,75,83,90,87,96,84,81,65,66,69,78,80,30,5000000,0],
+  ["Berkly Catton","C","G",58,79,61,73,70,77,79,78,79,56,77,45,35,76,20,975000,2],
+  ["Seth Jarvis","AG","D",66,85,70,85,80,83,86,82,80,59,84,58,50,82,24,5325000,1],
+  ["Connor McMichael","AG","G",66,86,76,83,80,90,82,76,79,56,82,66,56,81,25,7500000,2],
+  ["Ivan Demidov","AG","G",63,78,66,81,78,80,80,81,84,65,78,47,44,79,21,975000,1],
+  ["Nicolas Roy","AG","D",75,72,79,76,77,75,73,73,74,63,76,83,75,78,29,2450000,1],
+  ["Samuel Savoie","AG","G",84,74,73,72,79,67,70,65,65,71,68,49,54,74,22,750000,2],
+  ["Alex DeBrincat","AD","D",65,89,56,87,85,89,92,84,81,56,89,83,67,83,29,8750000,3],
+  ["Joni Ikonen","AD","D",70,96,60,85,82,86,84,71,74,57,85,69,64,80,27,4375000,1],
+  ["Ryan Leonard","AD","D",76,76,70,78,77,72,77,72,70,67,83,47,42,78,21,3750000,4],
+  ["Kirill Marchenko","AD","D",58,90,84,80,77,87,84,66,71,52,76,64,48,77,26,2200000,2],
+  ["Moritz Seider","D","D",84,76,86,87,85,77,82,72,77,82,61,70,70,84,25,12250000,1],
+  ["Kaiden Guhle","D","G",83,75,85,84,82,77,78,67,71,82,60,54,44,81,24,3750000,1],
+  ["Roman Josi","D","G",61,77,71,94,78,75,84,80,78,60,73,99,99,81,36,5000000,1],
+  ["Janis Jerome Moser","D","G",72,77,73,78,79,80,79,73,74,78,59,67,62,78,26,1575000,2],
+  ["Sam Rinzel","D","D",63,75,73,77,77,70,76,74,73,66,72,48,46,76,22,800000,1],
+  ["Connor Hellebuyck","G","G",79,89,87,93,91,88,92,72,84,null,null,90,68,83,33,8650000,1]
+ ]},
+ {c:'PITTSBURGH', n:'Penguins de Pittsburgh', j:[
+  ["Ryan Strome","C","D",60,80,70,83,86,75,89,82,84,67,67,91,82,80,33,5000000,2],
+  ["Roni Hirvonen","C","G",66,80,65,88,71,84,81,80,77,68,72,50,48,78,24,1875000,1],
+  ["Nikolaj Ehlers","AG","G",60,91,70,92,86,85,99,73,77,69,86,82,74,84,30,12200000,1],
+  ["Jared McCann","AG","G",67,81,75,82,80,77,81,74,73,59,83,79,73,80,30,5950000,1],
+  ["Roby Jarventie","AG","G",72,73,87,78,89,77,80,70,70,56,80,52,56,78,24,2825000,1],
+  ["Andrew Cristall","AG","G",63,73,62,73,70,72,82,81,76,61,72,46,45,76,21,900000,2],
+  ["Anton Frondell","AG","G",73,69,76,71,71,67,71,70,71,64,74,35,32,75,19,975000,2],
+  ["Raphael Lavoie","AD","D",59,83,79,95,89,86,86,75,78,55,89,62,66,82,26,5950000,1],
+  ["Caedan Bankier","AD","G",66,77,79,78,77,80,77,78,76,64,72,50,40,78,23,5750000,5],
+  ["Prokhor Poltapov","AD","G",70,79,76,75,77,76,82,70,76,62,76,55,46,78,23,5750000,5],
+  ["Samu Salminen","AD","G",77,68,80,77,81,78,72,74,68,68,77,52,42,77,23,950000,3],
+  ["Matthew Poitras","AD","D",67,76,72,73,77,70,71,76,74,65,75,50,39,76,22,800000,2],
+  ["Vasily Ponomarev","AD","G",67,79,72,77,77,80,79,73,73,63,72,54,39,76,24,1875000,1],
+  ["Jackie Hughes","AD","G",68,74,59,75,69,78,70,76,76,63,70,49,36,74,23,800000,1],
+  ["Jett Woo","D","D",89,74,88,94,75,76,83,67,76,87,59,59,66,84,26,10625000,2],
+  ["Pavel Mintyukov","D","G",76,73,82,84,77,68,82,72,80,82,63,53,50,81,23,5325000,1],
+  ["Logan Stanley","D","G",76,73,86,80,72,67,73,61,63,78,60,75,74,78,28,2250000,1],
+  ["Tyson Hinds","D","D",77,71,81,76,78,77,75,68,64,76,64,49,46,77,23,3750000,5],
+  ["Urho Vaakanainen","D","G",75,74,81,85,83,80,75,62,62,78,56,66,47,77,27,3125000,1],
+  ["Daniil Chayka","D","G",68,74,80,80,80,78,76,64,65,74,65,52,41,76,24,825000,1],
+  ["Brady Cleveland","D","D",84,62,88,65,72,56,66,65,62,74,55,44,45,75,21,800000,2],
+  ["Filip Nordberg","D","G",79,67,81,76,77,72,70,59,69,74,61,50,40,75,22,800000,2],
+  ["Jeremy Swayman","G","G",79,87,82,85,96,89,85,68,86,null,null,68,70,80,28,5750000,4],
+  ["Tristan Lennox","G","G",76,81,86,83,81,90,83,73,72,null,null,58,42,75,26,700000,2]
+ ]},
+ {c:'BOSTON', n:'Bruins de Boston', j:[
+  ["Jordan Kyrou","C","D",60,83,71,83,82,83,85,80,79,53,81,77,66,80,28,5750000,3],
+  ["Julian Lutz","C","G",74,73,82,79,83,70,74,72,69,63,75,49,43,77,22,800000,1],
+  ["Rachat Schmidt","C","G",50,50,50,50,50,50,50,50,50,50,50,50,50,55,25,6250000,1],
+  ["Brock Boeser","AG","D",81,85,89,91,93,75,79,70,73,49,86,87,74,82,29,7500000,2],
+  ["Isac Lundestrom","AG","G",66,83,76,96,91,93,83,81,72,65,78,71,72,82,27,10625000,1],
+  ["Matt Duchene","AG","G",68,77,70,78,78,87,77,82,81,63,79,99,99,81,35,6000000,2],
+  ["Travis Konecny","AG","D",86,78,75,82,78,70,80,77,72,66,80,81,72,81,29,7500000,2],
+  ["Tim Bozon","AD","G",73,94,64,87,78,86,81,82,69,72,85,87,83,83,32,8750000,3],
+  ["Ben Thomas","D","D",90,77,87,91,89,68,78,65,68,87,54,83,70,83,30,8750000,4],
+  ["Caleb Jones","D","G",77,70,83,87,80,76,77,65,69,80,61,79,68,80,29,4375000,1],
+  ["Matt Dumba","D","D",73,78,67,89,85,74,79,80,78,67,71,88,69,80,32,7200000,3],
+  ["Ryan Murphy","D","D",55,76,65,80,77,87,76,80,79,68,78,83,83,80,33,5000000,0],
+  ["Ty Smith","D","G",69,83,62,91,79,79,85,81,74,65,70,68,49,80,26,4375000,1],
+  ["Cody Ceci","D","D",76,72,81,83,81,82,72,73,68,79,58,89,79,79,33,3450000,1],
+  ["Joel Blomqvist","G","G",77,90,75,94,92,91,89,65,88,null,null,60,58,81,24,2825000,1],
+  ["Joel Hofer","G","G",76,85,85,88,85,81,86,72,77,null,null,71,62,78,26,950000,3],
+  ["Matthew Thiessen","G","G",80,84,83,83,83,86,82,68,79,null,null,68,53,77,26,950000,2]
+ ]},
+ {c:'OTTAWA', n:'Senateurs d’Ottawa', j:[
+  ["Ryan Poehling","C","G",69,88,82,89,85,86,82,82,70,76,75,68,64,83,27,7500000,1],
+  ["Elias Lindholm","C","D",66,76,66,83,77,87,91,92,80,64,67,71,74,80,32,7200000,1],
+  ["Sam Steel","C","G",71,82,78,97,92,91,84,78,75,53,73,77,68,80,28,5750000,2],
+  ["Alex Newhook","C","G",63,79,67,81,80,76,82,80,75,58,77,55,42,78,25,2250000,3],
+  ["Brayden Tracey","C","G",70,76,74,78,82,83,82,70,73,55,78,66,42,77,25,950000,1],
+  ["Brennan Othmann","AG","G",76,79,80,77,78,68,78,72,74,66,77,47,44,79,23,3750000,3],
+  ["Jesse Ylonen","AG","D",61,88,63,90,87,94,89,78,78,51,76,65,56,79,27,3750000,1],
+  ["Artur Kayumov","AG","G",53,87,63,92,93,93,88,69,73,58,79,62,55,77,28,950000,2],
+  ["Samuel Honzek","AG","G",61,75,75,78,71,78,78,75,75,63,76,46,42,77,22,950000,3],
+  ["Chris Kreider","AD","G",80,80,84,80,87,80,80,68,75,55,85,97,99,82,35,7200000,2],
+  ["Jesper Bratt","AD","G",58,86,65,83,82,86,89,85,80,54,79,80,73,81,28,5950000,1],
+  ["Alexander Holtz","AD","D",61,79,79,78,84,81,76,72,75,60,76,49,37,77,24,950000,3],
+  ["Nico Myatovic","AD","D",70,75,83,69,82,74,70,69,69,63,77,50,47,76,22,800000,2],
+  ["Porter Martone","AD","D",67,71,76,76,73,71,71,78,76,62,75,40,39,76,20,975000,2],
+  ["Josh Morrissey","D","G",77,78,71,85,79,70,80,78,79,75,75,76,58,82,31,7500000,0],
+  ["Mikhail Sergachev","D","G",73,78,82,87,71,77,82,77,75,78,69,77,70,82,28,8750000,3],
+  ["Jamie Drysdale","D","D",65,84,65,88,80,80,87,80,79,70,71,48,46,81,24,5325000,1],
+  ["Erik Brannstrom","D","G",57,85,66,79,76,85,84,79,79,67,73,73,59,80,27,5750000,1],
+  ["Samuel Morin","D","G",88,67,87,95,88,80,75,57,69,77,64,82,69,80,31,5000000,0],
+  ["Reilly Webb","D","D",81,76,85,77,83,66,74,57,57,83,49,70,66,77,27,2200000,2],
+  ["Scott Mayfield","D","D",78,68,84,82,74,71,69,64,63,81,53,72,72,77,34,1400000,1],
+  ["Gavin White","D","D",63,70,71,82,78,68,72,76,72,65,69,54,48,75,24,700000,1],
+  ["Mattias Havelid","D","D",64,72,67,85,78,85,75,71,73,70,68,48,33,75,22,800000,2],
+  ["Carter Hart","G","G",78,90,82,93,90,86,89,74,89,null,null,74,67,82,28,8750000,3],
+  ["Ukko-Pekka Luukkonen","G","G",76,82,87,89,92,84,83,65,84,null,null,64,54,78,27,2200000,1],
+  ["Samuel Jonsson","G","G",83,82,89,78,76,79,82,68,81,null,null,57,47,77,23,700000,2]
+ ]},
+ {c:'MONTREAL', n:'Canadiens de Montréal', j:[
+  ["Matthew Savoie","C","D",68,87,65,86,75,77,82,81,81,64,78,48,50,80,22,2825000,1],
+  ["Steven Stamkos","C","D",63,86,67,92,87,85,75,77,70,66,78,99,99,80,36,4075000,1],
+  ["Brayden Schenn","C","G",77,76,74,76,80,70,75,74,74,59,73,99,85,78,35,4700000,1],
+  ["Tij Iginla","C","G",76,73,72,77,78,72,70,72,71,66,75,37,36,76,20,975000,2],
+  ["Alexei Protas","C","G",64,64,81,81,72,73,68,74,71,66,71,53,31,75,25,775000,1],
+  ["Adrian Kempe","AG","G",81,80,82,81,86,79,77,70,75,58,82,87,69,81,30,7500000,1],
+  ["Matthew Beniers","AG","G",75,82,74,86,80,81,76,75,72,72,74,52,42,79,24,5325000,1],
+  ["Logan Cooley","AG","G",66,79,65,78,74,78,84,81,76,61,76,48,36,78,22,1875000,1],
+  ["Nikita Kucherov","AD","G",67,85,69,85,72,76,85,85,83,59,79,99,73,82,33,7500000,1],
+  ["Clayton Keller","AD","G",60,95,66,91,83,89,86,76,81,52,79,77,75,80,28,5750000,2],
+  ["Filip Forsberg","AD","D",72,76,69,79,72,81,78,75,80,61,79,99,86,80,32,5950000,1],
+  ["Justin Sourdif","AD","D",64,78,72,88,78,81,78,77,73,67,74,54,47,78,24,1875000,1],
+  ["Charlie Stramel","AD","D",75,70,85,75,76,68,74,69,67,64,75,51,45,76,22,825000,3],
+  ["Victor Hedman","D","G",67,77,79,93,84,91,79,77,73,79,66,99,99,82,35,5000000,0],
+  ["Bowen Byram","D","G",71,84,77,89,81,77,88,75,74,74,71,58,45,81,25,7500000,3],
+  ["Gabriel Carlsson","D","G",84,74,87,89,86,82,76,58,69,79,55,76,51,80,29,5950000,2],
+  ["Jarret Tyszka","D","G",80,73,87,84,71,89,73,69,62,83,50,74,71,80,27,4375000,1],
+  ["Nolan Allan","D","G",77,72,81,83,81,72,77,64,64,80,60,53,48,78,23,2250000,3],
+  ["Anton Silayev","D","G",78,72,82,80,71,66,77,68,67,77,58,37,40,77,20,975000,2],
+  ["Ruben Rafkin","D","D",74,71,80,78,80,65,73,66,67,74,60,56,39,76,24,700000,1],
+  ["Artyom Duda","D","G",65,72,74,75,72,81,73,72,72,73,69,45,30,75,22,800000,2],
+  ["Seamus Casey","D","D",73,78,70,73,70,72,79,67,68,73,63,45,32,75,22,800000,2],
+  ["Magnus Chrona","G","G",72,85,88,94,91,90,90,66,89,null,null,72,63,81,26,3125000,2],
+  ["Erik Portillo","G","G",76,84,91,83,85,87,87,73,81,null,null,74,55,79,26,2250000,3]
+ ]},
+ {c:'BUFFALO', n:'Sabres de Buffalo', j:[
+  ["Mika Zibanejad","C","D",66,77,79,93,75,79,78,81,72,70,85,97,96,83,33,8450000,2],
+  ["Dylan Larkin","C","G",71,84,71,85,84,77,88,81,76,64,78,74,68,82,30,7500000,1],
+  ["Shane Pinto","C","D",74,80,76,80,72,81,78,73,76,73,78,58,48,80,26,8750000,1],
+  ["Jordan Greenway","AG","G",87,72,98,85,99,71,75,72,64,58,86,72,79,82,29,9075000,2],
+  ["Jakub Vrana","AG","G",57,88,67,93,87,79,89,77,74,67,80,73,65,81,30,7500000,1],
+  ["Joel ErikssonEk","AG","G",76,71,82,80,81,78,74,78,73,73,77,80,65,81,29,7500000,1],
+  ["Maxim Barbashev","AG","G",81,72,80,77,77,64,71,63,68,70,69,49,56,75,23,775000,2],
+  ["Dylan James","AG","G",79,71,74,73,82,73,73,69,68,68,67,48,49,74,23,800000,1],
+  ["Klim Kostin","AD","G",52,90,88,80,86,81,97,69,74,52,82,70,59,80,27,5950000,1],
+  ["Noel Gunler","AD","D",54,85,79,82,79,82,90,76,78,58,79,58,55,80,25,5950000,2],
+  ["Oskar Pettersson","AD","D",76,76,86,75,75,62,72,66,68,65,74,45,42,76,22,750000,2],
+  ["Brandon Carlo","D","D",83,68,95,92,79,73,79,61,70,81,51,81,58,81,30,6250000,0],
+  ["Mattias Samuelsson","D","G",86,67,96,87,84,72,77,56,69,84,51,62,52,81,26,7500000,2],
+  ["Nikita Zadorov","D","G",87,64,88,87,84,70,72,66,72,78,61,83,69,81,31,5950000,1],
+  ["Benjamin Roger","D","D",74,77,86,82,84,79,83,66,67,75,59,54,42,79,24,5750000,4],
+  ["Michael Benning","D","D",66,79,66,83,79,80,80,75,77,63,76,62,57,79,24,1875000,1],
+  ["Oliver Ekman-Larsson","D","G",65,78,67,79,77,73,77,73,74,69,59,98,73,75,35,1900000,1],
+  ["Zayne Parekh","D","D",62,76,59,77,69,74,76,77,76,66,69,38,31,75,20,975000,2],
+  ["Ilya Sorokin","G","G",86,91,87,93,89,86,89,73,86,null,null,79,67,84,31,8750000,4],
+  ["Isaiah Saville","G","G",71,86,89,88,83,86,89,66,83,null,null,66,57,79,26,2250000,3],
+  ["Will Cranley","G","G",80,84,83,79,79,76,82,67,78,null,null,58,51,76,24,700000,1]
+ ]},
+ {c:'TORONTO', n:'Maple Leafs de Toronto', j:[
+  ["Connor Bedard","C","D",72,77,71,83,78,80,86,80,83,63,85,45,49,82,21,8750000,3],
+  ["Barrett Hayton","C","G",71,87,81,88,82,78,81,82,77,60,77,65,43,81,26,9075000,2],
+  ["Mathew Barzal","C","D",69,86,74,85,83,88,93,82,80,60,70,80,72,81,29,6250000,5],
+  ["Rutger McGroarty","C","G",82,75,81,78,85,71,68,71,71,69,77,46,49,78,22,900000,1],
+  ["Fabian Lysell","C","D",63,86,70,76,71,76,83,78,78,62,70,51,47,77,23,950000,3],
+  ["Vassili Zaitsev","AG","G",70,86,65,92,81,87,84,77,79,57,81,60,50,80,25,5750000,3],
+  ["Filip Mesar","AG","D",64,82,67,74,73,77,82,77,78,59,73,47,47,77,22,900000,1],
+  ["Matvei Michkov","AD","G",68,76,64,84,67,74,84,83,84,62,85,48,46,81,22,7500000,3],
+  ["Ivan Miroshnichenko","AD","D",69,78,74,76,72,77,78,74,77,59,85,50,49,79,22,900000,1],
+  ["Gabriel Perreault","AD","G",69,75,64,72,71,77,74,76,76,64,75,49,37,76,21,975000,2],
+  ["Chris Bigras","D","G",97,79,87,99,93,96,89,78,83,87,52,74,93,89,31,13750000,1],
+  ["Quinn Hughes","D","G",64,82,70,89,85,79,88,85,84,70,72,76,78,84,27,12200000,1],
+  ["Ryan Merkley","D","D",55,89,66,89,83,71,89,84,78,52,81,63,69,82,26,9075000,2],
+  ["Travis Sanheim","D","G",86,76,83,86,88,78,85,62,74,82,60,74,65,82,30,7500000,0],
+  ["Cam York","D","G",62,79,65,84,76,77,79,78,81,68,73,57,49,79,25,3750000,3],
+  ["Lian Bichsel","D","G",83,75,85,79,80,63,73,63,63,82,54,50,37,78,22,900000,1],
+  ["Eamon Powell","D","D",60,80,64,82,72,79,75,73,74,67,67,55,44,76,24,1875000,1],
+  ["Chris Gibson","G","G",83,91,92,89,83,78,90,63,86,null,null,89,67,83,34,8450000,1],
+  ["Kevin Lankinen","G","G",84,84,80,84,83,85,88,74,80,null,null,64,64,79,31,1100000,1],
+  ["Michael Hrabal","G","G",78,83,90,71,77,86,81,65,82,null,null,54,48,76,21,900000,2]
+ ]},
+ {c:'TAMPABAY', n:'Lightning de Tampa Bay', j:[
+  ["Aleksander Barkov","C","G",66,77,77,85,79,84,80,82,77,72,78,85,94,82,31,7500000,3],
+  ["Jacob de la Rose","C","G",99,76,93,84,99,99,85,65,68,82,65,78,87,82,31,7200000,2],
+  ["Oliver Kapanen","C","D",65,77,69,78,70,77,77,70,64,67,72,50,33,74,23,800000,2],
+  ["Lucas Raymond","AG","D",63,86,69,88,81,87,85,80,81,62,84,53,47,82,24,8450000,1],
+  ["Jake Neighbours","AG","G",86,76,86,87,95,78,74,71,69,67,81,55,55,81,24,5325000,1],
+  ["Arthur Kaliyev","AG","G",55,82,85,79,82,80,84,75,67,59,87,59,46,80,25,5750000,3],
+  ["Colby Barlow","AG","G",75,74,84,73,84,67,71,70,70,66,76,44,43,77,21,950000,3],
+  ["Zach Benson","AG","G",74,72,67,76,64,69,76,82,71,71,73,44,35,77,21,975000,2],
+  ["Grigori Denisenko","AD","D",59,91,68,94,72,80,95,82,85,54,81,68,62,82,26,9075000,2],
+  ["Tyson Jost","AD","G",71,84,73,84,83,91,81,83,64,74,83,64,70,82,28,8750000,3],
+  ["Lukas Reichel","AD","G",67,86,74,83,85,85,87,73,71,57,75,51,48,78,24,2825000,1],
+  ["Daniil Gushchin","AD","G",60,83,62,78,82,75,82,68,77,55,70,57,44,74,24,700000,1],
+  ["Juuso Maenpaa","AD","G",72,79,54,75,67,86,78,72,72,61,70,59,37,74,24,775000,2],
+  ["Jacob Trouba","D","D",83,75,82,95,72,89,90,65,69,82,59,95,86,83,32,8450000,1],
+  ["Owen Power","D","G",76,79,86,88,88,78,84,79,78,77,69,54,53,83,24,10500000,3],
+  ["Adam Parsells","D","D",93,68,99,74,77,51,71,55,60,90,39,69,65,80,29,5950000,2],
+  ["Brandt Clarke","D","D",64,76,74,77,76,70,78,82,76,66,72,50,44,78,23,2250000,3],
+  ["Dmitry Simachev","D","D",66,78,84,82,78,71,81,70,72,76,66,42,38,78,21,2250000,3],
+  ["Owen Pickering","D","G",76,68,81,79,75,70,71,71,71,78,59,51,40,77,22,900000,1],
+  ["Ethan Del Mastro","D","G",72,72,80,71,78,71,72,67,64,73,62,51,32,75,23,700000,2],
+  ["Oscar Dansk","G","G",60,99,69,91,89,78,89,65,97,null,null,95,63,83,32,8450000,1],
+  ["Jakub Malek","G","G",78,81,83,87,88,87,83,77,78,null,null,64,49,77,24,750000,2],
+  ["Trey Augustine","G","G",78,85,77,78,79,79,82,64,79,null,null,51,47,76,21,800000,2]
+ ]},
+ {c:'FLORIDE', n:'Panthers de la Floride', j:[
+  ["Dylan Strome","C","G",68,76,73,86,80,77,87,92,85,59,74,70,94,83,29,9075000,1],
+  ["Sam Reinhart","C","D",58,79,71,87,82,87,84,86,84,63,82,74,70,82,31,8450000,2],
+  ["Oliver Johansson","C","G",63,79,68,76,75,82,81,77,74,61,65,49,40,75,23,950000,5],
+  ["Kirill Kabanov","AG","D",64,81,62,93,70,77,85,78,82,43,78,98,56,78,34,7200000,1],
+  ["Mason McTavish","AG","G",68,76,77,81,82,76,76,71,76,62,81,51,40,78,23,5750000,5],
+  ["Morgan Barron","AG","G",84,71,86,78,84,84,71,70,68,72,72,67,69,78,28,3125000,2],
+  ["Rory Kerins","AG","G",69,80,62,86,68,86,70,75,74,68,77,53,43,77,24,700000,1],
+  ["Lucas Edmonds","AG","D",66,74,69,76,78,80,71,75,73,55,79,53,51,76,25,825000,3],
+  ["Pavel Zacha","AD","G",75,80,91,85,93,80,77,74,68,61,89,67,66,82,29,7500000,5],
+  ["Yegor Chinakhov","AD","G",57,86,74,81,82,80,86,78,82,53,82,59,62,80,25,5950000,2],
+  ["Jan Jenik","AD","G",65,85,66,84,88,91,84,70,72,58,80,65,53,78,26,2250000,2],
+  ["Samuel Girard","D","G",58,85,61,86,77,83,86,78,77,62,76,70,57,80,28,5750000,3],
+  ["John Carlson","D","D",65,73,72,84,73,80,77,81,75,70,70,99,84,79,36,4075000,1],
+  ["MacKenzie Weegar","D","D",79,75,79,85,77,74,71,71,71,76,59,70,71,79,32,5950000,1],
+  ["Martin Fehervary","D","G",76,76,76,79,77,75,76,74,73,79,60,62,64,79,26,2500000,1],
+  ["Justin Faulk","D","D",62,74,69,86,78,74,77,79,69,70,71,99,82,78,34,7200000,1],
+  ["William Villeneuve","D","D",65,73,66,81,83,79,74,79,80,70,71,53,52,78,24,1250000,1],
+  ["Alexander Romanov","D","G",67,78,79,83,79,73,80,70,71,72,64,57,43,77,26,2200000,2],
+  ["Dmitri Kuzmin","D","G",63,72,67,72,69,76,74,76,74,63,70,52,44,75,23,700000,2],
+  ["Mikulas Hovorka","D","D",76,68,85,80,80,71,61,64,63,75,54,58,51,75,25,950000,2],
+  ["Kasper Kulonummi","D","D",62,73,61,78,69,66,75,72,72,64,69,49,45,74,22,700000,2],
+  ["Jordan Binnington","G","G",84,86,78,89,90,75,86,78,84,null,null,87,66,80,33,6375000,2],
+  ["Dan Vladar","G","G",79,85,88,85,84,84,86,66,82,null,null,65,60,79,29,1400000,1],
+  ["Filip Larsson","G","G",70,78,77,77,75,81,78,69,80,null,null,67,51,73,28,700000,1]
+ ]},
+ {c:'CAROLINA', n:'Hurricanes de la Caroline', j:[
+  ["Jonathan Drouin","C","G",63,83,63,95,89,83,97,91,89,59,73,91,76,83,31,8750000,4],
+  ["Teuvo Taravainen","C","G",81,70,57,91,84,89,88,82,83,49,82,98,94,81,32,6250000,0],
+  ["Shane Wright","C","D",61,78,71,83,76,81,81,78,77,72,81,54,42,80,22,3750000,1],
+  ["Tristan Broz","C","G",70,81,73,83,77,76,75,76,71,71,74,56,49,78,24,3750000,4],
+  ["Evan Vierling","C","G",67,77,72,82,77,78,75,71,72,66,71,53,34,76,24,750000,1],
+  ["Jake DeBrusk","AG","G",92,76,89,79,97,75,78,65,74,67,87,83,79,83,30,10625000,1],
+  ["Jeff Skinner","AG","G",60,88,71,86,83,89,96,69,76,54,87,96,95,82,34,8450000,1],
+  ["Jan Mysak","AG","G",64,85,72,81,81,85,83,74,73,56,80,55,47,78,24,2825000,1],
+  ["Jonatan Berggren","AG","G",73,75,69,76,77,79,77,73,74,64,75,61,60,77,26,1000000,1],
+  ["Evgeny Svechnikov","AD","G",83,78,89,85,95,78,80,69,72,55,82,70,62,81,30,7500000,1],
+  ["Fabian Zetterlund","AD","D",69,77,78,78,76,79,79,76,74,67,76,63,63,79,26,2575000,2],
+  ["Rasmus Dahlin","D","G",70,83,76,94,95,81,91,81,78,71,73,64,72,84,26,12200000,2],
+  ["Hampus Lindholm","D","G",73,73,80,86,75,75,77,75,76,82,59,85,68,81,32,5950000,1],
+  ["Layton Ahac","D","G",80,73,86,79,82,78,76,64,62,83,62,58,60,80,25,5750000,3],
+  ["Nick Perbix","D","D",73,74,85,76,76,80,73,68,70,77,60,68,67,78,28,2450000,1],
+  ["Mats Lindgren","D","G",63,74,65,77,61,76,73,74,74,67,69,47,41,75,22,700000,2],
+  ["Yaroslav Askarov","G","D",74,92,85,93,85,89,87,64,82,null,null,63,52,81,24,2825000,1],
+  ["Pyotr Kochetkov","G","G",75,87,90,93,94,76,87,68,82,null,null,70,67,80,27,3125000,1],
+  ["Gage Alexander","G","G",77,83,90,89,91,83,83,72,75,null,null,61,54,77,24,775000,2]
+ ]},
+ {c:'WASHINGTON', n:'Capitals de Washington', j:[
+  ["Mark Scheifele","C","D",70,84,74,88,84,78,80,86,80,64,83,95,90,84,33,13500000,1],
+  ["Danton Heinen","C","G",71,79,70,86,87,88,69,83,72,66,84,67,68,81,31,6250000,0],
+  ["Josh Norris","C","G",61,80,78,81,83,83,84,77,69,79,78,64,62,81,27,7500000,1],
+  ["Cayden Lidstrom","C","G",76,75,80,74,69,66,75,73,72,61,76,38,33,77,20,975000,2],
+  ["Eetu Luostarinen","C","G",74,74,78,77,83,81,71,74,70,70,71,59,51,77,28,4375000,1],
+  ["David Goyette","C","G",62,79,69,74,72,76,78,74,78,64,73,45,38,76,22,800000,2],
+  ["Alexis Lafreniere","AG","G",64,90,74,93,90,89,87,79,81,58,79,52,46,82,25,9075000,2],
+  ["Michael Rasmussen","AG","G",92,79,99,86,98,78,76,63,67,51,86,65,68,81,27,7500000,1],
+  ["Vladislav Firstov","AG","G",60,80,73,84,79,81,75,76,73,69,81,53,47,79,25,3750000,3],
+  ["Gavin Hayes","AG","D",65,73,71,72,68,76,74,72,73,67,71,46,30,75,22,750000,2],
+  ["Sam Colangelo","AD","D",77,75,88,84,90,74,76,68,65,60,86,58,51,79,25,3125000,2],
+  ["Francesco Pinelli","AD","G",69,78,73,84,75,78,74,77,71,69,74,49,41,78,23,2250000,3],
+  ["Josh Anderson","AD","D",71,82,79,76,72,69,73,67,70,64,70,69,69,76,32,1575000,1],
+  ["Neal Pionk","D","D",84,75,79,83,84,80,74,73,72,80,62,74,77,81,31,6250000,0],
+  ["Andrew Peeke","D","D",81,69,88,88,83,72,80,62,65,80,60,64,56,80,28,5750000,3],
+  ["Cal Foote","D","D",76,75,94,85,78,78,69,63,69,79,53,61,51,79,28,5950000,2],
+  ["Emil Andrae","D","G",75,77,74,86,83,66,73,71,76,68,73,52,48,78,24,2825000,1],
+  ["Logan Mailloux","D","D",72,71,84,79,83,62,71,70,66,75,67,49,37,77,23,950000,3],
+  ["Axel Sandin-Pellikka","D","D",64,74,71,82,73,72,78,74,73,68,71,42,43,76,21,900000,2],
+  ["Andrey Vasilevskiy","G","G",82,91,87,95,94,87,94,74,89,null,null,86,79,85,32,11575000,1],
+  ["Cayden Primeau","G","G",76,85,84,83,83,80,84,69,82,null,null,66,58,78,27,950000,1]
+ ]},
+ {c:'DETROIT', n:'Red Wings de Detroit', j:[
+  ["Martin Necas","C","D",65,89,70,82,80,82,84,80,78,64,77,70,58,81,27,10625000,1],
+  ["Ryan Nugent-Hopkins","C","G",53,75,64,80,74,79,83,85,75,64,75,97,88,79,33,5950000,1],
+  ["Hendrix Lapierre","C","G",63,78,71,77,71,82,80,76,71,70,74,51,38,77,24,2825000,1],
+  ["Alexander Wennberg","C","G",60,77,66,76,78,78,77,73,73,68,72,87,74,76,32,1950000,1],
+  ["Jake Evans","C","D",70,78,67,76,80,81,77,71,74,71,69,67,67,76,30,3250000,1],
+  ["Jaromir Pytlik","C","D",75,71,79,76,82,76,67,68,71,62,72,63,40,75,25,75000,1],
+  ["Radek Faksa","C","G",73,71,77,72,72,74,71,71,70,71,66,81,63,75,32,2450000,1],
+  ["Red Savage","C","G",79,72,74,69,80,66,70,70,65,71,66,55,48,74,23,725000,2],
+  ["Mikko Rantanen","AG","G",73,77,91,88,89,76,82,77,74,57,87,76,80,83,30,9075000,1],
+  ["Dmitri Buchelnikov","AG","D",65,74,65,78,78,81,74,72,73,65,75,57,46,75,23,750000,2],
+  ["Andrei Svechnikov","AD","G",60,92,82,90,81,89,92,75,73,54,86,55,48,82,26,7500000,1],
+  ["Jack Quinn","AD","D",68,77,69,86,89,84,76,72,71,67,83,56,48,79,25,4375000,2],
+  ["Nate Danielson","AD","D",74,77,76,79,81,74,76,75,67,71,71,47,42,77,22,950000,3],
+  ["Jaccob Slavin","D","G",63,74,83,89,87,89,77,71,70,83,58,77,79,80,32,5950000,3],
+  ["Luke Hughes","D","G",68,80,71,74,74,75,84,77,74,69,71,53,36,79,23,7500000,5],
+  ["Mike Matheson","D","G",65,81,73,85,78,73,80,77,74,75,67,77,71,79,32,5000000,2],
+  ["Ville Heinola","D","G",62,79,70,83,78,84,73,78,74,68,72,53,49,78,25,2250000,3],
+  ["Vince Dunn","D","G",63,74,72,80,86,79,78,77,73,68,71,74,71,78,30,3750000,1],
+  ["Kevin Korchinski","D","G",69,75,71,78,78,73,76,75,72,70,69,50,33,76,22,900000,1],
+  ["Tyler Kleven","D","G",80,70,83,75,70,65,74,63,63,74,59,57,40,76,24,80000,1],
+  ["Mark Visentin","G","G",79,87,95,94,98,85,83,70,86,null,null,94,65,82,34,7200000,2],
+  ["Filip Lindberg","G","G",71,84,82,84,84,86,85,68,85,null,null,73,63,78,27,850000,1],
+  ["Jiri Patera","G","G",78,82,80,85,88,84,87,71,86,null,null,61,60,78,27,950000,1]
+ ]},
+ {c:'ST.LOUIS', n:'Blues de St. Louis', j:[
+  ["Quinton Byfield","C","G",65,85,85,92,90,80,86,82,79,60,79,50,40,82,24,6875000,1],
+  ["Jack Roslovic","C","D",69,81,77,83,84,88,76,79,71,70,75,79,72,80,29,7500000,2],
+  ["Ivan Barbashev","C","G",72,77,73,79,79,81,76,75,74,64,76,78,72,79,30,3600000,1],
+  ["Yegor Spiridonov","C","G",82,77,88,75,78,79,71,67,62,68,80,63,55,78,25,2250000,2],
+  ["Filip Bystedt","C","G",60,76,77,76,71,76,77,76,73,67,72,50,43,77,22,900000,2],
+  ["Zach Dean","C","G",70,76,73,81,70,73,76,75,71,66,72,47,37,76,23,825000,1],
+  ["Bo Horvat","AG","G",90,69,97,89,99,76,75,64,62,68,86,86,98,82,31,7500000,3],
+  ["Kailer Yamamoto","AG","D",67,92,51,82,75,77,93,79,82,50,87,73,74,81,28,7500000,3],
+  ["Mikhail Grigorenko","AG","G",52,94,82,87,84,85,92,73,67,44,90,83,93,81,32,5950000,3],
+  ["Adam Sykora","AG","G",81,78,71,73,78,74,76,70,71,69,70,51,44,76,22,800000,2],
+  ["Zachary L'Heureux","AG","G",77,72,80,78,83,62,74,69,71,62,74,49,39,76,23,825000,1],
+  ["Andrei Kuzmenko","AD","D",61,80,75,86,84,84,88,82,81,60,82,59,61,82,30,7500000,1],
+  ["Vincent Trocheck","AD","D",68,79,61,90,88,82,68,82,72,72,83,81,88,80,33,7200000,2],
+  ["Artturi Lehkonen","AD","G",63,83,60,82,70,79,81,75,74,73,79,83,70,79,31,4825000,2],
+  ["Ville Koivunen","AD","G",67,77,69,73,74,77,78,74,72,62,73,47,37,75,23,775000,1],
+  ["Chad Krys","D","G",80,77,87,87,84,74,81,68,64,80,53,76,69,81,28,7500000,3],
+  ["Gustav Forsling","D","G",71,77,76,85,79,79,83,73,79,83,62,76,70,81,30,7200000,3],
+  ["Louis Crevier","D","D",82,67,98,76,75,73,68,61,62,84,60,54,61,80,25,4375000,2],
+  ["Ryan Zuhlsdorf","D","G",81,81,85,79,75,88,74,60,61,86,46,80,70,79,29,3125000,1],
+  ["Sam Dickinson","D","G",72,73,76,79,74,77,78,69,70,75,65,42,37,77,20,975000,2],
+  ["Juuse Saros","G","G",82,90,75,88,91,84,88,74,83,null,null,82,70,81,31,6875000,3],
+  ["Elvis Merzlikins","G","G",77,86,85,88,85,88,82,72,79,null,null,84,75,79,32,3875000,1],
+  ["Ilya Nabokov","G","G",77,83,76,87,84,78,83,62,82,null,null,58,52,76,23,750000,2]
+ ]},
+ {c:'NASHVILLE', n:'Predators de Nashville', j:[
+  ["Tage Thompson","C","D",68,82,85,80,79,75,78,76,80,62,81,75,71,82,29,10625000,1],
+  ["Mavrik Bourque","C","D",67,85,66,89,79,77,83,82,77,67,81,58,58,81,24,5325000,1],
+  ["Anthony Beauvillier","C","G",63,86,62,83,76,79,80,79,72,69,78,82,73,79,29,3500000,0],
+  ["Jesper Boqvist","C","G",72,78,71,78,77,79,80,75,72,64,71,72,60,77,28,1000000,0],
+  ["Kevin Labanc","AG","D",65,77,73,86,89,87,85,82,81,60,81,81,65,82,31,5950000,1],
+  ["Anthony Duclair","AG","D",67,98,65,90,84,87,92,67,63,51,85,79,70,79,31,3500000,3],
+  ["Yegor Sharangovich","AG","G",69,83,71,77,79,81,81,74,77,60,81,71,64,79,28,2500000,1],
+  ["Jesse Puljujarvi","AD","D",58,85,80,98,88,83,95,74,86,57,86,71,57,84,28,12250000,2],
+  ["Matthew Coronato","AD","D",69,85,66,83,68,76,86,82,81,60,83,60,50,81,24,7500000,3],
+  ["Rasmus Kupari","AD","D",57,92,65,85,78,87,91,78,76,54,81,68,51,80,26,4375000,2],
+  ["Michael B-Nygard","AD","D",79,78,70,69,78,68,71,68,67,68,74,44,39,75,21,900000,2],
+  ["Noah Hanifin","D","G",80,74,76,85,87,85,80,83,81,67,71,80,69,82,29,7500000,1],
+  ["Vladislav Gavrikov","D","G",75,74,86,84,81,71,75,71,66,81,59,81,65,80,30,4700000,2],
+  ["Carson Lambos","D","G",72,78,77,79,76,75,79,71,69,80,66,55,34,79,23,3750000,3],
+  ["Henri Jokiharju","D","D",69,80,84,86,80,81,79,66,71,81,53,65,51,79,27,4375000,1],
+  ["Samuel Bolduc","D","G",75,76,85,84,90,75,79,63,69,80,52,67,57,79,26,4375000,1],
+  ["Aidan Hreschuk","D","G",73,75,73,75,76,78,75,70,63,73,61,51,37,75,23,700000,2],
+  ["Graham Sward","D","G",63,71,74,70,78,72,72,74,72,59,70,49,46,74,23,775000,2],
+  ["Jesse Pulkkinen","D","G",77,61,82,79,81,73,62,62,64,75,58,49,43,74,22,800000,2],
+  ["Simon Forsmark","D","G",73,65,77,77,77,78,67,65,67,73,58,51,44,74,23,700000,2],
+  ["Ilya Samsonov","G","G",79,97,84,99,97,86,94,76,89,null,null,83,67,86,29,12200000,1]
+ ]},
+ {c:'COLUMBUS', n:'Blue Jackets de Columbus', j:[
+  ["Pierre-Luc Dubois","C","G",69,85,78,91,90,91,82,79,72,71,78,77,59,82,28,8750000,3],
+  ["Roope Hintz","C","G",67,82,81,84,78,82,78,79,75,71,80,88,70,82,30,7500000,1],
+  ["Claude Giroux","C","D",58,74,65,86,81,84,80,81,80,61,74,99,99,79,38,2250000,0],
+  ["Connor Bunnaman","C","G",94,69,91,79,94,59,76,69,66,83,65,74,76,79,28,3750000,3],
+  ["Ryan McLeod","C","G",67,79,89,83,85,78,84,71,67,53,77,63,60,78,27,2250000,1],
+  ["Jason Robertson","AG","G",77,82,86,81,85,90,80,73,75,58,86,77,81,83,27,7500000,1],
+  ["Vitali Kravtsov","AG","G",56,86,78,84,84,90,89,81,81,51,79,69,57,81,27,7500000,3],
+  ["Nathan Gaucher","AG","D",77,79,85,74,83,72,73,68,67,68,76,58,49,78,23,1875000,1],
+  ["Jamieson Rees","AD","G",82,95,65,83,69,71,80,85,72,68,73,62,57,81,25,7500000,3],
+  ["Logan Brown","AD","G",85,76,99,89,92,84,73,66,67,62,82,77,70,81,28,7500000,2],
+  ["Jack Drury","AD","G",64,82,68,77,70,74,79,76,77,65,73,64,61,77,26,4375000,1],
+  ["James Malatesta","AD","G",73,80,65,79,67,71,76,69,70,65,76,52,45,76,23,950000,4],
+  ["Jonas Siegenthaler","D","G",82,73,88,90,79,75,79,71,73,84,59,70,63,83,29,5950000,1],
+  ["Kevin Bahl","D","G",87,64,96,88,87,64,82,57,61,88,53,70,66,82,26,7500000,2],
+  ["Bode Wilde","D","D",58,83,78,84,89,82,89,83,78,58,73,62,59,81,26,7500000,1],
+  ["Jared Cowen","D","G",80,67,83,88,84,87,82,55,66,86,47,99,82,80,35,3250000,2],
+  ["Ryan Lindgren","D","G",74,76,87,82,85,78,79,62,61,82,50,76,56,79,28,3750000,3],
+  ["Noah Warren","D","D",81,68,86,73,76,67,67,62,64,78,57,47,37,76,22,900000,2],
+  ["Ales Stezka","G","G",75,89,85,84,91,90,92,73,85,null,null,81,72,82,29,7500000,2]
+ ]},
+ {c:'CHICAGO', n:'Blackhawks de Chicago', j:[
+  ["Tim Stutzle","C","G",61,86,72,87,87,85,85,77,79,59,76,55,38,79,24,5325000,1],
+  ["Macklin Celebrini","C","G",64,78,66,82,79,81,80,81,80,65,76,37,37,78,20,975000,1],
+  ["Jonathan Huberdeau","AG","G",62,80,73,88,86,80,81,78,76,60,80,86,82,80,33,7200000,1],
+  ["Dalibor Dvorsky","AG","G",72,75,76,75,80,76,74,73,73,71,78,44,40,78,21,2250000,3],
+  ["Isak Rosen","AG","G",70,80,68,78,71,81,79,73,73,65,76,51,38,77,23,950000,3],
+  ["Joshua Roy","AG","G",60,76,67,73,73,77,76,73,75,57,73,49,39,74,23,700000,1],
+  ["Trevor Zegras","AD","G",62,95,72,85,83,75,90,82,80,59,82,59,48,82,25,8750000,3],
+  ["William Nylander","AD","D",64,78,67,83,82,82,83,82,84,62,85,83,75,82,30,8450000,1],
+  ["Logan Stankoven","AD","D",70,84,65,79,67,80,82,74,77,64,80,50,50,79,23,3750000,3],
+  ["Philip Tomasino","AD","G",72,82,67,82,79,86,82,74,72,56,74,59,45,77,25,950000,2],
+  ["Jake Sanderson","D","G",74,78,88,87,83,76,81,73,78,84,58,52,52,83,24,6875000,1],
+  ["Miro Heiskanen","D","G",70,79,78,89,78,79,84,75,77,83,69,82,67,82,27,9075000,1],
+  ["Denton Mateychuk","D","G",64,76,67,83,74,81,81,81,77,68,72,46,41,79,22,900000,1],
+  ["Brett Pesce","D","D",64,74,81,83,77,79,75,71,69,80,56,82,75,78,32,4375000,1],
+  ["Michael Kesselring","D","D",69,72,83,80,80,70,76,71,68,79,56,68,56,78,26,2250000,2],
+  ["Thatcher Demko","G","G",85,90,87,92,84,84,89,74,88,null,null,84,68,83,31,7500000,3],
+  ["Filip Gustavsson","G","G",77,85,84,92,95,86,92,69,83,null,null,70,63,80,28,3750000,3],
+  ["Vadim Zherenko","G","G",73,80,81,82,82,81,83,64,86,null,null,61,55,76,25,700000,1]
+ ]},
+ {c:'COLORADO', n:'Avalanche du Colorado', j:[
+  ["Connor McDavid","C","G",67,95,72,92,84,83,95,85,88,60,82,86,88,86,29,15625000,1],
+  ["Sam Bennett","C","G",70,80,70,92,84,84,83,86,84,64,82,73,73,84,30,9075000,1],
+  ["John Beecher","C","G",81,77,92,84,93,66,80,68,68,60,77,59,50,79,25,3750000,3],
+  ["Noah Ostlund","C","G",73,83,65,85,75,86,79,76,80,63,73,49,43,78,22,975000,1],
+  ["Taylor Hall","AG","G",68,89,70,96,92,84,83,80,68,70,81,99,99,83,35,6000000,2],
+  ["Nicolas Petan","AG","G",57,89,64,81,71,93,95,87,79,57,75,81,71,81,31,6250000,0],
+  ["Oliver Bjorkstrand","AG","D",90,74,76,86,99,98,77,66,66,64,84,82,76,80,31,5950000,2],
+  ["Nicholas Robertson","AG","G",81,85,62,84,78,69,77,76,69,71,79,61,54,79,25,3125000,2],
+  ["Reid Schaefer","AG","G",75,73,85,77,86,68,72,68,69,68,78,55,49,78,23,800000,1],
+  ["Samuel Poulin","AD","G",78,78,91,82,93,76,76,70,70,63,81,57,62,80,25,5750000,3],
+  ["Jacob Perreault","AD","D",58,86,71,77,76,78,84,75,72,60,79,58,46,78,24,2250000,3],
+  ["Derrick Pouliot","D","G",59,78,58,85,78,83,86,84,74,68,79,91,78,81,32,7200000,2],
+  ["Nicolas Beaudin","D","G",69,83,66,88,88,90,85,80,74,67,67,62,55,80,27,5750000,3],
+  ["Thomas Chabot","D","G",74,76,83,88,83,80,84,68,67,79,65,73,60,80,29,7500000,2],
+  ["Corson Ceulemans","D","D",70,78,80,79,78,73,80,70,66,78,69,51,36,78,23,2250000,3],
+  ["Eemeli Rasanen","D","D",79,68,94,81,83,81,67,59,62,80,54,73,61,78,27,2200000,1],
+  ["Daemon Hunt","D","G",75,75,82,78,70,76,72,66,64,77,55,58,48,77,24,1250000,1],
+  ["Victor Soderstrom","D","D",64,77,72,79,77,81,80,74,76,66,66,58,45,77,25,950000,3],
+  ["Christian Kyrou","D","D",62,71,68,77,77,82,73,79,76,59,73,54,47,76,23,75000,1],
+  ["Spencer Knight","G","G",69,90,84,89,91,89,88,70,85,null,null,63,52,80,25,3750000,3],
+  ["Alex Lyon","G","G",79,85,80,86,87,84,85,75,85,null,null,77,70,79,34,2375000,1],
+  ["Benjamin Gaudreau","G","G",75,86,82,82,83,88,84,70,75,null,null,57,43,77,23,950000,5]
+ ]},
+ {c:'VANCOUVER', n:'Canucks de Vancouver', j:[
+  ["Evgeni Malkin","C","G",70,76,81,81,79,74,77,83,80,63,78,99,93,82,40,5000000,1],
+  ["Joseph Veleno","C","G",68,87,78,85,86,81,83,85,78,68,73,61,65,82,26,9075000,2],
+  ["Conor Geekie","C","G",72,75,81,78,85,69,74,77,77,67,75,46,44,79,22,1875000,1],
+  ["Thomas Bordeleau","C","G",67,80,69,79,76,75,74,73,80,64,76,57,45,77,24,2825000,1],
+  ["Caleb Desnoyers","C","G",67,69,74,73,76,73,73,75,69,68,73,34,34,75,19,975000,2],
+  ["Valeri Nichushkin","AG","G",72,82,79,80,66,84,83,74,75,70,79,78,68,81,31,6250000,0],
+  ["Joakim Kemell","AG","D",71,82,70,76,73,81,81,76,74,64,82,46,49,79,22,900000,1],
+  ["Liam Ohgren","AG","G",63,75,73,85,80,72,73,72,71,73,76,47,48,77,22,900000,1],
+  ["Daniil But","AG","D",77,71,84,76,82,63,73,69,68,62,76,44,36,76,21,900000,2],
+  ["Owen Tippett","AD","D",72,90,93,91,93,90,85,68,72,61,90,64,63,84,27,10625000,2],
+  ["Kieffer Bellows","AD","G",83,91,93,87,98,95,80,61,72,58,88,74,84,83,28,10500000,3],
+  ["Brett Berard","AD","G",73,89,61,75,67,73,86,86,83,63,72,57,53,80,24,3750000,1],
+  ["Dougie Hamilton","D","D",79,82,80,91,88,72,79,66,73,80,63,99,86,82,33,7500000,2],
+  ["Simon Edvinsson","D","G",68,80,77,83,77,75,85,84,79,66,74,52,47,82,23,8750000,3],
+  ["Jacob Truscott","D","G",80,74,81,81,79,73,75,69,72,86,65,55,61,81,24,3750000,1],
+  ["Jared McIsaac","D","G",81,77,87,93,86,69,84,56,68,84,48,60,57,80,26,7500000,2],
+  ["Jacob Cederholm","D","D",90,71,88,86,80,75,75,54,63,84,49,66,67,79,28,3750000,3],
+  ["Mikey Anderson","D","G",75,74,83,83,82,74,74,71,68,77,58,71,66,79,27,3300000,1],
+  ["Elias Salomonsson","D","D",73,78,78,75,68,76,77,67,69,75,65,46,38,77,22,800000,2],
+  ["Stian Stolberg","D","G",83,67,79,76,76,67,67,67,66,76,58,44,40,76,21,900000,2],
+  ["Lukas Dostal","G","G",75,91,75,85,86,86,90,73,82,null,null,65,53,80,26,3125000,2],
+  ["Jan Bednar","G","G",77,87,88,84,83,74,86,71,79,null,null,66,54,78,24,700000,1]
+ ]},
+ {c:'CALGARY', n:'Flames de Calgary', j:[
+  ["Leo Carlsson","C","G",65,76,79,83,81,80,80,82,78,74,76,49,44,81,22,10500000,5],
+  ["Danny Zhilkin","C","G",58,77,70,66,67,75,80,75,77,64,71,50,47,75,23,800000,1],
+  ["Paul Ludwinski","C","G",76,71,75,72,77,66,71,69,66,70,70,48,38,74,22,750000,2],
+  ["Kyle Connor","AG","G",59,88,72,83,84,88,84,76,78,64,82,79,77,81,30,6250000,3],
+  ["Drake Batherson","AG","G",80,79,79,84,83,82,81,75,75,60,77,69,64,80,28,5750000,3],
+  ["Oliver Wahlstrom","AG","D",61,85,87,83,89,80,84,73,71,55,81,71,47,80,26,5950000,2],
+  ["Frank Vatrano","AG","G",74,78,67,79,80,73,78,73,79,63,79,78,70,79,32,4700000,1],
+  ["Karl Henriksson","AG","G",74,79,61,86,80,82,80,72,69,66,72,59,43,76,25,825000,2],
+  ["Joshua Bloom","AG","G",75,73,79,72,78,72,72,70,66,68,70,56,42,75,23,750000,2],
+  ["Adam Fantilli","AD","D",75,80,77,78,79,77,80,75,77,65,80,48,42,80,22,8750000,5],
+  ["Jimmy Snuggerud","AD","D",71,74,77,79,76,77,76,77,73,67,76,48,45,78,22,900000,1],
+  ["Mackie Samoskevich","AD","D",65,82,73,75,70,77,84,79,79,70,68,59,48,78,24,1875000,1],
+  ["Beckett Sennecke","AD","D",63,74,67,78,75,79,75,80,79,65,75,40,39,77,20,975000,2],
+  ["Olivier Nadeau","AD","D",64,77,80,74,76,72,77,76,74,64,74,48,41,77,23,950000,3],
+  ["Charlie McAvoy","D","D",73,75,82,94,74,81,81,72,73,80,58,84,74,81,29,7500000,2],
+  ["Griffin Reinhart","D","G",82,72,83,92,88,84,79,59,78,83,52,85,72,81,32,7200000,2],
+  ["David Jiricek","D","D",78,72,84,85,78,70,78,70,72,80,66,52,53,80,23,5325000,1],
+  ["Brandon Montour","D","D",64,78,66,84,78,72,78,76,77,63,76,77,78,79,32,4825000,2],
+  ["Ivan Provorov","D","G",67,79,72,81,84,80,80,78,76,69,68,77,76,79,29,3575000,2],
+  ["Sean Durzi","D","D",69,76,64,79,77,75,78,76,75,70,63,62,59,77,27,950000,2],
+  ["Bryce Montgomery","D","D",77,65,83,79,78,74,66,64,62,75,58,58,53,75,24,725000,2],
+  ["Cameron Whynot","D","G",72,71,76,71,77,70,72,69,65,73,62,55,43,75,23,750000,2],
+  ["Samuel Montembeault","G","G",82,88,86,86,90,83,90,70,83,null,null,73,71,81,30,5000000,0],
+  ["Jesper Wallstedt","G","G",78,86,83,88,91,84,89,78,85,null,null,55,58,80,24,3750000,3],
+  ["Dustin Wolf","G","G",77,87,77,87,77,82,81,65,83,null,null,69,54,78,25,700000,2]
+ ]},
+ {c:'EDMONTON', n:'Oilers d’Edmonton', j:[
+  ["Leon Draisaitl","C","G",70,84,77,83,81,75,80,84,83,63,87,86,82,84,31,10250000,4],
+  ["John Tavares","C","G",64,79,69,97,87,79,79,82,76,57,79,99,93,81,35,5750000,0],
+  ["Ryan Johansen","C","D",59,80,76,84,92,84,81,78,74,66,74,98,91,80,34,5950000,1],
+  ["Xavier Bourgault","C","D",65,81,71,78,75,85,78,76,73,65,75,54,42,77,24,950000,2],
+  ["David Edstrom","C","G",62,72,74,78,74,74,73,73,71,65,72,47,40,75,21,900000,2],
+  ["Anton Lundell","AG","G",65,78,80,88,89,88,78,81,75,69,80,62,54,81,25,7500000,2],
+  ["Ozzy Wiesblatt","AG","D",82,77,85,89,95,75,76,68,64,66,79,64,57,79,24,3750000,1],
+  ["Cole Caufield","AD","D",67,86,57,90,81,84,88,75,76,58,88,63,56,80,25,5750000,3],
+  ["Vitali Abramov","AD","G",57,84,68,93,87,88,80,76,79,49,87,73,57,80,28,5750000,2],
+  ["Chaz Lucius","AD","D",72,76,72,77,71,79,76,71,75,65,78,51,41,77,23,950000,3],
+  ["Juuso Valimaki","D","G",74,77,82,84,74,88,82,79,80,64,80,81,67,83,28,12250000,4],
+  ["Jakob Chychrun","D","G",82,81,83,91,87,87,87,58,70,83,45,91,51,81,28,7500000,3],
+  ["Will Borgen","D","D",80,68,88,83,82,73,74,71,66,80,57,75,68,80,30,4700000,2],
+  ["Nicolas Hague","D","G",78,74,85,79,77,75,71,67,69,78,61,81,74,79,28,2425000,1],
+  ["Anton Olsson","D","G",71,76,75,77,77,70,76,70,67,69,64,56,34,75,23,750000,2],
+  ["Ryan Chesley","D","D",77,73,78,73,77,62,75,57,63,76,62,44,37,75,22,80000,1],
+  ["Frederik Andersen","G","G",72,93,92,95,92,86,86,66,85,null,null,98,78,83,36,5950000,1],
+  ["Dennis Hildeby","G","G",82,82,96,83,83,80,80,74,79,null,null,63,50,78,25,750000,2],
+  ["Vitek Vanecek","G","G",79,82,78,86,82,89,83,78,81,null,null,81,66,78,30,1225000,1]
+ ]},
+ {c:'MINNESOTA', n:'Wild du Minnesota', j:[
+  ["Peyton Krebs","C","G",68,84,72,81,73,74,83,79,77,64,76,52,41,79,25,3750000,3],
+  ["Patrick Guay","C","G",57,78,67,80,70,75,74,79,77,69,79,56,57,78,24,2825000,1],
+  ["Tristen Robins","C","D",58,82,69,82,77,78,81,74,76,60,74,57,46,77,25,950000,1],
+  ["Samuel Helenius","C","G",67,73,76,78,75,74,76,68,67,66,69,58,35,74,24,750000,2],
+  ["Kasperi Kapanen","AG","D",65,84,64,86,78,83,89,84,81,60,77,74,57,81,30,6250000,2],
+  ["Arseni Gritsyuk","AG","G",71,87,57,85,79,80,82,79,79,62,75,58,48,79,25,3750000,3],
+  ["Roman Kantserov","AG","G",71,72,65,77,62,67,74,77,71,68,74,48,44,76,22,800000,2],
+  ["Vladimir Tarasenko","AD","G",64,77,70,85,81,88,83,75,77,57,84,96,74,80,35,5950000,1],
+  ["Anatoli Golyshev","AD","G",52,88,50,92,78,91,83,72,77,71,85,70,72,79,31,6875000,1],
+  ["Alex Laferriere","AD","D",56,78,72,82,86,78,80,80,83,62,73,60,58,78,25,3125000,2],
+  ["Cole O'Hara","AD","D",63,74,74,87,79,79,72,73,70,69,80,55,57,78,24,700000,1],
+  ["Louis Belpedio","D","G",80,69,85,76,83,77,73,69,58,83,56,78,81,79,30,4375000,1],
+  ["Sean Behrens","D","G",72,74,73,74,78,76,76,79,71,71,76,49,49,78,23,3750000,4],
+  ["Christian Krygier","D","G",80,68,84,71,70,75,74,61,63,82,50,62,58,77,26,850000,1],
+  ["Linus Ullmark","G","G",84,87,89,85,78,83,89,74,82,null,null,83,73,81,33,4725000,2]
+ ]},
+ {c:'LOSANGELES', n:'Kings de Los Angeles', j:[
+  ["Cole Perfetti","C","G",63,83,70,90,82,83,82,82,82,66,84,52,46,82,24,8450000,1],
+  ["Marco Rossi","C","G",63,81,70,97,82,91,83,84,85,66,79,64,49,82,25,8750000,3],
+  ["Brayden Yager","C","G",69,75,69,82,73,78,74,76,70,64,73,46,37,76,21,900000,2],
+  ["Michael Misa","C","G",69,74,68,74,72,78,76,74,73,65,76,35,30,76,19,975000,2],
+  ["Dawson Mercer","AG","D",79,78,83,88,89,84,76,76,70,70,81,56,57,81,25,7500000,2],
+  ["Kasper Simontaival","AG","D",65,85,65,84,76,87,82,77,79,64,83,55,54,80,24,3750000,1],
+  ["Juraj Slafkovsky","AG","G",71,77,82,78,84,72,78,77,76,58,79,52,40,79,22,2825000,1],
+  ["Kaapo Kakko","AD","G",66,88,81,88,88,83,91,75,79,63,84,55,46,83,25,10500000,3],
+  ["Cutter Gauthier","AD","G",74,78,81,80,87,71,79,70,73,66,80,48,49,79,22,2825000,1],
+  ["Connor McClennon","AD","D",71,85,64,69,64,74,81,70,71,64,69,52,36,75,24,700000,2],
+  ["Cale Makar","D","D",71,88,69,98,85,88,89,85,82,73,81,78,78,87,28,17500000,1],
+  ["David Reinbacher","D","D",76,73,81,83,78,75,78,69,72,80,66,50,45,80,22,5750000,3],
+  ["Devon Toews","D","G",69,75,76,89,82,77,76,69,73,83,73,78,68,80,32,7350000,3],
+  ["Luke Shenn","D","G",81,73,82,92,78,80,75,58,71,88,46,99,84,80,36,3250000,0],
+  ["Tristan Luneau","D","D",68,73,76,76,74,74,71,72,71,72,67,50,36,76,22,900000,2],
+  ["Emil M. Lilleberg","D","G",74,71,77,78,79,68,72,64,59,72,63,59,43,74,25,700000,1],
+  ["Tristan Jarry","G","G",86,89,84,90,83,90,90,74,90,null,null,78,74,83,31,7500000,3],
+  ["Stuart Skinner","G","G",79,85,89,85,83,85,85,76,85,null,null,84,75,80,28,4775000,3]
+ ]},
+ {c:'SANJOSE', n:'Sharks de San Jose', j:[
+  ["Jesperi Kotkaniemi","C","G",70,83,77,89,86,83,83,83,79,62,79,61,51,82,26,9075000,2],
+  ["Jaden Schwartz","C","G",60,81,64,90,83,99,91,86,84,63,67,99,99,81,34,7200000,1],
+  ["Nico Hischier","C","G",65,87,72,92,88,87,89,80,78,57,76,64,48,81,27,7500000,1],
+  ["Ryan O'Reilly","C","G",74,73,70,84,86,80,74,79,79,72,79,98,95,81,35,6000000,1],
+  ["Brad Lambert","C","D",69,87,71,80,81,76,85,71,73,57,74,51,38,77,23,900000,1],
+  ["Zachary Bolduc","C","G",64,80,75,76,74,70,79,77,74,63,74,48,43,77,23,950000,3],
+  ["Nathan Legare","AG","D",82,70,94,84,98,79,70,72,69,65,88,60,69,82,25,8750000,3],
+  ["Brendan Brisson","AG","G",74,85,70,89,76,88,82,85,83,57,69,59,57,80,25,5950000,2],
+  ["Akil Thomas","AD","D",63,87,73,90,80,87,86,80,71,71,81,61,64,82,26,5950000,2],
+  ["Kent Johnson","AD","G",66,80,74,79,78,80,79,78,82,62,77,58,44,79,24,3750000,3],
+  ["Miko Matikka","AD","D",69,76,83,68,83,80,74,69,68,63,77,54,43,76,23,800000,1],
+  ["Haydn Fleury","D","G",80,70,91,89,87,76,85,73,68,82,65,72,61,83,30,12200000,1],
+  ["Adam Fox","D","D",64,84,69,88,83,82,85,85,76,77,70,62,65,82,28,8750000,3],
+  ["Braden Schneider","D","D",82,73,87,94,91,80,77,65,71,79,56,54,58,81,25,5950000,2],
+  ["Shea Theodore","D","G",60,79,76,94,83,81,80,82,80,64,72,75,74,81,31,6250000,0],
+  ["Gianni Fairbrother","D","G",74,74,80,77,71,69,75,65,68,78,65,61,47,77,26,950000,2],
+  ["Xavier Bernard","D","G",75,73,90,74,81,68,77,62,53,79,58,61,47,77,26,950000,2],
+  ["Artyom Grushnikov","D","G",77,69,80,77,81,76,77,64,62,75,58,54,44,76,23,825000,3],
+  ["Philippe Desrosiers","G","D",85,93,63,96,98,93,91,63,90,null,null,81,60,83,31,7500000,4],
+  ["Rasmus Korhonen","G","G",77,82,89,91,93,85,85,73,80,null,null,66,56,78,24,775000,2],
+  ["Tyler Wall","G","G",79,82,88,79,77,82,78,67,79,null,null,73,58,76,28,700000,1]
+ ]},
+ {c:'ANAHEIM', n:'Ducks d’Anaheim', j:[
+  ["Semyon Arguchintsev","C","D",59,82,61,79,83,94,87,86,90,61,67,65,64,79,26,5950000,2],
+  ["Ethan Phillips","C","D",83,78,68,85,70,82,75,68,69,80,68,58,52,77,25,950000,3],
+  ["Owen Beck","C","D",69,84,65,81,78,75,76,73,71,68,77,46,41,77,22,800000,2],
+  ["Luca DelBelBelluz","C","G",62,70,73,74,79,77,67,72,73,60,73,51,39,74,23,800000,2],
+  ["Curtis Douglas","C","G",70,66,93,70,71,63,69,69,61,57,68,71,40,73,26,70000,1],
+  ["Sidney Crosby","AG","G",73,78,72,80,80,78,81,85,84,68,82,99,99,84,39,7250000,4],
+  ["Michael Bunting","AG","G",73,85,75,89,85,69,76,84,67,74,83,74,73,83,31,8750000,0],
+  ["Denis Gurianov","AG","G",55,89,78,88,84,83,92,77,87,45,84,64,66,82,29,9075000,2],
+  ["Quentin Musty","AG","G",71,74,81,72,76,65,73,73,72,61,73,42,43,76,21,900000,2],
+  ["Cedrick Guindon","AG","G",77,70,77,71,86,72,70,63,69,68,72,46,42,74,22,700000,2],
+  ["Alex Tuch","AD","D",93,69,97,87,99,93,71,66,62,65,84,71,80,81,30,7500000,1],
+  ["Alexander Nylander","AD","D",64,88,78,88,81,85,91,69,74,60,84,70,63,81,28,7500000,3],
+  ["Simon Holmstrom","AD","G",61,93,72,86,72,82,86,79,72,70,75,58,48,80,25,5750000,3],
+  ["William Eklund","AD","G",73,78,68,75,73,82,82,75,74,63,72,53,38,77,24,950000,1],
+  ["Eric Florchuk","AD","G",59,83,80,73,74,68,72,76,69,53,72,62,38,75,26,7000,1],
+  ["Connor Hall","D","G",87,73,95,81,81,79,73,61,62,85,55,69,75,82,28,8750000,3],
+  ["Seth Jones","D","D",74,78,80,88,74,79,81,74,75,82,66,74,57,82,32,6250000,3],
+  ["Ryan Pulock","D","D",78,71,83,90,82,85,78,69,73,79,67,82,89,81,32,7200000,2],
+  ["Alfons Malmstrom","D","G",85,76,85,83,68,65,79,54,62,85,50,79,67,79,28,3750000,3],
+  ["Michael Vukojevic","D","G",78,66,91,84,89,68,80,61,65,80,56,63,48,79,25,3750000,3],
+  ["Philippe Myers","D","D",73,73,99,74,73,59,76,49,54,87,48,78,68,78,29,4375000,2],
+  ["Cade Webber","D","G",80,65,92,76,73,70,65,58,60,81,57,62,58,77,25,1400000,1],
+  ["Ethan Edwards","D","G",59,71,64,73,79,73,72,77,75,69,74,52,47,76,24,700000,1],
+  ["Michael McNiven","G","G",77,91,86,96,92,87,95,73,84,null,null,79,72,83,29,7500000,1],
+  ["Cole Brady","G","G",71,87,87,90,87,85,89,61,83,null,null,62,57,79,25,2250000,3]
+ ]},
+ {c:'DALLAS', n:'Stars de Dallas', j:[
+  ["Kirby Dach","C","D",66,84,83,88,85,77,89,81,77,61,78,55,44,82,25,8750000,3],
+  ["Ridly Greig","C","G",74,81,70,85,82,71,77,77,70,70,76,59,44,79,24,3750000,1],
+  ["Cameron Lund","C","D",67,76,73,73,77,73,73,71,71,67,75,48,41,76,22,800000,2],
+  ["Gabriel Vilardi","C","D",60,77,80,81,82,84,78,74,70,65,65,74,54,76,27,825000,2],
+  ["Easton Cowan","C","G",81,73,65,70,73,67,72,71,71,68,71,41,39,75,21,800000,2],
+  ["Filip Zadina","AG","G",62,90,76,93,80,85,91,77,78,53,86,72,61,82,27,8750000,1],
+  ["Kole Lind","AG","D",69,89,69,92,87,96,84,76,70,49,81,73,57,79,28,3750000,3],
+  ["Ryan Suzuki","AG","G",60,85,76,83,85,78,84,81,82,59,70,56,59,79,25,3750000,0],
+  ["Tyler Boucher","AG","D",83,73,86,81,86,64,78,71,70,63,78,54,46,79,23,3750000,3],
+  ["Patrick Laine","AD","D",65,81,78,92,93,85,82,75,78,63,88,65,48,82,28,8750000,3],
+  ["Vasily Podkolzin","AD","G",67,85,74,85,84,74,85,82,81,57,83,62,53,82,25,8750000,3],
+  ["Rickard Rakell","AD","D",76,76,75,80,77,80,78,76,73,59,78,91,71,79,33,4900000,2],
+  ["Darnell Nurse","D","G",86,76,87,94,83,73,80,75,72,80,67,81,90,84,31,10250000,4],
+  ["Evan Bouchard","D","D",70,83,70,84,85,82,85,85,84,69,78,75,65,84,27,15500000,1],
+  ["Marcus Pettersson","D","G",80,82,66,87,85,85,80,77,72,72,75,74,58,81,30,7500000,1],
+  ["Helge Grans","D","D",81,71,86,79,75,76,73,69,71,79,59,55,53,79,24,2825000,1],
+  ["Ryan O'Rourke","D","G",77,72,81,87,82,70,76,68,70,82,59,50,63,79,24,5325000,1],
+  ["Simon Benoit","D","G",82,75,84,80,82,69,77,56,57,79,52,69,67,77,27,950000,1],
+  ["Calle Clang","G","G",79,90,81,88,90,76,85,70,78,null,null,61,61,79,24,1875000,1]
+ ]},
+ {c:'UTAH', n:'Mammoth de l’Utah', j:[
+  ["Nathan MacKinnon","C","D",60,84,73,86,76,80,85,83,80,57,81,80,83,82,31,8450000,3],
+  ["Nick Suzuki","C","D",69,79,76,83,86,80,85,82,79,70,73,67,81,82,27,8750000,3],
+  ["Wyatt Johnston","C","D",70,80,65,83,86,81,82,80,81,62,85,65,60,81,24,10500000,1],
+  ["Morgan Geekie","C","D",74,76,78,81,77,82,75,72,70,58,74,75,68,77,28,950000,3],
+  ["Brandon Hagel","AG","G",83,75,75,83,87,74,78,76,74,66,80,74,63,81,28,5950000,2],
+  ["Dylan Cozens","AG","D",73,80,80,88,85,71,81,76,71,64,75,61,43,79,25,3750000,3],
+  ["Dylan Holloway","AG","G",74,82,83,82,91,69,77,66,66,61,75,59,49,77,25,3125000,2],
+  ["Matthew Boldy","AD","G",76,77,79,80,81,76,77,76,76,63,78,65,67,80,25,5750000,3],
+  ["Dylan Guenther","AD","D",64,78,74,81,77,79,78,74,77,61,81,54,45,78,23,2250000,3],
+  ["Dylan Peterson","AD","G",67,68,82,74,83,75,70,69,68,62,72,58,38,74,24,70000,1],
+  ["Colton Parayko","D","D",80,73,86,88,81,80,74,68,71,82,58,81,81,81,33,6250000,2],
+  ["Jeremie Poirier","D","G",61,80,71,86,79,78,82,78,85,60,81,61,58,81,24,5325000,1],
+  ["Simon Nemec","D","D",68,76,73,88,76,77,82,81,80,72,72,50,46,81,22,3750000,1],
+  ["Niko Mikkola","D","G",81,73,86,85,81,71,74,67,68,80,56,71,66,80,30,5950000,1],
+  ["Timothy Liljegren","D","D",62,87,70,83,77,89,88,74,79,60,72,66,57,80,27,4375000,1],
+  ["Lane Hutson","D","G",64,81,57,74,71,73,80,72,76,61,69,54,41,76,22,800000,2],
+  ["Zeev Buium","D","G",63,74,67,80,78,76,71,75,76,71,68,43,37,75,21,975000,2],
+  ["Jake Oettinger","G","G",81,93,90,97,98,89,94,71,90,null,null,66,70,85,28,12250000,2],
+  ["Adam Gajan","G","G",78,84,79,80,79,75,82,67,82,null,null,54,52,76,22,800000,2]
+ ]},
+ {c:'PHILLY', n:'Flyers de Philadelphie', j:[
+  ["Auston Matthews","C","G",65,77,78,85,75,85,78,80,80,68,89,80,83,84,29,12200000,1],
+  ["Sebastian Aho","C","G",67,86,68,94,86,91,91,86,85,57,82,79,76,84,29,10625000,2],
+  ["Brady Tkachuk","AG","G",87,81,94,91,97,76,77,77,75,64,91,64,71,86,27,15500000,1],
+  ["Sean Couturier","AG","G",61,73,78,87,82,81,83,84,76,73,73,98,92,82,34,8450000,1],
+  ["Jiri Kulich","AG","G",72,84,72,79,74,77,77,71,73,74,77,54,42,79,22,900000,1],
+  ["J-J Peterka","AD","G",62,88,74,83,82,82,90,77,79,58,87,60,64,82,24,8750000,3],
+  ["Jon A.Marchessault","AD","D",70,90,53,90,81,78,79,77,69,72,82,94,92,80,36,3250000,0],
+  ["Jake Guentzel","AD","G",67,78,66,85,82,86,82,77,74,56,82,84,66,79,32,3450000,1],
+  ["Adam Boqvist","D","D",62,91,70,96,77,81,89,76,79,68,70,64,46,82,26,9075000,1],
+  ["Ben Chiarot","D","G",86,76,92,77,77,83,66,52,56,89,43,99,90,79,35,3250000,2],
+  ["Brady Skjei","D","G",72,79,80,81,83,74,78,71,69,76,64,85,69,79,32,4700000,1],
+  ["Domenick Fensore","D","G",64,83,52,85,74,82,84,79,77,62,75,64,49,79,25,3750000,3],
+  ["Devon Levi","G","G",81,86,82,90,83,81,90,72,82,null,null,66,57,80,25,3125000,2],
+  ["Joseph Woll","G","G",77,86,89,90,95,84,87,71,81,null,null,72,61,80,28,3750000,3],
+  ["Drew Commesso","G","G",77,86,74,86,85,85,84,80,82,null,null,67,47,78,24,800000,1]
+ ]},
+ {c:'WINNIPEG', n:'Jets de Winnipeg', j:[
+  ["Elias Pettersson","C","G",63,90,73,88,87,94,95,88,81,66,70,71,77,83,28,10500000,2],
+  ["Brayden Point","C","D",68,84,61,91,90,89,85,83,79,64,83,73,68,82,30,7500000,3],
+  ["Robert Thomas","C","D",67,83,65,84,74,83,82,82,82,70,80,73,68,82,27,12250000,1],
+  ["Artemi Panarin","AG","D",61,81,63,83,83,84,86,86,84,58,81,99,84,82,35,7200000,1],
+  ["Quinn Finley","AG","G",55,80,68,77,66,80,80,75,75,60,72,48,43,75,22,750000,2],
+  ["Ty Smilanic","AG","G",63,74,73,78,80,81,76,69,70,64,72,63,32,75,24,80000,1],
+  ["Marco Kasper","AD","G",79,81,76,80,80,72,81,72,73,70,79,52,49,80,22,2825000,1],
+  ["Carter Savoie","AD","G",73,79,67,79,81,72,80,76,73,64,81,53,50,79,24,1875000,1],
+  ["Samu Tuomaala","AD","G",67,80,67,77,72,77,77,76,72,67,73,48,40,76,23,825000,1],
+  ["Cam Fowler","D","G",74,76,82,96,85,85,78,70,73,81,59,99,93,82,35,5000000,0],
+  ["Philip Broberg","D","G",70,81,84,82,83,83,84,67,76,79,64,64,44,81,25,7500000,2],
+  ["Filip Hronek","D","D",73,75,72,83,81,80,78,79,78,70,73,80,67,80,29,5950000,1],
+  ["Thomas Harley","D","G",68,80,75,85,82,83,78,78,77,72,72,68,62,80,25,5750000,3],
+  ["Matt Roy","D","D",72,75,78,79,78,76,76,73,71,81,56,70,66,79,31,5325000,1],
+  ["Alex Nedeljkovic","G","G",81,92,80,99,96,93,93,69,83,null,null,90,63,83,30,7200000,2],
+  ["David Rittich","G","G",80,85,86,81,82,83,83,68,80,null,null,79,68,78,34,1250000,1],
+  ["Calvin Pickard","G","G",85,81,82,81,81,80,79,73,82,null,null,74,71,77,34,1250000,1]
+ ]},
+ {c:'VEGAS', n:'Golden Knights de Vegas', j:[
+  ["Mitch Marner","C","G",60,89,65,93,95,89,91,82,82,58,78,75,60,82,29,10625000,2],
+  ["Jack Eichel","C","D",65,84,73,89,85,79,84,79,78,59,76,84,70,80,30,7500000,1],
+  ["Josh Lopina","C","D",66,77,78,78,80,81,75,75,70,64,73,60,49,77,25,950000,1],
+  ["James Hagens","C","G",64,74,67,79,74,80,77,76,75,60,73,40,35,75,20,975000,2],
+  ["Brett Howden","AG","G",78,77,76,77,77,75,73,71,74,65,76,78,70,78,28,2425000,1],
+  ["Danila Yurov","AG","G",60,79,71,78,78,73,81,78,79,60,77,49,43,78,23,1875000,1],
+  ["Matyas Sapovaliv","AG","G",61,78,77,86,71,77,70,76,68,72,76,50,54,77,22,800000,1],
+  ["Carson Bantle","AG","G",72,69,84,79,81,69,69,70,68,65,73,57,42,76,24,1875000,1],
+  ["Jakub Brabenec","AG","G",63,73,75,74,76,78,75,71,71,60,71,52,33,74,23,700000,1],
+  ["Mark Stone","AD","D",63,72,76,85,84,89,77,81,79,72,72,89,99,80,34,10000000,1],
+  ["Ryan Winterton","AD","D",65,81,73,82,75,75,75,76,70,68,76,47,44,77,23,950000,3],
+  ["Jani Nyman","AD","G",76,72,84,73,78,77,68,67,67,66,77,49,48,76,22,750000,2],
+  ["Lukas Cormier","D","G",72,83,70,85,79,85,80,78,75,74,74,53,44,81,24,3750000,1],
+  ["Kaedan Korczak","D","D",82,75,87,87,81,72,81,61,71,81,57,53,51,80,25,5750000,3],
+  ["Alex Vlasic","D","G",74,73,92,81,84,79,75,61,65,80,54,58,51,78,25,2250000,3],
+  ["Carter Yakemchuk","D","D",77,72,77,81,80,65,71,75,77,68,78,44,43,78,21,900000,1],
+  ["Stanislav Svozil","D","G",67,77,80,77,78,73,74,73,69,77,69,49,42,78,23,2250000,2],
+  ["Noah Ellis","D","D",77,67,77,79,78,78,67,65,61,72,56,50,45,74,24,950000,2],
+  ["Adin Hill","G","G",81,86,88,86,85,83,89,67,83,null,null,69,66,80,30,3125000,1],
+  ["Logan Thompson","G","D",75,89,86,92,92,84,85,66,83,null,null,69,68,80,29,2200000,2],
+  ["Sebastian Cossa","G","G",76,80,86,84,84,90,84,79,79,null,null,57,48,77,24,775000,3]
+ ]},
+ {c:'SEATTLE', n:'Kraken de Seattle', j:[
+  ["Jakob Pelletier","C","G",77,90,62,87,75,82,87,76,78,60,84,59,57,81,25,7500000,3],
+  ["T.J. Tynan","C","D",72,85,47,88,63,95,97,95,84,38,78,99,97,81,34,5950000,1],
+  ["Fyodor Svechkov","C","G",65,81,72,73,73,76,85,85,76,64,70,50,49,78,23,2250000,3],
+  ["Matthew Wood","C","D",73,63,82,75,71,74,66,69,68,63,78,46,39,75,21,900000,2],
+  ["J.T. Miller","AG","G",69,79,78,81,87,86,84,87,82,67,70,88,99,82,33,7500000,0],
+  ["Phillip Danault","AG","G",73,86,76,96,87,86,81,80,62,81,72,77,83,81,33,7200000,2],
+  ["Jonathan Lekkerimaki","AG","D",63,77,67,75,75,83,77,74,78,60,81,46,40,77,22,900000,1],
+  ["Alexander Suzdalev","AG","G",56,80,72,69,66,70,79,78,78,60,70,50,48,76,22,750000,2],
+  ["Jordan Dumais","AG","D",62,80,56,74,67,75,80,80,79,63,70,49,47,75,22,750000,2],
+  ["Anthony Mantha","AD","G",58,78,71,90,92,88,93,71,78,48,99,84,65,82,32,7200000,3],
+  ["Bobby Brink","AD","D",73,80,65,81,75,83,87,73,76,67,90,56,50,81,25,7500000,3],
+  ["Jagger Firkus","AD","D",62,77,65,82,78,86,80,76,73,67,79,46,50,78,22,800000,1],
+  ["Adam Larsson","D","D",85,74,87,90,81,79,80,72,74,85,61,93,78,84,34,9725000,1],
+  ["Jakub Zboril","D","G",89,78,84,96,87,86,78,69,72,83,66,74,74,84,29,10625000,1],
+  ["Zach Werenski","D","G",65,84,71,87,69,79,82,83,82,75,74,77,76,83,29,8750000,5],
+  ["Noah Dobson","D","D",74,77,86,89,82,80,87,73,73,79,64,61,49,82,26,9075000,2],
+  ["Artyom Levshunov","D","D",76,75,80,82,81,70,77,70,74,79,65,43,41,79,21,975000,1],
+  ["Maxim Strbak","D","G",82,66,84,67,78,66,63,66,64,74,58,47,42,75,21,800000,2],
+  ["Michael Fisher","D","D",61,76,72,71,67,71,75,73,72,67,70,50,38,75,22,750000,2],
+  ["Marek Alscher","D","G",81,62,84,65,72,53,62,58,62,77,58,48,51,74,22,750000,2],
+  ["Olivier Rodrigue","G","G",79,90,82,97,99,87,94,71,89,null,null,68,70,83,26,8750000,3],
+  ["Alexei Kolosov","G","G",77,84,83,86,89,87,85,75,78,null,null,66,46,78,24,800000,2]
+ ]}
+];
+
 
 </script>
 <script>
@@ -3246,6 +4052,7 @@ construireCharte();
 /* ---------- Navigation et initialisation ---------- */
 function toutRendre(){
   rendreAlignement();
+  if (typeof window !== 'undefined' && window.__txPret) rendreTransactions();
   rendreProduction();
   rendreProgression();
   rendreCharte();
@@ -3258,6 +4065,7 @@ document.querySelectorAll('nav button[data-vue]').forEach(b=>{
     document.getElementById('vue-'+b.dataset.vue).classList.add('actif');
     if (b.dataset.vue==='composition') rendreComposition();
     if (b.dataset.vue==='trios') rendreTrios();
+    if (b.dataset.vue==='transactions') rendreTransactions();
     if (b.dataset.vue==='progression') rendreProgression();
     if (b.dataset.vue==='ovdetail') peuplerJoueursOvd();
     if (b.dataset.vue==='charte') rendreCharte();
@@ -3410,6 +4218,269 @@ function construireOvd(){
 construireOvd();
 
 
+
+/* ------------------ OV DES GARDIENS (ESTIMÉ) ------------------
+   La formule officielle des gardiens n'est pas publiée. Celle-ci est calibrée
+   par moindres carrés sur les 38 gardiens dont l'OV du 8 juillet 2026 est connu et
+   dont les cotes sont inchangées dans USHL22.ros, avec l'ancrage documenté
+   « 50 partout → 48 ». Résultat : 38/38 arrondis exacts sur l'échantillon,
+   35/38 en validation croisée un-contre-tous, écart maximal 0,494 point.
+   Les OV de gardiens affichés dans le constructeur de transaction sont donc des
+   estimations fiables à ±1. Ordre des cotes : IN SP ST EN DU DI SK PA PC EX LD. */
+const OV_ORDRE_G = ['it','sp','st','en','du','di','sk','pa','pc','ex','ld'];
+const OV_POIDS_G = {w:[0.099168, 0.287101, 0.085317, 0.062645, 0.014281, 0.033691, 0.125945, 0.04403, 0.161637, 0.020472, 0.012166], cst:0.677306};
+function ovGardien(cotes){
+  if (OV_ORDRE_G.some(k => cotes[k] === null || cotes[k] === undefined || isNaN(cotes[k]))) return null;
+  const valeur = OV_ORDRE_G.reduce((s,k,i) => s + OV_POIDS_G.w[i]*cotes[k], OV_POIDS_G.cst);
+  return {valeur, arrondi: Math.round(valeur)};
+}
+
+/* =====================================================================
+   CONSTRUCTEUR DE TRANSACTION
+   San Jose (données vivantes de ETAT.roster, prolongations comprises)
+   contre une des 31 autres formations lues dans LIGUE (fichier .ros).
+   ===================================================================== */
+const TX_ORDRE = {C:0, AG:1, AD:2, D:3, G:4};
+const TX_ETAT = {partenaire:'', sj:[], part:[]};
+
+/* Convertit une fiche compacte de LIGUE en objet joueur du même format que le roster. */
+function ligueFiche(t){
+  const j = {};
+  LIGUE_COLS.forEach((c,i)=>{ j[c] = t[i]; });
+  return j;
+}
+function ligueJoueurs(code){
+  const e = LIGUE.find(x=>x.c===code);
+  return e ? e.j.map(ligueFiche) : [];
+}
+function ligueNom(code){
+  const e = LIGUE.find(x=>x.c===code);
+  return e ? e.n : code;
+}
+
+/* Masse comptant au plafond pour une liste quelconque de joueurs.
+   Même règle que calculerMasse : les backups sont exclus, un contrat à 0 an ne
+   compte que s'il a été prolongé, un joueur hors alignement ne compte pas. */
+function txMasse(joueurs, resignMap){
+  const r = resignMap || {};
+  let masse = 0;
+  for (const j of joueurs){
+    if (j.backup) continue;
+    const sig = (j.ct === 0) ? r[normaliserNom(j.nom)] : null;
+    if (sig) masse += sig.salaire;
+    else if (!j.horsAlignement && j.ct > 0) masse += (j.salaire || 0);
+  }
+  return masse;
+}
+function txEffectif(joueurs){
+  const c = {C:0, AG:0, AD:0, D:0, G:0};
+  for (const j of joueurs){ if (!j.backup && c[j.po] !== undefined) c[j.po]++; }
+  return c;
+}
+function txMoyenneOV(joueurs){
+  const v = joueurs.filter(j=>!j.backup && isFinite(j.ov)).map(j=>j.ov);
+  return v.length ? v.reduce((a,b)=>a+b,0)/v.length : null;
+}
+function txMoyenneAge(joueurs){
+  const v = joueurs.filter(j=>!j.backup && isFinite(j.age)).map(j=>j.age);
+  return v.length ? v.reduce((a,b)=>a+b,0)/v.length : null;
+}
+
+/* Effectif de San Jose tel qu'affiché dans la vue Alignement. */
+function txRosterSJ(){ return ETAT.roster.filter(j=>!j.backup); }
+
+/* Applique l'échange : retire les partants, ajoute les arrivants. */
+function txAppliquer(base, partants, arrivants){
+  const cles = new Set(partants.map(j => normaliserNom(j.nom)));
+  return base.filter(j=>!cles.has(normaliserNom(j.nom))).concat(arrivants);
+}
+
+/* Calcule les deux bilans. Retourne null si aucune équipe partenaire n'est choisie. */
+function txCalculer(etat){
+  const e = etat || TX_ETAT;
+  if (!e.partenaire) return null;
+  const resign = litResignatures();
+  const sjAvant   = txRosterSJ();
+  const partAvant = ligueJoueurs(e.partenaire);
+  const trouve = (liste, noms) => noms
+    .map(n => liste.find(j => normaliserNom(j.nom) === normaliserNom(n)))
+    .filter(Boolean);
+  const sortSJ   = trouve(sjAvant, e.sj);
+  const sortPart = trouve(partAvant, e.part);
+  const sjApres   = txAppliquer(sjAvant,   sortSJ,   sortPart);
+  const partApres = txAppliquer(partAvant, sortPart, sortSJ);
+  const bilan = (nom, code, avant, apres, resMap) => {
+    const mAvant = txMasse(avant, resMap), mApres = txMasse(apres, resMap);
+    return {nom, code,
+      avant, apres,
+      nAvant: avant.filter(j=>!j.backup).length, nApres: apres.filter(j=>!j.backup).length,
+      masseAvant: mAvant, masseApres: mApres,
+      margeApres: PLAFOND - mApres,
+      depasse: mApres > PLAFOND,
+      effectif: txEffectif(apres),
+      ovAvant: txMoyenneOV(avant), ovApres: txMoyenneOV(apres),
+      ageApres: txMoyenneAge(apres)};
+  };
+  return {
+    sj:   bilan('Sharks de San Jose', 'SANJOSE', sjAvant,   sjApres,   resign),
+    part: bilan(ligueNom(e.partenaire), e.partenaire, partAvant, partApres, {}),
+    sortSJ, sortPart,
+    vide: sortSJ.length === 0 && sortPart.length === 0
+  };
+}
+
+/* Avertissements d'effectif : 12 attaquants, 6 défenseurs, 2 gardiens pour habiller 20. */
+function txAvertissements(b){
+  const a = [];
+  const att = b.effectif.C + b.effectif.AG + b.effectif.AD;
+  if (att < 12) a.push(`${b.nom} : ${att} attaquant${att>1?'s':''} seulement, il en faut 12 pour habiller quatre trios.`);
+  if (b.effectif.D < 6) a.push(`${b.nom} : ${b.effectif.D} défenseur${b.effectif.D>1?'s':''} seulement, il en faut 6.`);
+  if (b.effectif.G < 2) a.push(`${b.nom} : ${b.effectif.G} gardien${b.effectif.G>1?'s':''} seulement, il en faut 2.`);
+  return a;
+}
+
+/* ---------- Persistance ---------- */
+function litTransac(){
+  try { const o = JSON.parse(localStorage.getItem(CLES_LS.transac) || '{}');
+        return {partenaire: o.partenaire || '', sj: o.sj || [], part: o.part || []}; }
+  catch { return {partenaire:'', sj:[], part:[]}; }
+}
+function ecritTransac(o){
+  try { localStorage.setItem(CLES_LS.transac, JSON.stringify(o)); } catch(e){ /* quota */ }
+}
+
+/* ---------- Rendu ---------- */
+function txLigneJoueur(j, pris){
+  const sal = j.ct > 0 ? fmtArgentCourt(j.salaire) : '0 an';
+  const ct  = j.ct > 0 ? `${j.ct} an${j.ct>1?'s':''}` : 'échu';
+  return `<button type="button" class="tx-j${pris?' pris':''}" data-nom="${j.nom.replace(/"/g,'&quot;')}">
+    <span class="coche">${pris?'✕':'+'}</span>
+    <span class="po">${j.po}</span>
+    <span class="nom">${j.nom} <em>${j.age} ans</em></span>
+    <span class="chiffres">OV ${j.ov} · ${sal} · ${ct}</span>
+  </button>`;
+}
+function txRendreListe(id, joueurs, choisis){
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (!joueurs.length){ el.innerHTML = '<div class="tx-vide">Choisis une équipe partenaire.</div>'; return; }
+  const pris = new Set(choisis.map(normaliserNom));
+  el.innerHTML = joueurs.slice()
+    .sort((a,b)=> (TX_ORDRE[a.po]-TX_ORDRE[b.po]) || (b.ov-a.ov) || a.nom.localeCompare(b.nom,'fr'))
+    .map(j => txLigneJoueur(j, pris.has(normaliserNom(j.nom)))).join('');
+}
+function txCarte(b){
+  const dM = b.masseApres - b.masseAvant;
+  const dN = b.nApres - b.nAvant;
+  const dOV = (b.ovApres!==null && b.ovAvant!==null) ? b.ovApres - b.ovAvant : null;
+  const signe = v => (v>0?'+':'') + v;
+  const cls = v => v>0 ? 'plus' : (v<0 ? 'moins' : '');
+  return `<div class="stat-carte ${b.depasse?'alerte':''}">
+    <div class="lbl">${b.nom}</div>
+    <div class="val">${fmtArgent(b.masseApres)}</div>
+    <div class="det">masse ${dM===0?'inchangée':fmtArgent(b.masseAvant)+' → '+fmtArgent(b.masseApres)}
+      <span class="tx-delta ${cls(-dM)}">${dM===0?'':'('+signe(Math.round(dM/1000))+' k$)'}</span></div>
+    <div class="det">${b.depasse ? 'dépassement de '+fmtArgent(b.masseApres-PLAFOND) : 'marge '+fmtArgent(b.margeApres)}</div>
+    <div class="det">${b.nApres} joueurs <span class="tx-delta ${cls(dN)}">${dN===0?'':'('+signe(dN)+')'}</span>
+      · ${b.effectif.C}C ${b.effectif.AG}AG ${b.effectif.AD}AD ${b.effectif.D}D ${b.effectif.G}G</div>
+    <div class="det">OV moyen ${b.ovApres===null?'—':b.ovApres.toFixed(1).replace('.',',')}
+      <span class="tx-delta ${cls(dOV)}">${(dOV===null||Math.abs(dOV)<0.05)?'':'('+(dOV>0?'+':'')+dOV.toFixed(1).replace('.',',')+')'}</span>
+      · âge moyen ${b.ageApres===null?'—':b.ageApres.toFixed(1).replace('.',',')}</div>
+  </div>`;
+}
+function txSommaireTexte(r){
+  if (!r) return '';
+  const l = j => `${j.nom} (${j.po}, OV ${j.ov}, ${j.age} ans, ${fmtArgentCourt(j.salaire)}, ${j.ct} an${j.ct>1?'s':''})`;
+  const bloc = (b, sort) => `${b.nom}\n  cède : ${sort.length ? sort.map(l).join('\n         ') : 'rien'}\n`
+    + `  masse ${fmtArgent(b.masseAvant)} → ${fmtArgent(b.masseApres)} (marge ${fmtArgent(b.margeApres)})\n`
+    + `  effectif ${b.nApres} joueurs · ${b.effectif.C}C ${b.effectif.AG}AG ${b.effectif.AD}AD ${b.effectif.D}D ${b.effectif.G}G`;
+  return `PROPOSITION DE TRANSACTION — USHL Y22\n\n`
+    + bloc(r.sj, r.sortSJ) + '\n\n' + bloc(r.part, r.sortPart)
+    + `\n\nPlafond ${fmtArgent(PLAFOND)}. `
+    + (r.sj.depasse || r.part.depasse ? 'ATTENTION : dépassement du plafond.' : 'Les deux équipes respectent le plafond.');
+}
+function rendreTransactions(){
+  const sel = document.getElementById('txEquipe');
+  if (!sel) return;
+  if (!sel.options.length){
+    sel.innerHTML = '<option value="">— choisir —</option>' + LIGUE
+      .filter(e=>e.c!=='SANJOSE')
+      .slice().sort((a,b)=>a.n.localeCompare(b.n,'fr'))
+      .map(e=>`<option value="${e.c}">${e.n} (${e.c})</option>`).join('');
+  }
+  sel.value = TX_ETAT.partenaire;
+  const r = txCalculer(TX_ETAT);
+  document.getElementById('txTitrePart').textContent = TX_ETAT.partenaire ? ligueNom(TX_ETAT.partenaire) : '—';
+  txRendreListe('txListeSJ',  TX_ETAT.partenaire ? txRosterSJ() : [], TX_ETAT.sj);
+  txRendreListe('txListePart', TX_ETAT.partenaire ? ligueJoueurs(TX_ETAT.partenaire) : [], TX_ETAT.part);
+  const elB = document.getElementById('txBilan');
+  const elV = document.getElementById('txVerdict');
+  if (!r){
+    elB.innerHTML = ''; elV.innerHTML = '';
+    return;
+  }
+  elB.innerHTML = txCarte(r.sj) + txCarte(r.part);
+  const avert = [...txAvertissements(r.sj), ...txAvertissements(r.part)];
+  let cls = 'tx-verdict', titre;
+  if (r.vide){ titre = 'Aucun joueur sélectionné. Clique un nom dans une des deux colonnes.'; cls += ' attention'; }
+  else if (r.sj.depasse || r.part.depasse){
+    cls += ' refus';
+    const fautifs = [r.sj, r.part].filter(b=>b.depasse).map(b=>b.nom).join(' et ');
+    titre = `Transaction impossible : ${fautifs} dépasse${fautifs.includes(' et ')?'nt':''} le plafond de ${fmtArgent(PLAFOND)}.`;
+  } else {
+    if (avert.length) cls += ' attention';
+    titre = `Les deux équipes restent sous le plafond de ${fmtArgent(PLAFOND)}.`;
+  }
+  elV.innerHTML = `<div class="${cls}"><b>${titre}</b>`
+    + (avert.length ? '<ul>' + avert.map(a=>`<li>${a}</li>`).join('') + '</ul>' : '')
+    + '</div>';
+}
+function txBasculer(cote, nom){
+  const liste = TX_ETAT[cote];
+  const i = liste.findIndex(n => normaliserNom(n) === normaliserNom(nom));
+  if (i >= 0) liste.splice(i,1); else liste.push(nom);
+  ecritTransac(TX_ETAT);
+  rendreTransactions();
+}
+function attacherTransactions(){
+  const sel = document.getElementById('txEquipe');
+  if (!sel) return;
+  Object.assign(TX_ETAT, litTransac());
+  sel.addEventListener('change', ()=>{
+    TX_ETAT.partenaire = sel.value; TX_ETAT.part = [];
+    ecritTransac(TX_ETAT); rendreTransactions();
+  });
+  const brancher = (id, cote) => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('click', e=>{
+      const b = e.target.closest('button.tx-j');
+      if (b) txBasculer(cote, b.dataset.nom);
+    });
+  };
+  brancher('txListeSJ', 'sj');
+  brancher('txListePart', 'part');
+  const bv = document.getElementById('txVider');
+  if (bv) bv.addEventListener('click', ()=>{
+    TX_ETAT.sj = []; TX_ETAT.part = []; ecritTransac(TX_ETAT); rendreTransactions();
+  });
+  const bc = document.getElementById('txCopier');
+  if (bc) bc.addEventListener('click', ()=>{
+    const txt = txSommaireTexte(txCalculer(TX_ETAT));
+    const etat = document.getElementById('txCopieEtat');
+    if (!txt){ if (etat) etat.textContent = 'rien à copier'; return; }
+    const fini = ok => { if (etat){ etat.textContent = ok ? 'copié' : 'copie impossible'; setTimeout(()=>{etat.textContent='';}, 2500); } };
+    if (navigator.clipboard && navigator.clipboard.writeText)
+      navigator.clipboard.writeText(txt).then(()=>fini(true), ()=>fini(false));
+    else fini(false);
+  });
+  const d = document.getElementById('txDateFichier');
+  if (d) d.textContent = 'USHL22.ros, intégré le ' + DATE_SECOURS;
+  if (typeof window !== 'undefined') window.__txPret = true;
+}
+
+attacherTransactions();
+rendreTransactions();
+
 /* exposition pour le harnais de tests (jsdom) */
 if (typeof window !== 'undefined'){
   window.__SJS__ = {parseRoster, parseScoring, parseXtra, determinerProfil, evaluerStat,
@@ -3418,6 +4489,9 @@ if (typeof window !== 'undefined'){
     extraireFiche, validerPageEquipe, CONFIG, CLES_LS, parseFinance,
     litCompo, ecritCompo, joueursComposition, rendreComposition,
     litTrios, ecritTrios, validerAlignementTrios, rendreTrios, proposerTrios, TRIOS_VIDES,
+    LIGUE, LIGUE_COLS, ligueFiche, ligueJoueurs, ligueNom, ovGardien, OV_ORDRE_G,
+    TX_ETAT, txMasse, txEffectif, txCalculer, txAvertissements, txSommaireTexte,
+    txRosterSJ, txAppliquer, rendreTransactions, litTransac, ecritTransac, txBasculer,
     CHARTE_SALAIRE, salaireMinimum, statutResignature, cleCharte, dureeMaxCharte,
     fmtArgentCourt, parseArgent, litResignatures, ecritResignatures,
     ouvrirProlongation, fermerProlongation, calculerMasse, PLAFOND, echelonEffectif, peutProlonger,
