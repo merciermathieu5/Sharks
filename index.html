@@ -223,7 +223,7 @@
   .tx-j .cotes i:not(:first-child){margin-left:0;}
   .tx-j.pris .cotes{color:#b98a52;}
   .tx-liste.sans-cotes .cotes{display:none;}
-  .tx-tableau thead th{position:static; cursor:default; text-align:center; padding:7px 6px;}
+  .tx-tableau thead th{position:static; cursor:default; text-align:center; padding:7px 6px; font-size:.6rem;}
   .tx-tableau thead th:first-child{text-align:left;}
   .tx-tableau thead th small{display:block; font-size:.55rem; letter-spacing:.5px; color:var(--txt-faint); font-weight:400;}
   .tx-tableau thead th.tx-part{color:var(--orange-bright);}
@@ -233,6 +233,23 @@
     letter-spacing:1px; color:var(--txt-faint); font-weight:400;}
   .tx-tableau td.tx-moy{color:var(--txt-dim); border-left:1px solid var(--line); border-right:1px solid var(--line);}
   .tx-tableau td.tx-ecart{font-weight:600;}
+  .tx-tableau th.tx-nom, .tx-tableau td.tx-nom{position:sticky; left:0; z-index:2; text-align:left;
+    min-width:10rem; background:var(--panel); border-right:1px solid var(--line);}
+  .tx-tableau thead th.tx-nom{background:var(--teal-deep); z-index:3;}
+  .tx-tableau td.tx-nom b{font-family:var(--font-body); font-weight:600; font-size:.8rem; color:var(--txt);}
+  .tx-tableau td.tx-nom small{display:block; font-family:var(--font-data); font-size:.58rem;
+    letter-spacing:.4px; color:var(--txt-faint); margin-top:1px;}
+  .tx-tableau tbody.tx-paire + tbody.tx-paire tr:first-child td{border-top:2px solid var(--line);}
+  .tx-tableau tr.tx-r-titre td{background:var(--panel2); font-family:var(--font-data); font-size:.6rem;
+    letter-spacing:1.5px; text-transform:uppercase; color:var(--txt-faint); padding:6px 8px; text-align:left;}
+  .tx-tableau tr.tx-r-sort td.tx-nom{border-left:3px solid var(--orange);}
+  .tx-tableau tr.tx-r-entre td.tx-nom{border-left:3px solid var(--teal-bright);}
+  .tx-tableau tr.tx-r-moy td.tx-nom{border-left:3px solid var(--txt-faint);}
+  .tx-tableau tr.tx-r-ecart td{background:#0a1214;}
+  .tx-tableau tr.tx-r-ecart td.tx-nom{border-left:3px solid var(--line); background:#0a1214;}
+  .tx-tableau td.tx-ecart.tx-neutre{color:var(--txt-dim); font-weight:400;}
+  .tx-tableau td.tx-nul{color:var(--txt-faint);}
+  .tx-tableau tbody tr:hover{background:none;}
   .tx-tableau td.tx-ecart.gain{color:var(--ok);}
   .tx-tableau td.tx-ecart.perte{color:var(--bad);}
   .tx-vide{padding:16px 12px; font-size:.78rem; color:var(--txt-faint);}
@@ -4383,6 +4400,7 @@ function ecritTransac(o){
    de 25 000 $ dans un comparatif de transaction. */
 function txArgent(n){
   if (n === null || n === undefined || !isFinite(n)) return '—';
+  if (n === 0) return '0';
   const signe = n < 0 ? '\u2212' : '';
   const a = Math.abs(n);
   if (a >= 1000000){
@@ -4435,78 +4453,140 @@ function txCarte(b){
       · âge moyen ${b.ageApres===null?'—':b.ageApres.toFixed(1).replace('.',',')}</div>
   </div>`;
 }
-/* Comparatif des cotes entre les joueurs de l'échange, du point de vue de San Jose.
-   Patineurs et gardiens sont séparés : leurs cotes ne mesurent pas la même chose et
-   DF / OF ne s'appliquent qu'aux patineurs. */
+/* Comparateur des cotes — superposition ligne par ligne, comme la page des
+   formations de la ligue. Les joueurs sont appariés dans l'ordre de sélection :
+   1er cédé face au 1er acquis, 2e face au 2e, et ainsi de suite. */
+const TX_COLS_COMP = TX_COTES.concat([['ov','OV'],['age','ÂGE'],['salaire','SALAIRE'],['ct','CT']]);
+
 function txMoyenneCote(joueurs, cle){
   const v = joueurs.map(j=>j[cle]).filter(x => x !== null && x !== undefined && isFinite(x));
   return v.length ? v.reduce((a,b)=>a+b,0)/v.length : null;
 }
-function txComparatif(r){
-  if (!r || r.vide) return [];
-  const groupes = [];
-  for (const [cle, titre] of [['patineurs','Patineurs'], ['gardiens','Gardiens']]){
-    const filtre = j => (cle === 'gardiens') === (j.po === 'G');
-    const partent  = r.sortSJ.filter(filtre);
-    const arrivent = r.sortPart.filter(filtre);
-    if (!partent.length && !arrivent.length) continue;
-    const lignes = [];
-    const cotes = (cle === 'gardiens')
-      ? TX_COTES.filter(([k]) => k !== 'df' && k !== 'sc')
-      : TX_COTES;
-    for (const [k, lbl] of cotes.concat([['ov','OV'],['age','ÂGE']])){
-      const mP = txMoyenneCote(partent, k), mA = txMoyenneCote(arrivent, k);
-      lignes.push({cle:k, libelle:lbl,
-        partent: partent.map(j=>j[k]), arrivent: arrivent.map(j=>j[k]),
-        moyP:mP, moyA:mA, ecart:(mP===null||mA===null) ? null : mA-mP});
-    }
-    const sP = partent.reduce((s,j)=>s+(j.salaire||0),0);
-    const sA = arrivent.reduce((s,j)=>s+(j.salaire||0),0);
-    lignes.push({cle:'salaire', libelle:'SALAIRES',
-      partent: partent.map(j=>j.salaire), arrivent: arrivent.map(j=>j.salaire),
-      moyP:sP, moyA:sA, ecart:sA-sP, somme:true});
-    groupes.push({titre, partent, arrivent, lignes});
-  }
-  return groupes;
+/* Profil moyen d'un groupe : moyenne des cotes, de l'OV et de l'âge, somme des salaires. */
+function txProfil(joueurs){
+  const p = {};
+  for (const [k] of TX_COTES) p[k] = txMoyenneCote(joueurs, k);
+  p.ov  = txMoyenneCote(joueurs, 'ov');
+  p.age = txMoyenneCote(joueurs, 'age');
+  p.salaire = joueurs.length ? joueurs.reduce((s,j)=>s+(j.salaire||0),0) : null;
+  p.ct = null;
+  return p;
 }
-function txCelluleCote(v, cle){
-  if (v === null || v === undefined) return '—';
+function txEcartProfil(a, b){
+  const e = {};
+  for (const [k] of TX_COLS_COMP)
+    e[k] = (a[k] === null || a[k] === undefined || b[k] === null || b[k] === undefined) ? null : b[k]-a[k];
+  return e;
+}
+function txComparatif(r){
+  if (!r || r.vide) return null;
+  const n = Math.max(r.sortSJ.length, r.sortPart.length);
+  const paires = [];
+  for (let i = 0; i < n; i++){
+    const cede = r.sortSJ[i] || null, acquis = r.sortPart[i] || null;
+    paires.push({rang:i+1, cede, acquis, ecart: (cede && acquis) ? txEcartProfil(cede, acquis) : null});
+  }
+  const moyCede = txProfil(r.sortSJ), moyAcquis = txProfil(r.sortPart);
+  return {paires, moyCede, moyAcquis,
+    multiple: r.sortSJ.length > 1 || r.sortPart.length > 1,
+    ecart: (r.sortSJ.length && r.sortPart.length) ? txEcartProfil(moyCede, moyAcquis) : null};
+}
+/* Résumé par équipe : profil moyen de l'effectif avant et après l'échange. */
+function txResume(r){
+  if (!r) return [];
+  return [r.sj, r.part].map(b => {
+    const avant = txProfil(b.avant.filter(j=>!j.backup));
+    const apres = txProfil(b.apres.filter(j=>!j.backup));
+    avant.salaire = b.masseAvant; apres.salaire = b.masseApres;
+    return {nom:b.nom, code:b.code, nAvant:b.nAvant, nApres:b.nApres,
+            avant, apres, ecart: txEcartProfil(avant, apres)};
+  });
+}
+
+/* ---------- Rendu ---------- */
+/* Teinte continue du rouge (45 et moins) au vert (95 et plus), comme sur ushl.ca. */
+function txTeinte(v){
+  if (v === null || v === undefined || !isFinite(v)) return '';
+  const t = Math.max(0, Math.min(1, (v - 45) / 50));
+  const h = Math.round(t * 130);
+  return `background:hsl(${h},48%,17%); color:hsl(${h},74%,68%);`;
+}
+function txNombre(v, cle){
+  if (v === null || v === undefined || !isFinite(v)) return '—';
   if (cle === 'salaire') return txArgent(v);
-  if (cle === 'age') return v;
-  return v;
+  const arrondi = Math.round(v * 10) / 10;
+  return Number.isInteger(arrondi) ? String(arrondi) : arrondi.toFixed(1).replace('.', ',');
+}
+function txCellule(j, cle, teinte){
+  const v = j[cle];
+  if (v === null || v === undefined) return '<td class="tx-nul">—</td>';
+  if (cle === 'salaire' || cle === 'ct') return `<td>${txNombre(v, cle)}</td>`;
+  return teinte ? `<td style="${txTeinte(v)}">${txNombre(v, cle)}</td>` : `<td>${txNombre(v, cle)}</td>`;
+}
+function txCelluleEcart(v, cle){
+  if (v === null || v === undefined) return '<td class="tx-nul">—</td>';
+  const neutre = (cle === 'age' || cle === 'salaire' || cle === 'ct');
+  const cls = neutre ? 'tx-neutre' : (v > 0.049 ? 'gain' : (v < -0.049 ? 'perte' : ''));
+  const txt = (cle === 'salaire')
+    ? (v > 0 ? '+' : '') + txArgent(v)
+    : (v > 0.049 ? '+' : (v < -0.049 ? '\u2212' : '')) + txNombre(Math.abs(v), cle);
+  return `<td class="tx-ecart ${cls}">${txt}</td>`;
+}
+function txEnteteComp(libelle){
+  return `<tr><th class="tx-nom">${libelle || 'Joueur'}</th><th>PO</th><th>HD</th>`
+    + TX_COLS_COMP.map(([k,lbl]) => `<th>${lbl}</th>`).join('') + '</tr>';
+}
+function txRangeeJoueur(j, sens, villeA, villeB){
+  return `<tr class="tx-r-${sens}">
+    <td class="tx-nom"><b>${j.nom}</b><small>${villeA} \u2192 ${villeB}</small></td>
+    <td>${j.po}</td><td>${j.hd || '—'}</td>`
+    + TX_COLS_COMP.map(([k]) => txCellule(j, k, true)).join('') + '</tr>';
+}
+function txRangeeProfil(libelle, detail, profil, cls){
+  return `<tr class="${cls}">
+    <td class="tx-nom"><b>${libelle}</b>${detail ? `<small>${detail}</small>` : ''}</td>
+    <td></td><td></td>`
+    + TX_COLS_COMP.map(([k]) => txCellule(profil, k, cls === 'tx-r-moy')).join('') + '</tr>';
+}
+function txRangeeEcart(libelle, ecart){
+  return `<tr class="tx-r-ecart"><td class="tx-nom"><b>${libelle}</b></td><td></td><td></td>`
+    + TX_COLS_COMP.map(([k]) => txCelluleEcart(ecart[k], k)).join('') + '</tr>';
 }
 function rendreComparatif(r){
   const el = document.getElementById('txComparatif');
   if (!el) return;
-  const groupes = txComparatif(r);
-  if (!groupes.length){ el.innerHTML = ''; return; }
-  const moy = (v, cle, somme) => v === null ? '—'
-    : (cle === 'salaire' ? txArgent(v)
-    : (somme ? String(v) : v.toFixed(1).replace('.', ',')));
-  el.innerHTML = groupes.map(g => {
-    const entetes = ['<th>Cote</th>']
-      .concat(g.partent.map(j=>`<th class="tx-part">${j.nom}<small>cédé</small></th>`))
-      .concat(g.partent.length > 1 ? [`<th class="tx-part">Moy.</th>`] : [])
-      .concat(g.arrivent.map(j=>`<th class="tx-arr">${j.nom}<small>acquis</small></th>`))
-      .concat(g.arrivent.length > 1 ? [`<th class="tx-arr">Moy.</th>`] : [])
-      .concat(['<th>Écart</th>']).join('');
-    const corps = g.lignes.map(l => {
-      const cls = l.ecart === null ? '' : (l.ecart > 0.049 ? 'gain' : (l.ecart < -0.049 ? 'perte' : ''));
-      const signe = l.ecart === null ? '—'
-        : (l.cle === 'salaire' ? (l.ecart>0?'+':'') + txArgent(l.ecart)
-        : (l.ecart>0?'+':'\u2212') + Math.abs(Math.round(l.ecart*10)/10).toFixed(1).replace('.', ','));
-      return '<tr>' + `<td>${l.libelle}</td>`
-        + l.partent.map(v=>`<td>${txCelluleCote(v,l.cle)}</td>`).join('')
-        + (g.partent.length > 1 ? `<td class="tx-moy">${moy(l.moyP,l.cle,l.somme)}</td>` : '')
-        + l.arrivent.map(v=>`<td>${txCelluleCote(v,l.cle)}</td>`).join('')
-        + (g.arrivent.length > 1 ? `<td class="tx-moy">${moy(l.moyA,l.cle,l.somme)}</td>` : '')
-        + `<td class="tx-ecart ${cls}">${signe}</td>` + '</tr>';
-    }).join('');
-    return `<div class="uni-bloc"><div class="uni-titre">Comparatif des cotes — ${g.titre}
-      <small>écart = acquis moins cédés, du point de vue de San Jose · colonnes Moy. : moyenne des cotes, somme des salaires</small></div>
-      <div class="table-wrap"><table class="tx-tableau"><thead><tr>${entetes}</tr></thead><tbody>${corps}</tbody></table></div></div>`;
+  const c = txComparatif(r);
+  if (!c){ el.innerHTML = ''; return; }
+  const vSJ = ligueVille('SANJOSE'), vP = ligueVille(r.part.code);
+  const corps = c.paires.map(p => {
+    let t = `<tbody class="tx-paire"><tr class="tx-r-titre"><td class="tx-nom" colspan="${3 + TX_COLS_COMP.length}">Duel ${p.rang}</td></tr>`;
+    if (p.cede)   t += txRangeeJoueur(p.cede,   'sort', vSJ, vP);
+    if (p.acquis) t += txRangeeJoueur(p.acquis, 'entre', vP, vSJ);
+    if (p.ecart)  t += txRangeeEcart('Écart', p.ecart);
+    return t + '</tbody>';
   }).join('');
+  const totaux = c.multiple ? `<tbody class="tx-paire tx-totaux">
+      <tr class="tx-r-titre"><td class="tx-nom" colspan="${3 + TX_COLS_COMP.length}">Moyennes du bloc</td></tr>`
+      + txRangeeProfil('Cédés', `${vSJ} \u2192 ${vP}`, c.moyCede, 'tx-r-moy')
+      + txRangeeProfil('Acquis', `${vP} \u2192 ${vSJ}`, c.moyAcquis, 'tx-r-moy')
+      + (c.ecart ? txRangeeEcart('Écart', c.ecart) : '')
+      + '</tbody>' : '';
+  const comp = `<div class="uni-bloc"><div class="uni-titre">Comparateur des cotes
+      <small>1<sup>er</sup> cédé contre 1<sup>er</sup> acquis, 2<sup>e</sup> contre 2<sup>e</sup> — l'écart est celui de San Jose, l'âge et le salaire restent neutres</small></div>
+      <div class="table-wrap"><table class="tx-tableau"><thead>${txEnteteComp()}</thead>${corps}${totaux}</table></div></div>`;
+
+  const resume = txResume(r).map(e => `<tbody class="tx-paire">
+      <tr class="tx-r-titre"><td class="tx-nom" colspan="${3 + TX_COLS_COMP.length}">${e.nom}</td></tr>`
+      + txRangeeProfil('Avant', `${e.nAvant} joueurs`, e.avant, 'tx-r-moy')
+      + txRangeeProfil('Après', `${e.nApres} joueurs`, e.apres, 'tx-r-moy')
+      + txRangeeEcart('Écart', e.ecart)
+      + '</tbody>').join('');
+  const res = `<div class="uni-bloc"><div class="uni-titre">Résumé des changements par équipe
+      <small>profil moyen de l'effectif avant et après l'échange — la colonne SALAIRE donne la masse qui compte au plafond</small></div>
+      <div class="table-wrap"><table class="tx-tableau"><thead>${txEnteteComp('Équipe')}</thead>${resume}</table></div></div>`;
+  el.innerHTML = comp + res;
 }
+
 function txSommaireTexte(r){
   if (!r) return '';
   const l = j => `${j.nom} (${j.po}, OV ${j.ov}, ${j.age} ans, ${txArgent(j.salaire)}, ${j.ct} an${j.ct>1?'s':''})`;
@@ -4620,7 +4700,8 @@ if (typeof window !== 'undefined'){
     litCompo, ecritCompo, joueursComposition, rendreComposition,
     litTrios, ecritTrios, validerAlignementTrios, rendreTrios, proposerTrios, TRIOS_VIDES,
     LIGUE, LIGUE_COLS, ligueFiche, ligueJoueurs, ligueNom, ligueVille, ovGardien, OV_ORDRE_G,
-    TX_COTES, txComparatif, txMoyenneCote, rendreComparatif,
+    TX_COTES, TX_COLS_COMP, txComparatif, txMoyenneCote, txProfil, txEcartProfil,
+    txResume, txTeinte, txNombre, rendreComparatif,
     TX_ETAT, txMasse, txEffectif, txCalculer, txAvertissements, txSommaireTexte,
     txRosterSJ, txAppliquer, rendreTransactions, litTransac, ecritTransac, txBasculer,
     CHARTE_SALAIRE, salaireMinimum, statutResignature, cleCharte, dureeMaxCharte,

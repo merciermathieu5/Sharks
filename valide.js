@@ -1259,46 +1259,84 @@ const ATTENDU = {
   ok(som.includes('plafond') || som.includes('Plafond'), 'Le sommaire rappelle le plafond');
   egal(S.txSommaireTexte(null), '', 'Aucun bilan : sommaire vide');
 
-  console.log('— Comparatif des cotes');
+  console.log('— Comparateur des cotes');
   tableauEgal(S.TX_COTES.map(c=>c[1]),
     ['IN','SP','ST','EN','DU','DI','SK','PA','PC','DF','OF','EX','LD'],
     'Les 13 cotes dans l\'ordre de ushl.ca');
-  egal(S.txComparatif(null).length, 0, 'Aucun bilan : aucun comparatif');
-  egal(S.txComparatif(vide).length, 0, 'Échange vide : aucun comparatif');
+  tableauEgal(S.TX_COLS_COMP.map(c=>c[1]),
+    ['IN','SP','ST','EN','DU','DI','SK','PA','PC','DF','OF','EX','LD','OV','ÂGE','SALAIRE','CT'],
+    'Colonnes du comparateur : les cotes, puis OV, âge, salaire et contrat');
+  egal(S.txComparatif(null), null, 'Aucun bilan : aucun comparateur');
+  egal(S.txComparatif(vide), null, 'Échange vide : aucun comparateur');
 
   const cmp1 = S.txComparatif(ech1);
-  egal(cmp1.length, 1, 'Fleury contre Dach : un seul groupe (patineurs)');
-  egal(cmp1[0].titre, 'Patineurs', 'Groupe des patineurs');
-  egal(cmp1[0].lignes.length, 16, '13 cotes + OV + âge + salaire');
-  const ligneOV = cmp1[0].lignes.find(l=>l.cle==='ov');
-  tableauEgal(ligneOV.partent, [83], 'OV du joueur cédé (Fleury 83)');
-  tableauEgal(ligneOV.arrivent, [82], 'OV du joueur acquis (Dach 82)');
-  egal(ligneOV.ecart, -1, 'Écart d\'OV : −1 pour San Jose');
-  const ligneSal = cmp1[0].lignes.find(l=>l.cle==='salaire');
-  egal(ligneSal.ecart, 8750000 - 12200000, 'Écart de salaire : −3 450 000 $');
-  const ligneAge = cmp1[0].lignes.find(l=>l.cle==='age');
-  egal(ligneAge.ecart, -5, 'Écart d\'âge : San Jose rajeunit de 5 ans');
-  ok(cmp1[0].lignes.some(l=>l.cle==='df'), 'La cote DF est comparée entre patineurs');
+  egal(cmp1.paires.length, 1, 'Fleury contre Dach : un seul duel');
+  egal(cmp1.paires[0].cede.nom, 'Haydn Fleury', '1er cédé apparié au 1er acquis');
+  egal(cmp1.paires[0].acquis.nom, 'Kirby Dach', '1er acquis en vis-à-vis');
+  egal(cmp1.paires[0].ecart.ov, -1, 'Écart d\'OV du duel : −1 pour San Jose');
+  egal(cmp1.paires[0].ecart.age, -5, 'Écart d\'âge du duel : San Jose rajeunit de 5 ans');
+  egal(cmp1.paires[0].ecart.salaire, 8750000 - 12200000, 'Écart de salaire du duel : −3 450 000 $');
+  egal(cmp1.paires[0].ecart.df, 61 - 82, 'Écart de DF du duel');
+  ok(!cmp1.multiple, 'Un pour un : aucun bloc de moyennes');
 
-  const ech2 = S.txCalculer({partenaire:'DALLAS', sj:['Philippe Desrosiers','Adam Fox'], part:['Kirby Dach']});
-  const cmp2 = S.txComparatif(ech2);
-  egal(cmp2.length, 2, 'Échange mixte : un groupe de patineurs, un de gardiens');
-  egal(cmp2[1].titre, 'Gardiens', 'Deuxième groupe : gardiens');
-  ok(!cmp2[1].lignes.some(l=>l.cle==='df' || l.cle==='sc'),
-    'DF et OF sont écartés du comparatif des gardiens');
-  egal(cmp2[1].lignes.find(l=>l.cle==='ov').ecart, null,
-    'Aucun gardien acquis : écart non calculable');
-  egal(cmp2[0].partent.length, 1, 'Un seul patineur cédé dans le groupe des patineurs');
+  const ech3 = S.txCalculer({partenaire:'DALLAS', sj:['Adam Fox','Braden Schneider'],
+                             part:['Kirby Dach','Ridly Greig']});
+  const cmp3 = S.txComparatif(ech3);
+  egal(cmp3.paires.length, 2, 'Deux pour deux : deux duels');
+  egal(cmp3.paires[1].cede.nom, 'Braden Schneider', '2e cédé dans le 2e duel');
+  egal(cmp3.paires[1].acquis.nom, 'Ridly Greig', '2e acquis dans le 2e duel');
+  ok(cmp3.multiple, 'Bloc de moyennes affiché dès qu\'un camp aligne plus d\'un joueur');
+  proche(cmp3.moyCede.ov, 81.5, 0.001, 'OV moyen des deux joueurs cédés');
+  proche(cmp3.moyAcquis.ov, 80.5, 0.001, 'OV moyen des deux joueurs acquis');
+  proche(cmp3.ecart.ov, -1, 0.001, 'Écart moyen d\'OV du bloc');
+  egal(cmp3.moyCede.salaire, 8750000 + 5950000, 'La ligne salaire additionne au lieu de moyenner');
+  egal(cmp3.moyAcquis.salaire, 8750000 + 3750000, 'Salaires acquis additionnés');
 
-  const deuxUn = S.txCalculer({partenaire:'DALLAS', sj:['Adam Fox','Braden Schneider'], part:['Kirby Dach']});
-  const lOV = S.txComparatif(deuxUn)[0].lignes.find(l=>l.cle==='ov');
-  proche(lOV.moyP, 81.5, 0.001, 'Moyenne d\'OV des deux défenseurs cédés');
-  egal(lOV.moyA, 82, 'OV du seul joueur acquis');
-  proche(lOV.ecart, 0.5, 0.001, 'Écart moyen d\'OV : +0,5');
-  egal(S.txComparatif(deuxUn)[0].lignes.find(l=>l.cle==='salaire').moyP, 8750000 + 5950000,
-    'La ligne salaire additionne au lieu de moyenner');
+  const inegal = S.txComparatif(S.txCalculer({partenaire:'DALLAS', sj:['Adam Fox'], part:['Kirby Dach','Ridly Greig']}));
+  egal(inegal.paires.length, 2, 'Un pour deux : deux duels');
+  egal(inegal.paires[1].cede, null, 'Duel sans vis-à-vis : aucun joueur cédé');
+  egal(inegal.paires[1].ecart, null, 'Duel dépareillé : aucun écart calculé');
+
+  const gard = S.txComparatif(S.txCalculer({partenaire:'DALLAS', sj:['Philippe Desrosiers'], part:['Kirby Dach']}));
+  egal(gard.paires[0].ecart.df, null, 'Gardien contre patineur : DF non comparable');
+  egal(gard.paires[0].ecart.sc, null, 'Gardien contre patineur : OF non comparable');
+  egal(gard.paires[0].ecart.sp, 84 - 93, 'Les cotes communes restent comparées');
+
+  console.log('— Profils et résumé par équipe');
   egal(S.txMoyenneCote([{a:null},{a:80},{a:90}], 'a'), 85, 'Les cotes absentes sont écartées de la moyenne');
   egal(S.txMoyenneCote([{a:null}], 'a'), null, 'Aucune valeur : moyenne nulle');
+  egal(S.txProfil([]).ov, null, 'Groupe vide : profil sans OV');
+  egal(S.txProfil([]).salaire, null, 'Groupe vide : aucun salaire');
+  const prof = S.txProfil([{it:60, ov:80, age:24, salaire:1000000}, {it:70, ov:82, age:26, salaire:2000000}]);
+  egal(prof.it, 65, 'Moyenne d\'une cote');
+  egal(prof.ov, 81, 'Moyenne d\'OV');
+  egal(prof.salaire, 3000000, 'Somme des salaires');
+  egal(prof.ct, null, 'La colonne contrat n\'a pas de moyenne');
+  tableauEgal(S.txEcartProfil({ov:80, age:null}, {ov:83, age:25}).ov, 3, 'Écart entre deux profils');
+  egal(S.txEcartProfil({ov:80, age:null}, {ov:83, age:25}).age, null, 'Valeur absente : écart nul');
+
+  const res = S.txResume(ech1);
+  egal(res.length, 2, 'Un résumé par équipe');
+  egal(res[0].nom, 'Sharks de San Jose', 'Premier résumé : San Jose');
+  egal(res[1].nom, 'Stars de Dallas', 'Deuxième résumé : le partenaire');
+  egal(res[0].avant.salaire, ATTENDU.masseSousContrat, 'Colonne salaire du résumé = masse au plafond avant');
+  egal(res[0].apres.salaire, 91975000, 'Masse au plafond après l\'échange');
+  egal(res[0].ecart.salaire, 91975000 - ATTENDU.masseSousContrat, 'Écart de masse pour San Jose');
+  egal(res[0].nAvant, 21, 'Effectif de San Jose avant');
+  egal(res[0].nApres, 21, 'Effectif de San Jose après');
+  ok(res[0].avant.ov !== null && res[0].apres.ov !== null, 'OV moyen de l\'effectif calculé avant et après');
+  proche(res[0].ecart.ov, res[0].apres.ov - res[0].avant.ov, 0.0001, 'Écart d\'OV cohérent avec les deux profils');
+  egal(S.txResume(null).length, 0, 'Aucun bilan : aucun résumé');
+
+  console.log('— Teintes des cotes');
+  ok(S.txTeinte(95).includes('hsl(130'), 'Cote élevée : teinte verte');
+  ok(S.txTeinte(45).includes('hsl(0'), 'Cote faible : teinte rouge');
+  egal(S.txTeinte(null), '', 'Aucune cote : aucune teinte');
+  egal(S.txTeinte(120), S.txTeinte(95), 'Teinte bornée en haut');
+  egal(S.txTeinte(10), S.txTeinte(45), 'Teinte bornée en bas');
+  egal(S.txNombre(81.5, 'ov'), '81,5', 'Décimale à la virgule');
+  egal(S.txNombre(82, 'ov'), '82', 'Entier sans décimale inutile');
+  egal(S.txNombre(null, 'ov'), '—', 'Valeur absente');
 
   console.log('— Vue Transactions (DOM)');
   const btnTx = doc.querySelector('nav button[data-vue="transactions"]');
@@ -1354,15 +1392,36 @@ const ATTENDU = {
     'Aucun refus : les deux équipes respectent le plafond');
   tableauEgal(S.litTransac(), {partenaire:'DALLAS', sj:['Haydn Fleury'], part:['Kirby Dach'], cotes:true},
     'Échange conservé dans le stockage local');
-  const tabCmp = doc.querySelector('#txComparatif table.tx-tableau');
-  ok(!!tabCmp, 'Tableau comparatif rendu');
-  egal(tabCmp.querySelectorAll('thead th').length, 4, 'Un pour un : cote, cédé, acquis, écart (aucune colonne de moyenne)');
-  egal(tabCmp.querySelectorAll('tbody tr').length, 16, '16 rangées comparées');
-  ok(tabCmp.querySelector('thead').textContent.includes('Haydn Fleury'), 'Le joueur cédé est en en-tête');
-  ok(tabCmp.querySelector('thead').textContent.includes('Kirby Dach'), 'Le joueur acquis est en en-tête');
-  ok(tabCmp.querySelector('thead').textContent.includes('Écart'), 'Colonne Écart présente');
+  const tables = doc.querySelectorAll('#txComparatif table.tx-tableau');
+  egal(tables.length, 2, 'Deux tableaux : le comparateur et le résumé par équipe');
+  const tabCmp = tables[0];
+  egal(tabCmp.querySelectorAll('thead th').length, 3 + S.TX_COLS_COMP.length,
+    'En-tête : joueur, PO, HD puis les 17 colonnes de cotes');
+  ok(tabCmp.querySelector('thead').textContent.includes('IN'), 'Colonne IN dans l\'en-tête');
+  ok(tabCmp.querySelector('thead').textContent.includes('SALAIRE'), 'Colonne SALAIRE dans l\'en-tête');
+  egal(tabCmp.querySelectorAll('tbody.tx-paire').length, 1, 'Un pour un : un seul duel, aucun bloc de moyennes');
+  const duel = tabCmp.querySelector('tbody.tx-paire');
+  egal(duel.querySelectorAll('tr').length, 4, 'Duel : titre, joueur cédé, joueur acquis, écart');
+  ok(duel.querySelector('tr.tx-r-sort .tx-nom').textContent.includes('Haydn Fleury'), 'Rangée du joueur cédé');
+  ok(duel.querySelector('tr.tx-r-sort .tx-nom').textContent.includes('San Jose'), 'Sens de l\'échange affiché');
+  ok(duel.querySelector('tr.tx-r-entre .tx-nom').textContent.includes('Kirby Dach'), 'Rangée du joueur acquis');
+  ok(duel.querySelector('tr.tx-r-entre .tx-nom').textContent.includes('Dallas'), 'Provenance du joueur acquis');
+  ok(!!duel.querySelector('tr.tx-r-ecart'), 'Rangée d\'écart sous chaque duel');
+  ok(duel.querySelectorAll('tr.tx-r-sort td[style*="hsl"]').length >= 13,
+    'Les cotes du joueur cédé sont teintées');
   ok(doc.querySelectorAll('#txComparatif td.tx-ecart.gain').length > 0, 'Au moins un gain coloré');
   ok(doc.querySelectorAll('#txComparatif td.tx-ecart.perte').length > 0, 'Au moins une perte colorée');
+  ok(doc.querySelectorAll('#txComparatif td.tx-ecart.tx-neutre').length >= 3,
+    'Âge, salaire et contrat restent neutres');
+
+  const tabRes = tables[1];
+  egal(tabRes.querySelectorAll('tbody.tx-paire').length, 2, 'Résumé : un bloc par équipe');
+  ok(tabRes.textContent.includes('Sharks de San Jose'), 'Bloc de San Jose');
+  ok(tabRes.textContent.includes('Stars de Dallas'), 'Bloc du partenaire');
+  egal(tabRes.querySelectorAll('tbody.tx-paire')[0].querySelectorAll('tr').length, 4,
+    'Chaque équipe : titre, avant, après, écart');
+  ok(tabRes.querySelectorAll('tbody.tx-paire')[0].textContent.includes('21 joueurs'),
+    'Effectif rappelé dans le résumé');
 
   Array.from(doc.querySelectorAll('#txListeSJ button.tx-j'))
     .find(b=>b.dataset.nom==='Haydn Fleury').click();
