@@ -757,6 +757,45 @@ const ATTENDU = {
   doc.getElementById('ovd_pa').dispatchEvent(new W.Event('input'));
   egal(doc.getElementById('ovdValeur').textContent, '—', 'Cote manquante → aucun résultat');
 
+  console.log('— Calculateur OV détaillé : toute la ligue');
+  const selEqOvd = doc.getElementById('ovdEquipe');
+  ok(!!selEqOvd, 'Sélecteur d\'équipe présent');
+  egal(selEqOvd.querySelectorAll('option').length, S.LIGUE.length,
+    'Les ' + S.LIGUE.length + ' équipes de la ligue sont offertes');
+  egal(selEqOvd.value, 'SANJOSE', 'San Jose sélectionnée par défaut');
+  egal(selEqOvd.querySelector('option').value, 'SANJOSE', 'San Jose en tête de liste');
+  selEqOvd.value = 'NEWJERSEY';
+  selEqOvd.dispatchEvent(new W.Event('change'));
+  const patNJ = S.ligueJoueurs('NEWJERSEY').filter(j => j.po !== 'G');
+  egal(selOvd.querySelectorAll('option').length, patNJ.length + 1,
+    'Changement d\'équipe : ' + patNJ.length + ' patineurs du New Jersey + saisie manuelle');
+  const jNJ = patNJ[0];
+  selOvd.value = jNJ.nom;
+  selOvd.dispatchEvent(new W.Event('change'));
+  egal(doc.getElementById('ovdGroupe').value, jNJ.po === 'D' ? 'D' : 'F',
+    jNJ.nom + ' chargé dans le bon groupe');
+  egal(doc.getElementById('ovd_st').value, String(jNJ.st),
+    'Cote ST de ' + jNJ.nom + ' chargée depuis les formations LIGUE');
+  egal(doc.getElementById('ovdArrondi').textContent, String(jNJ.ov),
+    'Arrondi affiché = OV publié pour ' + jNJ.nom);
+  // cohérence à l'échelle de la ligue : chaque patineur retombe sur son OV publié
+  {
+    let ecarts = 0, n = 0;
+    S.LIGUE.forEach(e => e.j.forEach(t => {
+      const j = S.ligueFiche(t);
+      if (j.po === 'G') return;
+      n++;
+      const r = S.ovDetaille(j, j.po === 'D' ? 'D' : 'F');
+      if (!r || r.arrondi !== j.ov) ecarts++;
+    }));
+    egal(ecarts, 0, 'OV détaillé arrondi = OV publié pour les ' + n + ' patineurs de la ligue');
+  }
+  // retour à San Jose : la liste redevient celle de l'alignement
+  selEqOvd.value = 'SANJOSE';
+  selEqOvd.dispatchEvent(new W.Event('change'));
+  egal(selOvd.querySelectorAll('option').length, nbPatineurs + 1,
+    'Retour à San Jose : la liste redevient celle de l\'alignement');
+
   console.log('— Alignement des trios (règlements 1.1.1 et 1.1.2)');
   // bassin de test : signés du club + ajouts (6 attaquants, 2 défenseurs, 2 gardiens)
   // Bassin déterministe, indépendant de l'équipe : on retire les signés du club

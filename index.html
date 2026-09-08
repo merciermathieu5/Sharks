@@ -714,10 +714,13 @@
   <!-- ================= OV DÉTAILLÉ ================= -->
   <section class="vue" id="vue-ovdetail">
     <h2>Calculateur d'OV détaillé</h2>
-    <div class="h2-sous">Reproduit au centième l'overall du simulateur à partir des 13 cotes, comme la fonction <em>overall()</em> du classeur Excel. Pondérations calibrées sur les rosters complets de la ligue (8 juillet 2026) : validées au centième sur les 17 OV détaillés de référence du classeur et sur l'arrondi des 697 patineurs de la ligue. Gardiens exclus — leur formule est distincte.</div>
+    <div class="h2-sous">Reproduit au centième l'overall du simulateur à partir des 13 cotes, comme la fonction <em>overall()</em> du classeur Excel. Pondérations calibrées sur les rosters complets de la ligue (8 juillet 2026) : validées au centième sur les 17 OV détaillés de référence du classeur et sur l'arrondi des 697 patineurs de la ligue. Gardiens exclus — leur formule est distincte. Le sélecteur d'équipe couvre les 32 clubs : San Jose depuis l'alignement courant, les autres depuis les formations intégrées du fichier USHL22.ros.</div>
     <div class="ovd-panneau">
       <div class="ovd-ligne">
-        <label>Joueur de l'alignement
+        <label>Équipe
+          <select id="ovdEquipe"></select>
+        </label>
+        <label>Joueur
           <select id="ovdJoueur"><option value="">— saisie manuelle —</option></select>
         </label>
         <label>Groupe
@@ -4277,11 +4280,29 @@ function ovDetaille(cotes, groupe){
 
 const OVD_LIBELLES = {it:'IN', sp:'SP', st:'ST', en:'EN', du:'DU', di:'DI', sk:'SK',
                       pa:'PA', pc:'PC', df:'DF', sc:'OF', ex:'EX', ld:'LD'};
+/* Source des joueurs du calculateur selon l'équipe choisie : San Jose vient de
+   l'alignement courant (données vives), les autres clubs des formations LIGUE
+   intégrées (USHL22.ros). Gardiens exclus : leur formule n'est pas couverte. */
+function sourceJoueursOvd(code){
+  return (!code || code === 'SANJOSE') ? ETAT.roster : ligueJoueurs(code);
+}
+function peuplerEquipesOvd(){
+  const sel = document.getElementById('ovdEquipe');
+  if (!sel || sel.options.length) return;
+  sel.innerHTML = '<option value="SANJOSE">San Jose (alignement)</option>' + LIGUE
+    .filter(e => e.c !== 'SANJOSE')
+    .slice().sort((a,b) => a.v.localeCompare(b.v,'fr'))
+    .map(e => `<option value="${e.c}">${e.v}</option>`).join('');
+  sel.value = 'SANJOSE';
+}
 function peuplerJoueursOvd(){
   const sel = document.getElementById('ovdJoueur');
   if (!sel) return;
+  peuplerEquipesOvd();
+  const selEq = document.getElementById('ovdEquipe');
+  const code = selEq ? selEq.value : 'SANJOSE';
   const courant = sel.value;
-  const patineurs = ETAT.roster.filter(j => j.po !== 'G');
+  const patineurs = sourceJoueursOvd(code).filter(j => j.po !== 'G');
   sel.innerHTML = '<option value="">— saisie manuelle —</option>' +
     patineurs.map(j => `<option value="${j.nom}">${j.nom} (${j.po} · OV ${j.ov})</option>`).join('');
   if (courant && patineurs.some(j => j.nom === courant)) sel.value = courant;
@@ -4289,7 +4310,9 @@ function peuplerJoueursOvd(){
 function chargerJoueurOvd(){
   const nom = document.getElementById('ovdJoueur').value;
   if (!nom) return;
-  const j = ETAT.roster.find(x => x.nom === nom);
+  const selEq = document.getElementById('ovdEquipe');
+  const code = selEq ? selEq.value : 'SANJOSE';
+  const j = sourceJoueursOvd(code).find(x => x.nom === nom);
   if (!j) return;
   document.getElementById('ovdGroupe').value = (j.po === 'D') ? 'D' : 'F';
   OV_ORDRE.forEach(k => { document.getElementById('ovd_' + k).value = j[k]; });
@@ -4320,6 +4343,7 @@ function construireOvd(){
   OV_ORDRE.forEach(k => document.getElementById('ovd_' + k).addEventListener('input', calculerOvd));
   document.getElementById('ovdGroupe').addEventListener('change', calculerOvd);
   document.getElementById('ovdJoueur').addEventListener('change', chargerJoueurOvd);
+  document.getElementById('ovdEquipe').addEventListener('change', peuplerJoueursOvd);
   peuplerJoueursOvd();
   calculerOvd();
 }
@@ -4897,6 +4921,7 @@ if (typeof window !== 'undefined'){
     ouvrirProlongation, fermerProlongation, calculerMasse, PLAFOND, echelonEffectif, peutProlonger,
     MATRICES, STATS_PAR_MATRICE, NIVEAUX, SECOURS_ROSTER, PROFILS, STATS_DEF,
     ovDetaille, OV_POIDS, OV_ORDRE, peuplerJoueursOvd, calculerOvd,
+    peuplerEquipesOvd, sourceJoueursOvd,
     CS_COLONNES, CHARTE_OV_MIN, CHARTE_OV_MAX, verdictCharte, rendreCharte,
     peuplerJoueursCharte, calculerCharte, rendreApercuCharte, rangCharte, etiquetteOvCharte};
 }
