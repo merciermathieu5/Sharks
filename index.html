@@ -844,11 +844,10 @@ const CONFIG = {
     xtra:    'https://ushl.ca/ushl/menu_sim/USHL-pro/USHLxtrastats.html'
   },
   proxys: [
+    /* proxy.cors.sh (clé API exigée) et thingproxy (hors service) retirés — sept. 2026 */
     u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
     u => 'https://corsproxy.io/?url=' + encodeURIComponent(u),
-    u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u),
-    u => 'https://proxy.cors.sh/' + u,
-    u => 'https://thingproxy.freeboard.io/fetch/' + u
+    u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u)
   ],
   // limites d'utilisation des gardiens (projet gestiongardiens, généré depuis ushl.ca)
   urlLimites: 'https://merciermathieu5.github.io/gestiongardiens/limites.json',
@@ -2605,19 +2604,27 @@ function preparerRoster(){
 function litCache(){ try{ return JSON.parse(localStorage.getItem(CLES_LS.cache))||{}; }catch(e){ return {}; } }
 function ecritCache(c){ try{ localStorage.setItem(CLES_LS.cache, JSON.stringify(c)); }catch(e){ /* quota */ } }
 
-async function chercherViaProxy(url, {timeout=15000}={}){
+let ETAPE_MAJ = ''; // étiquette de l'étape en cours, affichée pendant les essais de relais
+function afficherEtapeMaj(txt){
+  const e = document.getElementById('etatMaj');
+  if (e) e.textContent = txt;
+}
+
+async function chercherViaProxy(url, {timeout=8000}={}){
   const prefere = Number(localStorage.getItem(CLES_LS.proxy));
   const ordre = [...CONFIG.proxys.keys()];
   if (!isNaN(prefere) && ordre.includes(prefere)){
     ordre.splice(ordre.indexOf(prefere),1); ordre.unshift(prefere);
   }
-  let derniereErreur = null;
+  let derniereErreur = null, pos = 0;
   for (const i of ordre){
+    pos++;
+    if (ETAPE_MAJ) afficherEtapeMaj(ETAPE_MAJ + ' relais ' + pos + '/' + ordre.length + '…');
     const cible = CONFIG.proxys[i](url);
     try{
       const ctl = new AbortController();
       const t = setTimeout(()=>ctl.abort(), timeout);
-      const rep = await fetch(cible, {signal:ctl.signal});
+      const rep = await fetch(cible, {signal:ctl.signal, cache:'no-store'});
       clearTimeout(t);
       if (!rep.ok) throw new Error('HTTP '+rep.status);
       const texte = await rep.text();
@@ -2702,7 +2709,7 @@ async function actualiserTout(){
   btn.disabled = true;
   const rapport = [];
   // 1) Formation
-  etat.textContent = 'formation…';
+  ETAPE_MAJ = 'formation —'; etat.textContent = 'formation…';
   try{
     const {texte, essais} = await chercherSource('roster', validerPageEquipe);
     const joueurs = parseRoster(texte);
@@ -2714,7 +2721,7 @@ async function actualiserTout(){
     } else rapport.push('formation : table introuvable, données locales conservées');
   }catch(e){ rapport.push('formation ✗ ('+e.message+')'); }
   // 1b) Contrats (page Finances — source de vérité des années de contrat)
-  etat.textContent = 'contrats…';
+  ETAPE_MAJ = 'contrats —'; etat.textContent = 'contrats…';
   try{
     const {texte, essais} = await chercherSource('finance', validerPageEquipe);
     const contrats = parseFinance(texte);
@@ -2735,7 +2742,7 @@ async function actualiserTout(){
     } else rapport.push('contrats : tables introuvables, CT de la formation conservés');
   }catch(e){ rapport.push('contrats ✗ ('+e.message+')'); }
   // 2) Pointage
-  etat.textContent = 'production…';
+  ETAPE_MAJ = 'production —'; etat.textContent = 'production…';
   try{
     const {texte, essais} = await chercherSource('scoring', validerPageEquipe);
     const s = parseScoring(texte);
@@ -2750,7 +2757,7 @@ async function actualiserTout(){
     }
   }catch(e){ rapport.push('production ✗ ('+e.message+')'); }
   // 3) XtraStats
-  etat.textContent = 'XtraStats…';
+  ETAPE_MAJ = 'XtraStats —'; etat.textContent = 'XtraStats…';
   try{
     const {texte} = await chercherSource('xtra');
     const x = parseXtra(texte, CONFIG.equipe);
@@ -2767,12 +2774,13 @@ async function actualiserTout(){
     } else rapport.push('XtraStats : rien trouvé pour '+CONFIG.equipe);
   }catch(e){ rapport.push('XtraStats ✗ ('+e.message+')'); }
   // 4) Limites d'utilisation des gardiens (GitHub Pages : requête directe permise)
-  etat.textContent = 'limites gardiens…';
+  ETAPE_MAJ = ''; etat.textContent = 'limites gardiens…';
   try{
     const n = await chargerLimites(true);
     rapport.push(n>0 ? 'limites gardiens ✓ ('+n+')' : 'limites gardiens : fichier vide');
   }catch(e){ rapport.push('limites gardiens ✗ ('+e.message+')'); }
 
+  ETAPE_MAJ = '';
   etat.textContent = rapport.join(' · ');
   btn.disabled = false;
   toutRendre();
