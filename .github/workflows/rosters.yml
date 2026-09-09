@@ -1,0 +1,48 @@
+name: Relève des alignements USHL
+
+# Tourne chaque matin, et à la demande depuis l'onglet Actions
+# (bouton « Run workflow »), par exemple après une ronde d'agents libres.
+on:
+  schedule:
+    - cron: '0 9 * * *'   # 09:00 UTC ≈ 05:00 heure de l'Est
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: releve-rosters
+  cancel-in-progress: false
+
+jobs:
+  relever:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # jsdom sert à réutiliser le parseur de index.html tel quel,
+      # pour que serveur et navigateur lisent les pages de la même façon.
+      - name: Installer jsdom
+        run: npm install jsdom --no-save --no-audit --no-fund
+
+      - name: Relever les 32 alignements
+        run: node scripts/fetch-rosters.mjs
+
+      # Le script sort en erreur si la relève est incomplète : dans ce cas
+      # l'étape précédente échoue et data/rosters.json reste tel quel.
+      - name: Committer si le fichier a changé
+        run: |
+          if [[ -z "$(git status --porcelain data/rosters.json)" ]]; then
+            echo "Aucun changement dans les alignements."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/rosters.json
+          git commit -m "Alignements USHL — relevé du $(date -u +%Y-%m-%d)"
+          git push

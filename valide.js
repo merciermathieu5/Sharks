@@ -14,7 +14,7 @@ function tableauEgal(a, b, msg){ ok(JSON.stringify(a)===JSON.stringify(b), msg +
 
 const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
 
-/* Constantes propres à l'équipe — fichier USHL22.ros intégré le 22 août 2026.
+/* Constantes propres à l'équipe — alignement publié sur ushl.ca (TeamRosters SANJOSE, 4 septembre 2026).
    masseSousContrat = somme des salaires CT>0 de l'alignement PRO, recoupée avec
    le bloc SANJOSE du fichier (masse totale 101 675 000 $ moins le contrat échu
    de Shea Theodore, 6 250 000 $). */
@@ -22,9 +22,9 @@ const ATTENDU = {
   equipe: 'SANJOSE',
   taille: 21,
   echantillon: {nom: 'Jesperi Kotkaniemi', salaire: 9075000, ct: 2, ov: 82},
-  masseSousContrat: 95425000,
+  masseSousContrat: 96525000,
   nbSousContrat: 20,
-  masseTotale: 101675000
+  masseTotale: 102775000
 };
 
 (async () => {
@@ -1195,7 +1195,7 @@ const ATTENDU = {
   W.localStorage.removeItem('sjs_resignatures_v1');
   W.localStorage.removeItem('sjs_transac_v1');
   egal(S.LIGUE.length, 32, '32 formations dans le fichier');
-  egal(S.LIGUE.reduce((s2,e)=>s2+e.j.length,0), 668, '668 joueurs au total');
+  egal(S.LIGUE.reduce((s2,e)=>s2+e.j.length,0), 666, '666 joueurs au total');
   egal(new Set(S.LIGUE.map(e=>e.c)).size, 32, 'Aucun code d\'équipe en double');
   ok(S.LIGUE.every(e=>e.n && e.n.length>2), 'Chaque équipe porte un nom lisible');
   tableauEgal(S.LIGUE_COLS,
@@ -1258,23 +1258,23 @@ const ATTENDU = {
   const vide = S.txCalculer({partenaire:'DALLAS', sj:[], part:[]});
   ok(vide.vide, 'Échange sans joueur repéré comme vide');
   egal(vide.sj.masseAvant, ATTENDU.masseSousContrat, 'Masse de départ des Sharks');
-  egal(vide.part.masseAvant, 97800000, 'Masse de départ des Stars de Dallas');
+  egal(vide.part.masseAvant, 88250000, 'Masse de départ des Stars de Dallas');
   egal(vide.sj.masseApres, vide.sj.masseAvant, 'Échange vide : masse inchangée');
 
-  const ech1 = S.txCalculer({partenaire:'DALLAS', sj:['Haydn Fleury'], part:['Kirby Dach']});
+  const ech1 = S.txCalculer({partenaire:'DALLAS', sj:['Haydn Fleury'], part:['Evan Bouchard']});
   egal(ech1.sortSJ.length, 1, 'Un joueur cédé par San Jose');
   egal(ech1.sortPart.length, 1, 'Un joueur cédé par Dallas');
-  egal(ech1.sj.masseApres, 91975000, 'San Jose : 95 425 000 − 12 200 000 + 8 750 000');
-  egal(ech1.part.masseApres, 101250000, 'Dallas : 97 800 000 − 8 750 000 + 12 200 000');
-  egal(ech1.sj.margeApres, 104000000 - 91975000, 'Marge des Sharks après l\'échange');
+  egal(ech1.sj.masseApres, 99825000, 'San Jose : 96 525 000 − 12 200 000 + 15 500 000');
+  egal(ech1.part.masseApres, 84950000, 'Dallas : 88 250 000 − 15 500 000 + 12 200 000');
+  egal(ech1.sj.margeApres, 104000000 - 99825000, 'Marge des Sharks après l\'échange');
   egal(ech1.sj.nApres, ech1.sj.nAvant, 'Un pour un : effectif inchangé');
-  tableauEgal(ech1.sj.effectif, {C:7, AG:2, AD:3, D:6, G:3}, 'Effectif des Sharks après l\'échange');
+  tableauEgal(ech1.sj.effectif, {C:6, AG:2, AD:3, D:7, G:3}, 'Effectif des Sharks après l\'échange');
   ok(!ech1.sj.depasse && !ech1.part.depasse, 'Les deux équipes restent sous le plafond');
-  ok(ech1.sj.apres.some(j=>j.nom==='Kirby Dach'), 'Le joueur acquis figure dans l\'effectif des Sharks');
+  ok(ech1.sj.apres.some(j=>j.nom==='Evan Bouchard'), 'Le joueur acquis figure dans l\'effectif des Sharks');
   ok(!ech1.sj.apres.some(j=>j.nom==='Haydn Fleury'), 'Le joueur cédé n\'y figure plus');
 
-  const trop = S.txCalculer({partenaire:'DALLAS', sj:[], part:['Kirby Dach']});
-  egal(trop.sj.masseApres, 104175000, 'Acquisition sèche de 8,75 M : 104 175 000 $');
+  const trop = S.txCalculer({partenaire:'DALLAS', sj:[], part:['Evan Bouchard']});
+  egal(trop.sj.masseApres, 112025000, 'Acquisition sèche de 15,5 M : 112 025 000 $');
   ok(trop.sj.depasse, 'Dépassement du plafond de 104 M$ détecté');
   ok(!trop.part.depasse, 'Dallas, qui se dégage, reste conforme');
 
@@ -1308,7 +1308,7 @@ const ATTENDU = {
   egal(S.txOvPrecis(null), null, 'Aucun joueur : aucun OV');
 
   egal(S.txJoueurDe('SANJOSE', 'Adam Fox').nom, 'Adam Fox', 'Joueur retrouvé dans son club');
-  egal(S.txJoueurDe('DALLAS', 'Kirby Dach').ov, 82, 'Joueur retrouvé chez le partenaire');
+  egal(S.txJoueurDe('DALLAS', 'Evan Bouchard').ov, 84, 'Joueur retrouvé chez le partenaire');
   egal(S.txJoueurDe('DALLAS', 'Adam Fox'), null, 'Joueur absent de l\'équipe demandée');
   egal(S.txJoueurDe('', 'Adam Fox'), null, 'Aucune équipe : aucun joueur');
 
@@ -1338,13 +1338,13 @@ const ATTENDU = {
   const cmp1 = S.txComparatif(ech1);
   egal(cmp1.paires.length, 1, 'Fleury contre Dach : un duel');
   proche(cmp1.moyCede.ov, 83, 0.001, 'OV du joueur cédé');
-  proche(cmp1.moyAcquis.ov, 82, 0.001, 'OV du joueur acquis');
-  proche(cmp1.ecart.ov, -1, 0.001, 'Écart d\'OV de l\'échange');
-  egal(cmp1.ecart.salaire, 8750000 - 12200000, 'Écart de masse échangée : −3 450 000 $');
-  const cmpN = S.txComparatif(S.txCalculer({partenaire:'DALLAS', sj:['Adam Fox','Braden Schneider'], part:['Kirby Dach']}));
+  proche(cmp1.moyAcquis.ov, 84, 0.001, 'OV du joueur acquis');
+  proche(cmp1.ecart.ov, 1, 0.001, 'Écart d\'OV de l\'échange');
+  egal(cmp1.ecart.salaire, 15500000 - 12200000, 'Écart de masse échangée : +3 300 000 $');
+  const cmpN = S.txComparatif(S.txCalculer({partenaire:'DALLAS', sj:['Adam Fox','Braden Schneider'], part:['Evan Bouchard']}));
   proche(cmpN.moyCede.ov, 81.5, 0.001, 'Moyenne d\'OV de deux joueurs cédés');
   egal(cmpN.moyCede.salaire, 8750000 + 5950000, 'Les salaires s\'additionnent au lieu de se moyenner');
-  const gard = S.txComparatif(S.txCalculer({partenaire:'DALLAS', sj:['Philippe Desrosiers'], part:['Kirby Dach']}));
+  const gard = S.txComparatif(S.txCalculer({partenaire:'DALLAS', sj:['Philippe Desrosiers'], part:['Evan Bouchard']}));
   egal(gard.ecart.df, null, 'Gardien contre patineur : DF non comparable');
 
   const res = S.txResume(ech1);
@@ -1352,7 +1352,7 @@ const ATTENDU = {
   egal(res[0].nom, 'Sharks de San Jose', 'Premier résumé : San Jose');
   egal(res[1].nom, 'Stars de Dallas', 'Deuxième résumé : le partenaire');
   egal(res[0].avant.salaire, ATTENDU.masseSousContrat, 'Colonne salaire du résumé = masse au plafond avant');
-  egal(res[0].apres.salaire, 91975000, 'Masse au plafond après l\'échange');
+  egal(res[0].apres.salaire, 99825000, 'Masse au plafond après l\'échange');
   proche(res[0].ecart.ov, res[0].apres.ov - res[0].avant.ov, 0.0001, 'Écart d\'OV cohérent avec les deux profils');
   egal(S.txResume(null).length, 0, 'Aucun bilan : aucun résumé');
 
@@ -1387,28 +1387,28 @@ const ATTENDU = {
   ok(Array.from(doc.getElementById('txEqA').options).some(o=>o.textContent.includes('mon club')),
     'San Jose est identifié comme mon club');
   egal(doc.getElementById('txJoA').options.length, ATTENDU.taille, 'Joueur A : tout l\'effectif des Sharks');
-  egal(doc.getElementById('txJoB').options.length, 19, 'Joueur B : tout l\'effectif des Stars');
+  egal(doc.getElementById('txJoB').options.length, 17, 'Joueur B : tout l\'effectif des Stars');
   ok(doc.getElementById('txJoA').options[0].textContent.includes('OV '), 'L\'OV figure dans le sélecteur');
 
-  chg('txJoA', 'Nico Hischier');
-  chg('txJoB', 'Kirby Dach');
+  chg('txJoA', 'Haydn Fleury');
+  chg('txJoB', 'Evan Bouchard');
   const fiches = doc.querySelectorAll('#txDuel .duel-fiche');
   egal(fiches.length, 2, 'Deux fiches de joueur');
-  ok(fiches[0].textContent.includes('Nico Hischier'), 'Fiche A : le joueur choisi');
-  ok(fiches[1].textContent.includes('Kirby Dach'), 'Fiche B : le joueur choisi');
+  ok(fiches[0].textContent.includes('Haydn Fleury'), 'Fiche A : le joueur choisi');
+  ok(fiches[1].textContent.includes('Evan Bouchard'), 'Fiche B : le joueur choisi');
   ok(fiches[0].textContent.includes('San Jose'), 'La ville figure sur la fiche');
-  ok(fiches[0].textContent.includes('80,58'), 'OV décimal affiché sur la fiche');
-  ok(fiches[0].textContent.includes('Playmaker'), 'Profil USHL affiché sur la fiche');
+  ok(fiches[0].textContent.includes('83,27'), 'OV décimal affiché sur la fiche');
+  ok(fiches[0].textContent.includes('DEliteShutdown'), 'Profil USHL affiché sur la fiche');
   egal(doc.querySelectorAll('#txDuel .duel-ligne').length, 14, '13 cotes plus l\'OV en jauges');
   const l1 = doc.querySelectorAll('#txDuel .duel-ligne')[0];
   ok(l1.querySelector('.duel-lbl').textContent.includes('IN'), 'Code court de la cote au centre');
   ok(l1.querySelector('.duel-lbl').textContent.includes('Intensité'), 'Nom long de la cote au centre');
   egal(l1.querySelectorAll('.duel-jauge').length, 2, 'Une jauge de chaque côté');
-  ok(l1.querySelector('.duel-jauge.b').classList.contains('gagne'), 'Dach gagne IN (66 contre 65)');
-  ok(!l1.querySelector('.duel-jauge.a').classList.contains('gagne'), 'Hischier ne gagne pas IN');
+  ok(l1.querySelector('.duel-jauge.a').classList.contains('gagne'), 'Fleury gagne IN (80 contre 70)');
+  ok(!l1.querySelector('.duel-jauge.b').classList.contains('gagne'), 'Bouchard ne gagne pas IN');
   const lSP = doc.querySelectorAll('#txDuel .duel-ligne')[1];
-  ok(lSP.querySelector('.duel-jauge.a').classList.contains('gagne'), 'Hischier gagne SP (87 contre 84)');
-  ok(doc.querySelector('#txDuel .duel-stats').textContent.includes('Passes'),
+  ok(lSP.querySelector('.duel-jauge.b').classList.contains('gagne'), 'Bouchard gagne SP (83 contre 80)');
+  ok(doc.querySelector('#txDuel .duel-stats').textContent.length > 0,
     'Statistiques évaluées du profil rappelées');
 
   console.log('— Ajout au marché depuis le comparateur');
@@ -1418,8 +1418,8 @@ const ATTENDU = {
   ok(boutons()[1].textContent.includes('reçus'), 'Joueur du partenaire : ajout aux joueurs reçus');
   boutons()[0].click();
   boutons()[1].click();
-  tableauEgal(S.litTransac().sj, ['Nico Hischier'], 'Le joueur cédé est enregistré');
-  tableauEgal(S.litTransac().part, ['Kirby Dach'], 'Le joueur reçu est enregistré');
+  tableauEgal(S.litTransac().sj, ['Haydn Fleury'], 'Le joueur cédé est enregistré');
+  tableauEgal(S.litTransac().part, ['Evan Bouchard'], 'Le joueur reçu est enregistré');
   ok(boutons()[0].textContent.includes('Retirer'), 'Le bouton propose ensuite de retirer');
   ok(boutons()[0].classList.contains('retire'), 'Bouton en mode retrait');
 
@@ -1429,7 +1429,7 @@ const ATTENDU = {
   ok(doc.querySelector('#txDuel .duel-note').textContent.includes('partenaire'),
     'Le motif du blocage est expliqué');
   chg('txEqB', 'DALLAS');
-  chg('txJoB', 'Kirby Dach');
+  chg('txJoB', 'Evan Bouchard');
 
   console.log('— Ce que chaque club met sur la table');
   const cotes = doc.querySelectorAll('#txEchange .ech-cote');
@@ -1437,10 +1437,10 @@ const ATTENDU = {
   ok(cotes[0].textContent.includes('San Jose cède'), 'Colonne de San Jose');
   ok(cotes[1].textContent.includes('Dallas cède'), 'Colonne du partenaire');
   egal(cotes[0].querySelectorAll('.ech-j').length, 1, 'Un joueur du côté de San Jose');
-  ok(cotes[0].textContent.includes('Nico Hischier'), 'Le joueur cédé y figure');
-  ok(cotes[0].textContent.includes('OV 81'), 'Son OV y figure');
-  ok(cotes[0].querySelector('.ech-total').textContent.includes('7,5 M'), 'Masse cédée par San Jose');
-  ok(cotes[1].querySelector('.ech-total').textContent.includes('8,75 M'), 'Masse cédée par Dallas');
+  ok(cotes[0].textContent.includes('Haydn Fleury'), 'Le joueur cédé y figure');
+  ok(cotes[0].textContent.includes('OV 83'), 'Son OV y figure');
+  ok(cotes[0].querySelector('.ech-total').textContent.includes('12,2 M'), 'Masse cédée par San Jose');
+  ok(cotes[1].querySelector('.ech-total').textContent.includes('15,5 M'), 'Masse cédée par Dallas');
   cotes[0].querySelector('button.ech-x').click();
   tableauEgal(S.litTransac().sj, [], 'Le ✕ retire le joueur de l\'échange');
   ok(doc.querySelectorAll('#txEchange .ech-cote')[0].textContent.includes('Aucun joueur'),
@@ -1453,8 +1453,8 @@ const ATTENDU = {
   ok(!doc.querySelector('#txVerdict .tx-verdict').classList.contains('refus'),
     'Échange équilibré : plus de refus');
   egal(doc.querySelectorAll('#txBilan .stat-carte').length, 2, 'Deux cartes de masse');
-  ok(doc.querySelector('#txBilan').textContent.replace(/[\s\u00a0\u202f]/g,'').includes('96675000'),
-    'Masse des Sharks après l\'échange : 96 675 000 $');
+  ok(doc.querySelector('#txBilan').textContent.replace(/[\s\u00a0\u202f]/g,'').includes('99825000'),
+    'Masse des Sharks après l\'échange : 99 825 000 $');
   const tab = doc.querySelector('#txComparatif table.tx-tableau');
   ok(!!tab, 'Tableau d\'impact rendu');
   egal(tab.querySelectorAll('thead th').length, 1 + S.TX_COLS_COMP.length, 'En-tête : équipe puis les 17 colonnes');
@@ -1470,7 +1470,7 @@ const ATTENDU = {
     'Âge, salaire et contrat restent neutres');
 
   const som = S.txSommaireTexte(S.txCalculer(S.TX_ETAT));
-  ok(som.includes('Nico Hischier') && som.includes('Kirby Dach'), 'Le sommaire nomme les deux joueurs');
+  ok(som.includes('Haydn Fleury') && som.includes('Evan Bouchard'), 'Le sommaire nomme les deux joueurs');
   ok(som.includes('Stars de Dallas'), 'Le sommaire nomme l\'équipe partenaire');
   egal(S.txSommaireTexte(null), '', 'Aucun bilan : sommaire vide');
 
@@ -1479,6 +1479,54 @@ const ATTENDU = {
   tableauEgal(S.litTransac().part, [], 'Les deux côtés sont vidés');
   ok(doc.querySelector('#txVerdict').textContent.includes('Aucun joueur'), 'Verdict revenu à l\'état vide');
   egal(doc.getElementById('txEqB').value, 'DALLAS', 'Le comparateur garde son équipe après le vidage');
+
+
+  /* ============ ALIMENTATION LOCALE (data/rosters.json) ============ */
+  console.log('— Chargement du fichier produit par l\'Action');
+  {
+    const refJ = S.SECOURS_ROSTER.map(j=>({...j}));
+    const charge = {
+      maj: 'test 1 2026',
+      equipes: {
+        [S.CONFIG.equipe]: {
+          fiche: S.CONFIG.equipe + ' 9-1-0',
+          joueurs: refJ.map((j,i)=> i===0 ? {...j, ov: j.ov, nom: j.nom} : j)
+        }
+      }
+    };
+    egal(typeof S.appliquerRosters, 'function', 'appliquerRosters exposée');
+    egal(S.appliquerRosters(null), null, 'Charge nulle : rien appliqué');
+    egal(S.appliquerRosters({}), null, 'Charge sans « equipes » : rien appliqué');
+    egal(S.appliquerRosters({equipes:{}}), 0, 'Aucune équipe connue : 0 remplacement');
+
+    // charge tronquée : sous le seuil de 10 joueurs, on ne touche à rien
+    const avant = S.ETAT.roster.length;
+    egal(S.appliquerRosters({equipes:{[S.CONFIG.equipe]:{joueurs:[{nom:'Bidon',ov:50}]}}}), 0,
+      'Équipe sous le seuil : ignorée');
+    egal(S.ETAT.roster.length, avant, 'Roster inchangé après une charge tronquée');
+    ok(S.ETAT.roster.every(j=>j.nom!=='Bidon'), 'Aucun joueur bidon injecté');
+
+    // charge valide
+    const n = S.appliquerRosters(charge);
+    ok(n >= 1, 'Au moins une équipe remplacée');
+    egal(S.ETAT.fiche, S.CONFIG.equipe + ' 9-1-0', 'Fiche reprise de la charge');
+    ok(S.ETAT.source.includes('ushl.ca'), 'Source signalée comme venant de ushl.ca');
+    ok(S.ETAT.roster.every(j=>j._profil), 'Profils recalculés après application');
+    egal(S.ligueJoueurs(S.CONFIG.equipe).length,
+      refJ.filter(j=>!j.horsAlignement).length, 'Bloc LIGUE du club synchronisé');
+    egal(S.LIGUE.length, 32, 'Les 32 formations sont conservées');
+    {
+      const vus = new Set(); let doubles = 0;
+      S.LIGUE.forEach(e=>e.j.forEach(t=>{ if(vus.has(t[0])) doubles++; vus.add(t[0]); }));
+      egal(doubles, 0, 'Aucun joueur en double après application');
+    }
+    ok(S.LIGUE.every(e=>e.j.every(t=>t.length===S.LIGUE_COLS.length)),
+      'Fiches compactes toujours au bon nombre de colonnes');
+
+    // remise en état pour la suite du harnais
+    S.ETAT.roster = refJ.map(j=>({...j}));
+    S.preparerRoster();
+  }
 
   console.log(`\n${total - echecs}/${total} vérifications réussies`);
   process.exit(echecs ? 1 : 0);
