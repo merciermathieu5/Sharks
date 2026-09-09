@@ -2648,6 +2648,38 @@ async function chercherViaProxy(url, {timeout=8000}={}){
    et purge du cache s'il a déjà été pollué. */
 function validerPageEquipe(texte){ return extraireFiche(texte) !== null; }
 
+/* Fraîcheur des pages de la ligue : «Dernière mise à jour le mercredi, juil 8 2026».
+   Hors saison, ushl.ca peut rester figé des semaines : si la page est plus
+   vieille que les données intégrées (DATE_SECOURS), on ne l'applique pas,
+   sinon un alignement à jour serait écrasé par un état antérieur. */
+const MOIS_FR = {jan:0,'fév':1,fev:1,mar:2,avr:3,mai:4,juin:5,jui:6,juil:6,'aoû':7,aou:7,sep:8,oct:9,nov:10,'déc':11,dec:11};
+function moisVersIndex(m){
+  m = m.toLowerCase().replace(/\.$/,'');
+  for (const cle of Object.keys(MOIS_FR).sort((a,b)=>b.length-a.length)){
+    if (m.startsWith(cle)) return MOIS_FR[cle];
+  }
+  return null;
+}
+function extraireDateMajPage(html){
+  const m = html.match(/Derni[eè]re mise à jour le\s+[a-zûé]+,?\s+([a-zûéA-Z\.]+)\s+(\d{1,2})\s+(\d{4})/i);
+  if (!m) return null;
+  const mois = moisVersIndex(m[1]);
+  return mois===null ? null : new Date(+m[3], mois, +m[2]);
+}
+function dateSecoursTs(){
+  const m = DATE_SECOURS.match(/(\d{1,2})\s+([a-zûéA-Z\.]+)\s+(\d{4})/);
+  if (!m) return null;
+  const mois = moisVersIndex(m[2]);
+  return mois===null ? null : new Date(+m[3], mois, +m[1]);
+}
+/* null → page à appliquer ; sinon → message expliquant qu'elle est trop vieille */
+function pageTropVieille(html){
+  const dPage = extraireDateMajPage(html), dSec = dateSecoursTs();
+  if (!dPage || !dSec || dPage >= dSec) return null;
+  return 'page de la ligue du ' + dPage.toLocaleDateString('fr-CA')
+       + ' — plus vieille que les données intégrées du ' + DATE_SECOURS + ', conservées';
+}
+
 async function chercherSource(cle, valider){
   const cache = litCache();
   const maintenant = Date.now();
@@ -2712,8 +2744,11 @@ async function actualiserTout(){
   ETAPE_MAJ = 'formation —'; etat.textContent = 'formation…';
   try{
     const {texte, essais} = await chercherSource('roster', validerPageEquipe);
-    const joueurs = parseRoster(texte);
-    if (joueurs.length >= 10){
+    const vieille = pageTropVieille(texte);
+    const joueurs = vieille ? [] : parseRoster(texte);
+    if (vieille){
+      rapport.push('formation : ' + vieille);
+    } else if (joueurs.length >= 10){
       ETAT.roster = joueurs; preparerRoster();
       const f = extraireFiche(texte); if (f) ETAT.fiche = f;
       ETAT.source = 'ushl.ca — ' + new Date().toLocaleString('fr-CA');
@@ -2724,8 +2759,11 @@ async function actualiserTout(){
   ETAPE_MAJ = 'contrats —'; etat.textContent = 'contrats…';
   try{
     const {texte, essais} = await chercherSource('finance', validerPageEquipe);
-    const contrats = parseFinance(texte);
-    if (contrats.size >= 5){
+    const vieilleFin = pageTropVieille(texte);
+    const contrats = vieilleFin ? new Map() : parseFinance(texte);
+    if (vieilleFin){
+      rapport.push('contrats : ' + vieilleFin);
+    } else if (contrats.size >= 5){
       let maj = 0, echus = 0;
       for (const j of ETAT.roster){
         const fin = contrats.get(normaliserNom(j.nom));
