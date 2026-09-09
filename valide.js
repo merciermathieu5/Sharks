@@ -1528,6 +1528,34 @@ const ATTENDU = {
     S.preparerRoster();
   }
 
+
+  /* ============ IDENTITÉ DE L'INTERFACE ============ */
+  console.log('— Identité visuelle du club');
+  {
+    const nomClub = S.ligueNom(S.CONFIG.equipe);
+    const villeClub = S.ligueVille(S.CONFIG.equipe);
+    const h1 = doc.querySelector('header h1');
+    ok(!!h1, 'Titre principal présent dans l\'en-tête');
+    egal(h1.textContent.toUpperCase().includes(nomClub.toUpperCase()), true,
+      'Le titre affiché nomme le club : ' + nomClub);
+    ok(doc.title.includes(nomClub), 'La balise <title> nomme le club');
+    const logo = doc.querySelector('header img.logo');
+    ok(!!logo, 'Logo présent');
+    egal(logo.getAttribute('alt'), nomClub, 'Texte alternatif du logo = nom du club');
+    ok(logo.getAttribute('src').toLowerCase().includes(S.CONFIG.equipe.toLowerCase().replace('.','')),
+      'Le fichier du logo correspond au code de l\'équipe');
+
+    /* Aucune trace d'un autre club dans l'en-tête : c'est le piège des portages,
+       où seule la casse d'origine avait été remplacée. */
+    const entete = doc.querySelector('header').textContent.toUpperCase();
+    for (const e of S.LIGUE){
+      if (e.c === S.CONFIG.equipe) continue;
+      ok(!entete.includes(e.n.toUpperCase()),
+        'L\'en-tête ne mentionne pas ' + e.n);
+    }
+    ok(villeClub.length > 1, 'Ville du club connue : ' + villeClub);
+  }
+
   console.log(`\n${total - echecs}/${total} vérifications réussies`);
   process.exit(echecs ? 1 : 0);
 })().catch(e => { console.error('ERREUR FATALE', e); process.exit(1); });
