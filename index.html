@@ -2667,7 +2667,7 @@ function extraireDateMajPage(html){
   return mois===null ? null : new Date(+m[3], mois, +m[2]);
 }
 function dateSecoursTs(){
-  const m = DATE_SECOURS.match(/(\d{1,2})\s+([a-zûéA-Z\.]+)\s+(\d{4})/);
+  const m = DATE_SECOURS.match(/(\d{1,2})(?:er)?\s+([a-zûéA-Z\.]+)\s+(\d{4})/);
   if (!m) return null;
   const mois = moisVersIndex(m[2]);
   return mois===null ? null : new Date(+m[3], mois, +m[1]);
