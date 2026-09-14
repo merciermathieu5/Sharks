@@ -1448,7 +1448,7 @@ const ATTENDU = {
 
   console.log('— Impact');
   ok(doc.querySelector('#txVerdict .tx-verdict').classList.contains('refus'),
-    'Acquisition sèche de Kirby Dach : dépassement refusé');
+    'Acquisition sèche d\'Evan Bouchard : dépassement refusé');
   doc.querySelectorAll('#txDuel button.duel-btn')[0].click();
   ok(!doc.querySelector('#txVerdict .tx-verdict').classList.contains('refus'),
     'Échange équilibré : plus de refus');
