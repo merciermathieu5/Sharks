@@ -2,6 +2,13 @@ name: Relève des alignements USHL
 
 # Tourne chaque matin, et à la demande depuis l'onglet Actions
 # (bouton « Run workflow »), par exemple après une ronde d'agents libres.
+#
+# ushl.ca sert parfois une page de vérification anti-robot au runner
+# GitHub (« Please wait while your request is being verified »). Quand
+# ça arrive, le premier job échoue sans rien écrire; un second job de
+# reprise tourne alors sur un runner neuf (donc une autre adresse IP)
+# après une pause. Le workflow n'est en échec que si les deux tentatives
+# sont bloquées.
 on:
   schedule:
     - cron: '50 11 * * *'   # 11:50 UTC ≈ 07:50 heure de l'Est
@@ -18,6 +25,11 @@ jobs:
   relever:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # Un échec ici ne met pas le workflow en échec : c'est le job de
+    # reprise qui tranche.
+    continue-on-error: true
+    outputs:
+      ok: ${{ steps.releve.outputs.ok }}
     steps:
       - uses: actions/checkout@v5
 
@@ -31,10 +43,44 @@ jobs:
         run: npm install jsdom --no-save --no-audit --no-fund
 
       - name: Relever les 32 alignements
-        run: node scripts/fetch-rosters.mjs
+        id: releve
+        run: node scripts/fetch-rosters.mjs && echo "ok=true" >> "$GITHUB_OUTPUT"
 
       # Le script sort en erreur si la relève est incomplète : dans ce cas
       # l'étape précédente échoue et data/rosters.json reste tel quel.
+      - name: Committer si le fichier a changé
+        run: |
+          if [[ -z "$(git status --porcelain data/rosters.json)" ]]; then
+            echo "Aucun changement dans les alignements."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/rosters.json
+          git commit -m "Alignements USHL — relevé du $(date -u +%Y-%m-%d)"
+          git push
+
+  reprise:
+    needs: relever
+    if: ${{ !cancelled() && needs.relever.outputs.ok != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Attendre avant de réessayer
+        run: sleep 300
+
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+
+      - name: Installer jsdom
+        run: npm install jsdom --no-save --no-audit --no-fund
+
+      - name: Relever les 32 alignements (reprise)
+        run: node scripts/fetch-rosters.mjs
+
       - name: Committer si le fichier a changé
         run: |
           if [[ -z "$(git status --porcelain data/rosters.json)" ]]; then
