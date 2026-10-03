@@ -1,13 +1,13 @@
 {
- "genere": "2026-10-02T16:50:45.784Z",
- "maj": "oct 1 2026",
+ "genere": "2026-10-03T15:15:18.433Z",
+ "maj": "oct 2 2026",
  "source": "ushl.ca — TeamRosters.php (PRO)",
  "nbEquipes": 32,
  "reprises": [],
  "equipes": {
   "ANAHEIM": {
    "fiche": "ANAHEIM 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "Sidney Crosby",
@@ -613,7 +613,7 @@
   },
   "BOSTON": {
    "fiche": "BOSTON 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "Anthony Cirelli",
@@ -1171,7 +1171,7 @@
   },
   "BUFFALO": {
    "fiche": "BUFFALO 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "Mika Zibanejad",
@@ -1729,7 +1729,7 @@
   },
   "CALGARY": {
    "fiche": "CALGARY 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "Olivier Nadeau",
@@ -2212,30 +2212,6 @@
      "horsAlignement": false
     },
     {
-     "nom": "Pierre-Olivier Joseph",
-     "po": "D",
-     "hd": "G",
-     "it": 75,
-     "sp": 78,
-     "st": 73,
-     "en": 71,
-     "du": 52,
-     "di": 75,
-     "sk": 78,
-     "pa": 75,
-     "pc": 72,
-     "df": 64,
-     "sc": 69,
-     "ex": 60,
-     "ld": 50,
-     "ov": 77,
-     "age": 27,
-     "salaire": 1150000,
-     "ct": 2,
-     "backup": false,
-     "horsAlignement": false
-    },
-    {
      "nom": "Samuel Montembeault",
      "po": "G",
      "hd": "G",
@@ -2455,7 +2431,7 @@
   },
   "CAROLINA": {
    "fiche": "CAROLINA 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "Evan Vierling",
@@ -3037,7 +3013,7 @@
   },
   "CHICAGO": {
    "fiche": "CHICAGO 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "Tim Stutzle",
@@ -3643,7 +3619,7 @@
   },
   "COLORADO": {
    "fiche": "COLORADO 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "John Beecher",
@@ -4225,7 +4201,7 @@
   },
   "COLUMBUS": {
    "fiche": "COLUMBUS 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "Ryan McLeod",
@@ -4759,7 +4735,7 @@
   },
   "DALLAS": {
    "fiche": "DALLAS 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "Gabriel Vilardi",
@@ -5341,7 +5317,7 @@
   },
   "DETROIT": {
    "fiche": "DETROIT 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "Martin Necas",
@@ -5971,7 +5947,7 @@
   },
   "EDMONTON": {
    "fiche": "EDMONTON 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "Xavier Bourgault",
@@ -6553,7 +6529,7 @@
   },
   "FLORIDE": {
    "fiche": "FLORIDE 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "Sam Reinhart",
@@ -7207,7 +7183,7 @@
   },
   "ISLANDERS": {
    "fiche": "ISLANDERS 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "Jack Hughes",
@@ -7717,7 +7693,7 @@
   },
   "LOSANGELES": {
    "fiche": "LOSANGELES 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "Brayden Yager",
@@ -8323,7 +8299,7 @@
   },
   "MINNESOTA": {
    "fiche": "MINNESOTA 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "Patrick Guay",
@@ -8905,7 +8881,7 @@
   },
   "MONTREAL": {
    "fiche": "MONTREAL 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "Steven Stamkos",
@@ -9511,7 +9487,7 @@
   },
   "NASHVILLE": {
    "fiche": "NASHVILLE 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "Nazem Kadri",
@@ -10117,7 +10093,7 @@
   },
   "NEWJERSEY": {
    "fiche": "NEWJERSEY 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "Morgan Frost",
@@ -10795,7 +10771,7 @@
   },
   "NYRANGERS": {
    "fiche": "NYRANGERS 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "Calum Ritchie",
@@ -11353,7 +11329,7 @@
   },
   "OTTAWA": {
    "fiche": "OTTAWA 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "Ryan Poehling",
@@ -12007,7 +11983,7 @@
   },
   "PHILLY": {
    "fiche": "PHILLY 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "Sebastian Aho",
@@ -12541,7 +12517,7 @@
   },
   "PITTSBURGH": {
    "fiche": "PITTSBURGH 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "Ryan Strome",
@@ -13195,7 +13171,7 @@
   },
   "SANJOSE": {
    "fiche": "SANJOSE 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "Jesperi Kotkaniemi",
@@ -13729,7 +13705,7 @@
   },
   "SEATTLE": {
    "fiche": "SEATTLE 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "T.J. Tynan",
@@ -14287,7 +14263,7 @@
   },
   "ST.LOUIS": {
    "fiche": "ST.LOUIS 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "Jack Roslovic",
@@ -14893,7 +14869,7 @@
   },
   "TAMPABAY": {
    "fiche": "TAMPABAY 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "Aleksander Barkov",
@@ -15499,7 +15475,7 @@
   },
   "TORONTO": {
    "fiche": "TORONTO 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "Mathew Barzal",
@@ -16033,7 +16009,7 @@
   },
   "UTAH": {
    "fiche": "UTAH 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "Nick Suzuki",
@@ -16591,7 +16567,7 @@
   },
   "VANCOUVER": {
    "fiche": "VANCOUVER 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "Joseph Veleno",
@@ -17149,7 +17125,7 @@
   },
   "VEGAS": {
    "fiche": "VEGAS 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "James Hagens",
@@ -17731,7 +17707,7 @@
   },
   "WASHINGTON": {
    "fiche": "WASHINGTON 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "Danton Heinen",
@@ -18265,7 +18241,7 @@
   },
   "WINNIPEG": {
    "fiche": "WINNIPEG 0-0-0",
-   "maj": "oct 1 2026",
+   "maj": "oct 2 2026",
    "joueurs": [
     {
      "nom": "Brayden Point",
