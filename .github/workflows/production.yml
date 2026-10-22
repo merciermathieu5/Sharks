@@ -1,0 +1,116 @@
+name: Relève de la production USHL
+
+# Pointage du club (gabarit TeamScoringTemplate.php), fiche (TeamScoring.php)
+# et XtraStats, écrits dans data/production.json. L'onglet Progression lit ce
+# fichier à l'ouverture, sans relais public.
+#
+# Deux passages par jour : en fin de soirée, puisque les simulations tombent
+# surtout en soirée, puis tôt le matin en filet de sécurité. Aussi à la demande
+# depuis l'onglet Actions (bouton « Run workflow »), et dès que ce fichier ou
+# le script change.
+#
+# Comme pour les alignements, ushl.ca sert parfois une page de vérification
+# anti-robot au runner GitHub. Le script écrit quand même les parts obtenues;
+# si le pointage manque, un second job reprend sur un runner neuf (donc une
+# autre adresse IP) après une pause.
+on:
+  schedule:
+    - cron: '41 3 * * *'    # 03:41 UTC ≈ 23 h 41 à l'heure avancée de l'Est
+    - cron: '21 11 * * *'   # 11:21 UTC ≈ 7 h 21 à l'heure avancée de l'Est
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/fetch-production.mjs'
+      - '.github/workflows/production.yml'
+
+permissions:
+  contents: write
+
+# Même groupe que rosters.yml : les deux relevés ne poussent jamais en même temps.
+concurrency:
+  group: releve-rosters
+  cancel-in-progress: false
+
+jobs:
+  relever:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Un échec ici ne met pas le workflow en échec : c'est le job de
+    # reprise qui tranche.
+    continue-on-error: true
+    outputs:
+      ok: ${{ steps.releve.outputs.ok }}
+    steps:
+      # la pointe actuelle de la branche plutôt que le commit déclencheur : un
+      # relevé des alignements a pu pousser pendant l'attente dans le groupe
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+
+      # jsdom sert à réutiliser les parseurs de index.html tels quels.
+      - name: Installer jsdom
+        run: npm install jsdom --no-save --no-audit --no-fund
+
+      - name: Relever la production du club
+        id: releve
+        run: node scripts/fetch-production.mjs && echo "ok=true" >> "$GITHUB_OUTPUT"
+
+      # Même si le pointage manque, les parts fraîches (fiche, XtraStats)
+      # sont déjà écrites : on les committe.
+      - name: Committer si le fichier a changé
+        if: ${{ !cancelled() }}
+        run: |
+          if [[ -z "$(git status --porcelain data/production.json)" ]]; then
+            echo "Aucun changement dans la production."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/production.json
+          git commit -m "Production USHL : relevé du $(TZ=America/Toronto date +'%Y-%m-%d %H:%M')"
+          git pull --rebase --quiet origin "${GITHUB_REF_NAME}"
+          git push
+
+  reprise:
+    needs: relever
+    if: ${{ !cancelled() && needs.relever.outputs.ok != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Attendre avant de réessayer
+        run: sleep 300
+
+      # la pointe actuelle de la branche plutôt que le commit déclencheur : la
+      # reprise doit partir de ce que le premier job a peut-être déjà poussé
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.ref }}
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+
+      - name: Installer jsdom
+        run: npm install jsdom --no-save --no-audit --no-fund
+
+      - name: Relever la production du club (reprise)
+        run: node scripts/fetch-production.mjs
+
+      - name: Committer si le fichier a changé
+        if: ${{ !cancelled() }}
+        run: |
+          if [[ -z "$(git status --porcelain data/production.json)" ]]; then
+            echo "Aucun changement dans la production."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/production.json
+          git commit -m "Production USHL : relevé du $(TZ=America/Toronto date +'%Y-%m-%d %H:%M')"
+          git pull --rebase --quiet origin "${GITHUB_REF_NAME}"
+          git push

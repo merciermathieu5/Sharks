@@ -1529,6 +1529,195 @@ const ATTENDU = {
   }
 
 
+  /* ============ PRODUCTION : GABARIT 2026, XTRASTATS BRUT, data/production.json ============ */
+  console.log('— Production : gabarit de pointage 2026, XtraStats brut et fichier de l\'Action');
+  {
+    const EQ = S.CONFIG.equipe;
+    const refJ = S.SECOURS_ROSTER.map(j=>({...j}));
+    const avant = {scoring:S.ETAT.scoring, xtra:S.ETAT.xtra, xtraDate:S.ETAT.xtraDate,
+      xtraArchive:S.ETAT.xtraArchive, fiche:S.ETAT.fiche, prodSource:S.ETAT.prodSource,
+      filtreProg:S.ETAT.filtreProg};
+    S.ETAT.roster = refJ.map(j=>({...j}));
+    S.preparerRoster();
+    const pats = refJ.filter(j=>!j.backup && j.po!=='G');
+    const gars = refJ.filter(j=>!j.backup && j.po==='G');
+    ok(pats.length >= 10 && gars.length >= 1, 'Alignement de référence : patineurs et gardien disponibles');
+    const g0 = gars[0];
+
+    /* Gabarit TeamScoringTemplate.php : structure, en-têtes et formats relevés sur
+       ushl.ca le 21 octobre 2026 (fragment sans <html>, thead et tbody, virgule
+       décimale, et le gardien listé aussi dans le tableau des patineurs). */
+    const th = t => `<th data-toggle="tooltip" data-placement="top" title="${t}">${t}</th>`;
+    const tr = cels => '<tr>' + cels.map(c=>`<td>${c}</td>`).join('') + '</tr>';
+    const ENT_P = ['NOM','TM','PO','R','GP','G','A','P','+/-','PIM','PP','SH','GW','GT','HT','S','S/G %','GS','PS'];
+    const ENT_G = ['NOM','TM','PO','R','GP','MIN','GAA','W','L','T','SO','GA','SA','PCT','PIM','AS'];
+    const nbP = Math.min(18, pats.length);
+    const lignesP = pats.slice(0, nbP).map((j, i) => tr([j.nom, 'XX', j.po==='D'?'D':'AG', i%5===0?'*':'', 1,
+      i===0?1:0, i===1?1:0, i<2?1:0, i===0?1:(i===2?-1:0), i===3?2:0, i===0?1:0, 0, i===0?1:0, 0, i, 2,
+      i===0?'50,0':'0.0', 0, 0]));
+    const ligneGardienPat = tr([g0.nom, 'XX', 'G', '', 1, 0,0,0,0,0,0,0,0,0,0,0, '0.0', 0, 0]);
+    const gabarit = `
+<div class = "row no-gutters"><div class="col-sm-12 col-md-10 offset-md-1">
+ <div class="tableau-top">Avants</div><div class="table-responsive">
+  <table id="forward-scoring" class="table table-sm table-striped"><thead><tr>${ENT_P.map(th).join('')}</tr></thead>
+  <tbody>${lignesP.slice(0,7).join('')}${ligneGardienPat}${lignesP.slice(7).join('')}</tbody></table></div>
+ <div class="tableau-top">Gardiens</div><div class="table-responsive">
+  <table id="goalie-stats" class="table table-sm table-striped"><thead><tr>${ENT_G.map(th).join('')}</tr></thead>
+  <tbody>${tr([g0.nom, 'XX', 'G', '', 1, 65, '0,92', 0, 0, 1, 0, 1, 23, ',957', 0, 0])}</tbody></table></div>
+</div></div>`;
+    const sg = S.parseScoring(gabarit, new W.DOMParser().parseFromString(gabarit, 'text/html'));
+    egal(sg.patineurs.length, nbP, 'Gabarit : tous les patineurs lus');
+    ok(sg.patineurs.every(p=>p.nom!==g0.nom), 'Gabarit : le gardien listé parmi les patineurs en est écarté (rang du +/- intact)');
+    const p0 = sg.patineurs.find(p=>p.nom===pats[0].nom) || {};
+    egal(p0.goals, 1, 'Gabarit : buts (G)');
+    egal(p0.pts, 1, 'Gabarit : points (P)');
+    egal(p0.plusminus, 1, 'Gabarit : différentiel (+/-)');
+    egal(p0.ppg, 1, 'Gabarit : buts en AN (PP et non SH)');
+    egal(p0.gwg, 1, 'Gabarit : buts gagnants (GW)');
+    egal(p0.shots, 2, 'Gabarit : tirs (S et non SH)');
+    egal(p0.hits, 0, 'Gabarit : mises en échec (HT)');
+    egal((sg.patineurs.find(p=>p.nom===pats[1].nom) || {}).assists, 1, 'Gabarit : passes (A)');
+    egal(sg.gardiens.length, 1, 'Gabarit : un gardien lu');
+    const gg = sg.gardiens[0] || {};
+    proche(gg.svpct, 0.957, 1e-9, 'Gardien : % d\'arrêts lu dans PCT (« ,957 »)');
+    proche(gg.avg, 0.92, 1e-9, 'Gardien : moyenne lue dans GAA (virgule décimale)');
+    egal(gg.mp, 65, 'Gardien : minutes lues dans MIN');
+    egal(gg.t, 1, 'Gardien : nulle (T)');
+    egal(gg.so, 0, 'Gardien : blanchissages (SO)');
+    const ancien = S.parseScoring(fixtureScoring);
+    egal(ancien.patineurs.length, 1, 'Ancien format : PCT d\'un tableau de patineurs ne le change pas en gardien');
+    proche(ancien.gardiens[0] && ancien.gardiens[0].svpct, 0.915, 1e-9, 'Ancien format : SV% toujours préféré');
+
+    // la bonne équipe se reconnaît à ses joueurs (le gabarit n'a pas de fiche)
+    egal(typeof S.validerPointage, 'function', 'validerPointage exposée');
+    ok(S.validerPointage(gabarit), 'Gabarit du club accepté (ses joueurs sont à l\'alignement)');
+    const autre = gabarit.replace(/<td>([^<]+)<\/td><td>XX<\/td>/g, (m, nom) => `<td>Zz ${nom} Autre</td><td>XX</td>`);
+    ok(!S.validerPointage(autre), 'Gabarit d\'une autre équipe refusé (aucun joueur en commun)');
+    const vide = gabarit.replace(/<tbody>[\s\S]*?<\/tbody>/g, '<tbody></tbody>');
+    ok(S.validerPointage(vide), 'Gabarit sans match encore : accepté (tableaux présents, aucun joueur)');
+    egal(S.parseScoring(vide).patineurs.length, 0, 'Gabarit sans match : aucun patineur');
+    ok(!S.validerPointage('<html><body>Please wait while your request is being verified...</body></html>'),
+      'Page de vérification anti-robot refusée');
+    ok(!S.validerPointage('<html><body><h3>Pointage</h3> ' + EQ + ' 0-0-1 (11e Western)</body></html>'),
+      'Page TeamScoring.php sans tableaux refusée (ce qui vidait l\'onglet Progression)');
+    ok(S.CONFIG.urls.pointage.includes('TeamScoringTemplate.php?seasonId=&seasonType=&team=')
+      && S.CONFIG.urls.pointage.endsWith('team=' + EQ), 'Adresse du gabarit configurée pour ' + EQ);
+    egal(typeof S.CONFIG.ttl.pointage, 'number', 'Durée de cache du gabarit définie');
+
+    /* XtraStats brut, tel que servi par la ligue : noms entre balises <a>, puis une
+       section des gardiens sans colonne POS (QG et HS). */
+    const pad = (s, n) => s.length >= n ? s : s + ' '.repeat(n - s.length);
+    const ligneX = (nom, code, pos, chiffres) =>
+      `<a name="${nom}"><a href="#${nom}">${pad(nom, 25)}</a> ${pad(code, 15)} ${pad(pos, 3)}${chiffres}`;
+    const xtraBrut = [
+      '<html><head><title>USHL XtraStats</title></head><body>',
+      '(As of 10/22/2026 00:43:22)<p>',
+      '<pre>',
+      'Player                    Team            POS GP   G   A   P  Sh PiM   MP   H Sh/G  M/G PiM/G  H/G M/PiM Sh/20 P/20  P/G  Diff',
+      ligneX(pats[0].nom, EQ, 'D', '   1   0   0   0   2   0   22   2 2.00 22.0   0.0  2.0  22.0  1.82 0.00 0.00 +0.00'),
+      ligneX(pats[1].nom, EQ, 'LW', '  1   0   0   0   0   0   14   0 0.00 14.0   0.0  0.0  14.0  0.00 0.00 0.00 +0.00'),
+      ligneX('Ry O&#39;Test', EQ, 'C', '   1   0   0   0   1   0   12   1 1.00 12.0   0.0  1.0  12.0  1.67 0.00 0.00 +0.00'),
+      ligneX('Alex Ailleurs', 'ZZAUTRE', 'RW', '  1   1   0   1   3   0   16   3 3.00 16.0   0.0  3.0  16.0  3.75 1.25 1.00 +0.00'),
+      ligneX(g0.nom, EQ, 'G', '   1   0   0   0   0   0    0   0 0.00  0.0   0.0  0.0   0.0  0.00 0.00 0.00 +0.00'),
+      '</pre><a name="goalies"><h2>Goaltender Statistics</h2></a><pre>',
+      'Player                    Team            GP   Sh   Sv  GA GA/GP Sh/GP   SV% Psv QG Bz HS',
+      `<a name="g"><a href="#g">${pad(g0.nom, 25)}</a> ${pad(EQ, 15)}  1   23   22   1  1.00  23.1 0.956 994  1  0  2`,
+      `<a name="h"><a href="#h">${pad('Gardien Ailleurs', 25)}</a> ${pad('ZZAUTRE', 15)}  1   30   27   3  3.00  30.0 0.900 990  0  1  0`,
+      '</pre></body></html>'
+    ].join('\n');
+    const xb = S.parseXtra(xtraBrut, EQ);
+    egal(xb.length, 4, 'XtraStats brut : 4 fiches du club (autre club exclu, gardien non dédoublé)');
+    const x0 = xb.find(r=>r.nom===pats[0].nom) || {};
+    egal(x0.mp, 22, 'XtraStats brut : nom débarrassé des balises, minutes lues');
+    egal(x0.hits, 2, 'XtraStats brut : mises en échec lues');
+    ok(xb.some(r=>r.nom==='Ry O\'Test'), 'XtraStats brut : entité &#39; décodée dans le nom');
+    ok(xb.every(r=>!/[<>]/.test(r.nom)), 'XtraStats brut : aucune balise dans les noms');
+    const xg = xb.filter(r=>r.nom===g0.nom);
+    egal(xg.length, 1, 'XtraStats : une seule fiche pour le gardien');
+    egal(xg[0] && xg[0].qg, 1, 'XtraStats : QG du gardien (section des gardiens)');
+    egal(xg[0] && xg[0].hs, 2, 'XtraStats : HS du gardien (section des gardiens)');
+
+    // fichier data/production.json produit par l'Action
+    egal(typeof S.appliquerProduction, 'function', 'appliquerProduction exposée');
+    egal(S.CHEMIN_PRODUCTION, 'data/production.json', 'Chemin du fichier de production');
+    egal(S.appliquerProduction(null), null, 'Charge nulle : rien appliqué');
+    egal(S.appliquerProduction({equipe: EQ}), null, 'Charge sans pointage ni XtraStats : rien appliqué');
+    S.ETAT.scoring = {patineurs:[], gardiens:[]};
+    egal(S.appliquerProduction({equipe:'ZZAUTRE', pointage:{patineurs:sg.patineurs, gardiens:sg.gardiens}}), null,
+      'Production d\'un autre club refusée (garde-fou des portages)');
+    egal(S.ETAT.scoring.patineurs.length, 0, 'Pointage inchangé après la charge d\'un autre club');
+    S.ETAT.fiche = EQ + ' 0-0-0';
+    const charge = {genere:'2026-10-22T11:21:00.000Z', equipe:EQ, fiche:EQ + ' 0-0-1',
+      pointage:{releve:'2026-10-22T11:21:00.000Z', patineurs:sg.patineurs, gardiens:sg.gardiens},
+      xtra:{releve:'2026-10-22T11:21:00.000Z', date:'10/22/2026', joueurs:xb}, reprises:[]};
+    egal(S.appliquerProduction(JSON.parse(JSON.stringify(charge))), nbP + 1, 'Charge valide : patineurs et gardien appliqués');
+    egal(S.ETAT.fiche, EQ + ' 0-0-1', 'Fiche plus avancée reprise de la charge');
+    egal(S.ETAT.xtraArchive, false, 'XtraStats jugé de la saison courante (GP 1 pour un club à 1 match)');
+    egal(S.ETAT.xtraDate, '10/22/2026', 'Date de XtraStats reprise');
+    ok(/^relevé automatique du /.test(S.ETAT.prodSource || ''), 'Provenance notée : relevé automatique');
+    S.ETAT.fiche = EQ + ' 3-1-0';
+    S.appliquerProduction(JSON.parse(JSON.stringify(charge)));
+    egal(S.ETAT.fiche, EQ + ' 3-1-0', 'Fiche moins avancée ignorée (alignements relevés plus tard)');
+    S.ETAT.fiche = EQ + ' 0-0-1';
+    S.ETAT.xtraArchive = S.xtraEstArchive(S.ETAT.xtra, S.matchsEquipe());
+
+    // fusion par joueur : ce que l'onglet Progression évalue
+    const prodG = S.productionDe(g0);
+    proche(prodG && prodG.svpct, 0.957, 1e-9, 'Gardien : % d\'arrêts du gabarit');
+    egal(prodG && prodG.mp, 65, 'Gardien : minutes du gabarit (et non le 0 de XtraStats)');
+    egal(prodG && prodG.qs, 1, 'Gardien : départs de qualité (QG de XtraStats)');
+    egal(prodG && prodG.hs, 2, 'Gardien : HS de XtraStats (et non les blanchissages)');
+    proche(S.valeurStat(g0, prodG, 'psv'), 957, 1e-6, 'Gardien : Psv = %A × 1000');
+    proche(S.valeurStat(g0, prodG, 'qggp'), 1, 1e-9, 'Gardien : DQ / match');
+    const prodP = S.productionDe(pats[0]);
+    egal(prodP && prodP.pts, 1, 'Patineur : points du gabarit');
+    egal(prodP && prodP.mp, 22, 'Patineur : minutes de XtraStats');
+    egal(prodP && prodP.hits, 2, 'Patineur : mises en échec de XtraStats');
+    proche(S.valeurStat(pats[0], prodP, 'hits20'), 2/(22/20), 1e-9, 'Patineur : MEÉ / 20 min');
+    S.ETAT.xtraArchive = true;
+    egal((S.productionDe(pats[0]) || {}).mp, null, 'Archive XtraStats : minutes ignorées même avec le pointage');
+    egal((S.productionDe(pats[0]) || {}).pts, 1, 'Archive XtraStats : le pointage reste affiché');
+    S.ETAT.xtraArchive = false;
+
+    // rendu : l'onglet Progression se remplit et dit d'où vient la production
+    S.ETAT.filtreProg = 'tous';
+    S.toutRendre();
+    const carte0 = [...doc.querySelectorAll('#progGrille .joueur-carte')]
+      .find(c => (c.querySelector('.jc-nom') || {}).textContent === pats[0].nom);
+    ok(!!carte0, 'Carte de progression du patineur témoin rendue');
+    ok(!!carte0 && !carte0.textContent.includes('Aucune production disponible'), 'Carte alimentée par le relevé automatique');
+    const ligneSrc = (doc.querySelector('#progSource') || {}).textContent || '';
+    ok(ligneSrc.includes('relevé automatique du'), 'Progression : provenance affichée (' + ligneSrc + ')');
+    ok(ligneSrc.includes('XtraStats en date du 10/22/2026'), 'Progression : date de XtraStats affichée');
+    ok(doc.querySelector('#prodSous').textContent.includes('relevé automatique du'), 'Production : provenance dans le sous-titre');
+    S.ETAT.scoring = {patineurs:[], gardiens:[]}; S.ETAT.xtra = []; S.ETAT.prodSource = null;
+    ok(S.libelleSourceProduction().includes('aucune donnée'), 'Sans production : la ligne le dit');
+
+    // chargement du fichier en même origine (fetch simulé, le reste du réseau coupé)
+    const fetchAvant = W.fetch;
+    W.fetch = async (u) => String(u).endsWith(S.CHEMIN_PRODUCTION)
+      ? {ok:true, status:200, json: async () => JSON.parse(JSON.stringify(charge))}
+      : Promise.reject(new Error('réseau désactivé en test'));
+    const r1 = await S.chargerProductionLocale();
+    ok(r1.ok && r1.joueurs === nbP + 1, 'data/production.json chargé et appliqué (' + JSON.stringify(r1) + ')');
+    ok(((doc.querySelector('#progSource') || {}).textContent || '').includes('relevé automatique du'),
+      'Progression rendue après le chargement');
+    W.fetch = async (u) => String(u).endsWith(S.CHEMIN_PRODUCTION)
+      ? {ok:false, status:404, json: async () => ({})}
+      : Promise.reject(new Error('réseau désactivé en test'));
+    const r2 = await S.chargerProductionLocale();
+    ok(!r2.ok && /404/.test(r2.raison || ''), 'Fichier absent : échec signalé sans rien casser');
+    egal(S.ETAT.scoring.patineurs.length, nbP, 'Pointage conservé après un chargement raté');
+    W.fetch = fetchAvant;
+
+    // remise en état pour la suite du harnais
+    Object.assign(S.ETAT, avant);
+    S.ETAT.roster = refJ.map(j=>({...j}));
+    S.preparerRoster();
+    S.toutRendre();
+  }
+
+
   /* ============ IDENTITÉ DE L'INTERFACE ============ */
   console.log('— Identité visuelle du club');
   {

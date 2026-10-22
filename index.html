@@ -401,6 +401,7 @@
   .modal-actions button.danger:hover{background:var(--bad); color:#fff;}
 
   /* ---------- Progression ---------- */
+  .prog-source{margin-top:-10px; color:var(--teal-bright);}
   .filtres{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px;}
   .filtres button{
     font-family:var(--font-body); font-size:.75rem; font-weight:600; letter-spacing:1px; text-transform:uppercase;
@@ -700,6 +701,7 @@
   <section class="vue" id="vue-progression">
     <h2>Charte de progression</h2>
     <div class="h2-sous">Seuils des matrices officielles (article 6.2.6) selon le profil et l'overall, dans leur version <strong>mise à jour de juillet 2026</strong> (révision de la recote été 2022). Un degré est acquis en <em>dépassant strictement</em> son seuil — le <strong style="color:var(--orange-bright)">Mémorable</strong> (ModS +60) exige de faire mieux que le seuil, pas de l'égaler (tableau 18).</div>
+    <div class="h2-sous prog-source" id="progSource"></div>
     <div class="filtres" id="progFiltres">
       <button class="actif" data-f="tous">Tous</button>
       <button data-f="av">Attaquants</button>
@@ -815,7 +817,7 @@
     <div class="regl-bloc">
       <h3>Sources et actualisation</h3>
       <p id="sourcesTexte"></p>
-      <p>Les pages de la USHL n'autorisent pas les requêtes directes entre sites : l'interface passe par une chaîne de relais publics (le premier qui répond est conservé). Si l'actualisation échoue, les données intégrées du <span id="dateSecours"></span> demeurent affichées. Les données récupérées sont mises en cache (formation : 12 h · production : 30 min).</p>
+      <p>Les pages de la USHL n'autorisent pas les requêtes directes entre sites. L'alignement et la production sont donc relevés côté serveur par des Actions GitHub (data/rosters.json chaque matin, data/production.json chaque soir et chaque matin) et chargés à l'ouverture, ce qui fonctionne aussi sur mobile. Le bouton Actualiser tente en plus une lecture en direct par une chaîne de relais publics (le premier qui répond est conservé). Si elle échoue, les dernières données relevées (<span id="dateSecours"></span>) demeurent affichées. Les données lues en direct sont mises en cache (formation : 12 h · production : 30 min).</p>
       <div class="regl-actions">
         <button id="btnViderCache" class="secondaire">Vider le cache de données</button>
       </div>
@@ -830,7 +832,8 @@
 /* =====================================================================
    SHARKS DE SAN JOSE — TABLEAU DE BORD DU DG (USHL)
    Monofichier vanilla HTML/CSS/JS — aucune dépendance, aucun build.
-   Sources en direct : TeamRosters.php, TeamScoring.php, USHLxtrastats.html
+   Sources en direct : TeamRosters.php, TeamScoringTemplate.php (pointage), TeamScoring.php (fiche), USHLxtrastats.html
+   Relevés du serveur (Actions GitHub) : data/rosters.json, data/production.json
    ===================================================================== */
 'use strict';
 
@@ -840,6 +843,9 @@ const CONFIG = {
   urls: {
     roster:  'https://ushl.ca/ushl/menu_sim/USHL-pro/jamesishot/TeamRosters.php?team=SANJOSE',
     scoring: 'https://ushl.ca/ushl/menu_sim/USHL-pro/jamesishot/TeamScoring.php?team=SANJOSE',
+    // TeamScoring.php ne contient plus les tableaux (constaté en octobre 2026) : elle les
+    // charge après coup depuis ce gabarit, que l'interface et l'Action lisent directement
+    pointage:'https://ushl.ca/ushl/menu_sim/USHL-pro/jamesishot/TeamScoringTemplate.php?seasonId=&seasonType=&team=SANJOSE',
     finance: 'https://ushl.ca/ushl/menu_sim/USHL-pro/jamesishot/TeamFinance.php?team=SANJOSE',
     xtra:    'https://ushl.ca/ushl/menu_sim/USHL-pro/USHLxtrastats.html'
   },
@@ -851,7 +857,7 @@ const CONFIG = {
   ],
   // limites d'utilisation des gardiens (projet gestiongardiens, généré depuis ushl.ca)
   urlLimites: 'https://merciermathieu5.github.io/gestiongardiens/limites.json',
-  ttl: { roster: 12*3600*1000, scoring: 30*60*1000, finance: 30*60*1000, xtra: 3600*1000, limites: 3600*1000 },
+  ttl: { roster: 12*3600*1000, scoring: 30*60*1000, pointage: 30*60*1000, finance: 30*60*1000, xtra: 3600*1000, limites: 3600*1000 },
   matchsSaison: 82
 };
 
@@ -2380,7 +2386,8 @@ const ENTETES_SCORING = {
   pim:['PIM','PUN','MIN PUN'], ppg:['PP','PPG','BAN'], gwg:['GW','GWG','BG'],
   shots:['S','SH','SHOTS','T','TIRS'], shotpct:['PCT','%','S%','%T'],
   w:['W','V'], l:['L','D'], t:['T','N','OTL'], avg:['AVG','GAA','MOY'],
-  svpct:['SV%','SVPCT','%A','SPCT'], so:['SO','BL'], qs:['QS','DQ'], hs:['HS']
+  svpct:['SV%','SVPCT','%A','SPCT'], so:['SO','BL'], qs:['QS','DQ'], hs:['HS'],
+  hits:['HT']   // gabarit 2026 : « HT » = mises en échec (infobulle de la ligue)
 };
 function trouverColonne(entetes, candidats){
   for (const c of candidats){
@@ -2413,9 +2420,21 @@ function parseScoring(html, doc){
       // si 'P' a servi aux deux, points = colonne suivante d'assists si PTS absent
       map.pts = trouverColonne(entetes, ['PTS','POINTS']);
     }
+    /* Gabarit 2026 (TeamScoringTemplate.php) : chez les gardiens, le % d'arrêts
+       s'intitule « PCT » et les minutes « MIN ». Ces libellés ne valent que dans
+       un tableau de gardiens : ailleurs, « PCT » serait le % de tirs. */
+    if (estGardien){
+      if (map.svpct < 0) map.svpct = trouverColonne(entetes, ['PCT']);
+      map.mp = trouverColonne(entetes, ['MIN','MP']);
+      map.shots = map.shotpct = -1;   // « T » (nulles) et « PCT » n'y sont pas des tirs
+    }
+    // le tableau des patineurs du gabarit liste aussi les gardiens (PO = G) : on
+    // les écarte, sinon ils fausseraient le rang du différentiel au club
+    const iPO = estGardien ? -1 : trouverColonne(entetes, ['PO','POS']);
     for (let i=1;i<lignes.length;i++){
       const cel = Array.from(lignes[i].querySelectorAll('td,th')).map(c=>c.textContent.trim());
       if (!cel[0] || cel.length < 3) continue;
+      if (iPO>=0 && cel[iPO]==='G') continue;
       const rec = { nom: cel[0].replace(/\s+/g,' ').trim() };
       for (const cle of Object.keys(map)){
         if (map[cle]>=0 && map[cle]<cel.length) rec[cle] = nombre(cel[map[cle]]);
@@ -2428,15 +2447,32 @@ function parseScoring(html, doc){
 }
 
 /* ---------- Parseur : XtraStats (texte préformaté) ----------
-   Colonnes fixes : Player Team POS GP G A P Sh PiM MP H ...
-   On filtre l'équipe demandée. */
+   Section des joueurs, colonnes fixes : Player Team POS GP G A P Sh PiM MP H ...
+   Section des gardiens, sans colonne POS : Player Team GP Sh Sv GA GA/GP Sh/GP SV% Psv QG Bz HS.
+   QG (départs de qualité) et HS en viennent : le gabarit de pointage ne les donne pas.
+   On filtre l'équipe demandée. La page brute entoure les noms de balises
+   (<a name><a href>Nom</a>) : elles sont retirées avant la lecture. */
+const ENTITES_XTRA = {'&amp;':'&', '&#39;':'\'', '&#039;':'\'', '&apos;':'\'', '&quot;':'"', '&nbsp;':' '};
+function ligneXtraPropre(l){
+  return l.replace(/<[^>]*>/g, '')                                      // balises de la page brute
+    .replace(/&(?:amp|#0?39|apos|quot|nbsp);/g, e => ENTITES_XTRA[e])   // entités usuelles
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1');                           // liens markdown éventuels [Nom](url)
+}
 function parseXtra(texte, equipe){
-  const resultat = [];
+  const resultat = [], gardiens = [];
   const lignes = texte.split(/\r?\n/);
   const re = new RegExp('^\\s*\\*?\\s*(.+?)\\s+' + equipe + '\\s+(C|LW|RW|D|G)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)');
+  // gardiens : GP, Sh, Sv, GA, GA/GP, Sh/GP, SV%, Psv, QG, Bz, HS (on garde GP, QG et HS)
+  const reG = new RegExp('^\\s*\\*?\\s*(.+?)\\s+' + equipe + '\\s+(\\d+)\\s+\\d+\\s+\\d+\\s+\\d+\\s+[\\d.]+\\s+[\\d.]+\\s+[\\d.]+\\s+\\d+\\s+(\\d+)\\s+\\d+\\s+(\\d+)\\s*$');
+  let sectionGardiens = false;
   for (const l of lignes){
-    // retirer la syntaxe markdown de liens éventuelle [Nom](url)
-    const propre = l.replace(/\[([^\]]+)\]\([^)]*\)/g, '$1');
+    const propre = ligneXtraPropre(l);
+    if (/^\s*Player\s+Team\s+GP\s+Sh\s+Sv\b/.test(propre)){ sectionGardiens = true; continue; }
+    if (sectionGardiens){
+      const g = propre.match(reG);
+      if (g) gardiens.push({nom: g[1].trim(), gp: +g[2], qg: +g[3], hs: +g[4]});
+      continue;
+    }
     const m = propre.match(re);
     if (!m) continue;
     resultat.push({
@@ -2444,6 +2480,13 @@ function parseXtra(texte, equipe){
       gp: +m[3], goals: +m[4], assists: +m[5], pts: +m[6],
       shots: +m[7], pim: +m[8], mp: +m[9], hits: +m[10]
     });
+  }
+  // QG et HS des gardiens rejoignent leur fiche de la section des joueurs
+  for (const g of gardiens){
+    const cle = normaliserNom(g.nom);
+    const j = resultat.find(r => normaliserNom(r.nom) === cle);
+    if (j){ j.qg = g.qg; j.hs = g.hs; }
+    else resultat.push({nom: g.nom, pos: 'G', gp: g.gp, qg: g.qg, hs: g.hs});
   }
   return resultat;
 }
@@ -2582,6 +2625,7 @@ const ETAT = {
   xtra: [],          // rempli à l'actualisation depuis USHLxtrastats.html
   xtraArchive: false,
   xtraDate: null,
+  prodSource: null,  // « relevé automatique du … » (data/production.json) ou « en direct (…) »
   fiche: 'SANJOSE 0-0-0',
   source: 'données intégrées (' + DATE_SECOURS + ')',
   filtreProg: 'tous',
@@ -2608,7 +2652,9 @@ function afficherEtapeMaj(txt){
   if (e) e.textContent = txt;
 }
 
-async function chercherViaProxy(url, {timeout=8000}={}){
+/* 20 s par relais : allorigins, le seul qui répondait encore en octobre 2026,
+   met souvent une quinzaine de secondes à servir une page de la ligue. */
+async function chercherViaProxy(url, {timeout=20000}={}){
   const prefere = Number(localStorage.getItem(CLES_LS.proxy));
   const ordre = [...CONFIG.proxys.keys()];
   if (!isNaN(prefere) && ordre.includes(prefere)){
@@ -2645,6 +2691,26 @@ async function chercherViaProxy(url, {timeout=8000}={}){
    dès la requête suivante), jamais de mise en cache d'une page invalide,
    et purge du cache s'il a déjà été pollué. */
 function validerPageEquipe(texte){ return extraireFiche(texte) !== null; }
+
+/* Le gabarit de pointage (TeamScoringTemplate.php) ne porte pas la fiche du
+   club : la bonne équipe se reconnaît à ses joueurs. Au moins la moitié des
+   noms listés doivent figurer à l'alignement, alors qu'une autre équipe n'en
+   partage presque aucun. Sans joueur listé (aucun match encore), seule la
+   présence d'un tableau de pointage est exigée : une page de vérification
+   anti-robot ou une page d'erreur n'en a pas. */
+function validerPointage(texte){
+  const d = new DOMParser().parseFromString(texte, 'text/html');
+  const aTableau = Array.from(d.querySelectorAll('table')).some(t=>{
+    const tr = t.querySelector('tr');
+    return !!tr && Array.from(tr.querySelectorAll('th,td')).some(c=>c.textContent.trim().toUpperCase()==='GP');
+  });
+  if (!aTableau) return false;
+  const s = parseScoring(texte, d);
+  const noms = [...s.patineurs, ...s.gardiens].map(p=>normaliserNom(p.nom));
+  if (!noms.length) return true;
+  const connus = new Set(ETAT.roster.map(j=>normaliserNom(j.nom)));
+  return noms.filter(n=>connus.has(n)).length / noms.length >= 0.5;
+}
 
 /* Lecture de la ligne «Dernière mise à jour le vendredi, sept 4 2026» des pages
    de la ligue. Sert uniquement à dater ce qui est affiché : les données en
@@ -2735,6 +2801,11 @@ async function actualiserTout(){
   const etat = document.getElementById('etatMaj');
   btn.disabled = true;
   const rapport = [];
+  // 0) Relevés du serveur, en même origine et instantanés : utiles si la page
+  //    est ouverte depuis longtemps. La lecture en direct ci-dessous a priorité.
+  etat.textContent = 'relevés du serveur…';
+  await chargerRostersLocaux();
+  await chargerProductionLocale();
   // 1) Formation
   ETAPE_MAJ = 'formation —'; etat.textContent = 'formation…';
   try{
@@ -2768,21 +2839,21 @@ async function actualiserTout(){
         +((essais||1)>1?', bonne équipe obtenue après réessai':'')+')');
     } else rapport.push('contrats : tables introuvables, CT de la formation conservés');
   }catch(e){ rapport.push('contrats ✗ ('+e.message+')'); }
-  // 2) Pointage
+  // 2) Pointage : le gabarit TeamScoringTemplate.php (la page TeamScoring.php ne
+  //    contient plus les tableaux). Sans fiche du club, ses joueurs font foi.
   ETAPE_MAJ = 'production —'; etat.textContent = 'production…';
   try{
-    const {texte, essais} = await chercherSource('scoring', validerPageEquipe);
+    const {texte, essais} = await chercherSource('pointage', validerPointage);
     const s = parseScoring(texte);
     if ((essais||1) > 1) rapport.push('production : bonne équipe obtenue après réessai');
     if (s.patineurs.length || s.gardiens.length){
       ETAT.scoring = s;
+      ETAT.prodSource = 'en direct (' + new Date().toLocaleTimeString('fr-CA', {hour:'2-digit', minute:'2-digit'}) + ')';
       rapport.push('production ✓ ('+s.patineurs.length+' patineurs)');
-    } else {
-      const f = extraireFiche(texte);
-      if (f) ETAT.fiche = f;
-      rapport.push('production : aucun match disputé pour le moment');
-    }
-  }catch(e){ rapport.push('production ✗ ('+e.message+')'); }
+    } else rapport.push('production : aucun match disputé pour le moment');
+  }catch(e){
+    rapport.push('production ✗ ('+e.message+')' + (ETAT.prodSource ? ' · '+ETAT.prodSource+' conservé' : ''));
+  }
   // 3) XtraStats
   ETAPE_MAJ = 'XtraStats —'; etat.textContent = 'XtraStats…';
   try{
@@ -2825,10 +2896,11 @@ function indexParNom(liste){
 function productionDe(j){
   const cle = normaliserNom(j.nom);
   const sc = indexParNom(j.po==='G' ? ETAT.scoring.gardiens : ETAT.scoring.patineurs).get(cle) || null;
-  const xt = indexParNom(ETAT.xtra).get(cle) || null;
-  // Saison courante seulement : TeamScoring d'abord, sinon XtraStats — mais
-  // jamais l'archive de la saison précédente (elle est simplement ignorée).
-  const base = sc || (ETAT.xtraArchive ? null : xt);
+  // Saison courante seulement : le pointage d'abord, sinon XtraStats, mais
+  // jamais l'archive de la saison précédente, ignorée pour toutes les colonnes
+  // (minutes et mises en échec comprises).
+  const xt = ETAT.xtraArchive ? null : (indexParNom(ETAT.xtra).get(cle) || null);
+  const base = sc || xt;
   if (!base) return null;
   const xtraCommeSource = !sc && base === xt;
   const out = {
@@ -2839,13 +2911,26 @@ function productionDe(j){
     shots: base.shots ?? null, pim: base.pim ?? null,
     mp: (sc?.mp ?? xt?.mp) ?? null,
     hits: (xt?.hits ?? sc?.hits) ?? null,
-    w: sc?.w ?? null, avg: sc?.avg ?? null, svpct: sc?.svpct ?? null, qs: sc?.qs ?? null,
-    hs: sc?.hs ?? sc?.so ?? null,
+    w: sc?.w ?? null, avg: sc?.avg ?? null, svpct: sc?.svpct ?? null,
+    // QG et HS : colonnes de XtraStats (section des gardiens), absentes du gabarit de pointage
+    qs: (sc?.qs ?? xt?.qg) ?? null,
+    hs: (sc?.hs ?? xt?.hs ?? sc?.so) ?? null,
     _xtraSource: xtraCommeSource
   };
   if (out.svpct!==null && out.svpct!==undefined && out.svpct>1) out.svpct = out.svpct/100; // «90.5» → 0.905
   out.shotpct = (out.goals!==null && out.shots) ? (out.goals/out.shots*100) : null;
   return out;
+}
+
+/* Provenance de la production, affichée en tête de l'onglet Progression. */
+function libelleSourceProduction(){
+  const n = ETAT.scoring.patineurs.length + ETAT.scoring.gardiens.length;
+  const xtraCourant = ETAT.xtra.length > 0 && !ETAT.xtraArchive;
+  const xtraTxt = xtraCourant && ETAT.xtraDate ? ' · XtraStats en date du ' + ETAT.xtraDate : '';
+  if (n) return 'Production : ' + (ETAT.prodSource || 'pointage de la ligue') + xtraTxt;
+  if (xtraCourant) return 'Production : XtraStats seulement' + (ETAT.xtraDate ? ', en date du ' + ETAT.xtraDate : '') + ' (pointage indisponible)';
+  if (ETAT.prodSource) return 'Production : aucun match au pointage (' + ETAT.prodSource + ')';
+  return 'Production : aucune donnée pour le moment. Le relevé automatique passe chaque soir et chaque matin.';
 }
 
 /* =====================================================================
@@ -3808,14 +3893,14 @@ function rendreProduction(){
   }
   const avecDonnees = lignes.filter(l=>l.p);
   $('#prodSous').textContent = enCours
-    ? 'Pointage de la saison actuelle (TeamScoring.php) enrichi de XtraStats (minutes, mises en échec)'
+    ? 'Pointage de la saison actuelle (' + (ETAT.prodSource || 'TeamScoring.php') + ') enrichi de XtraStats (minutes, mises en échec)'
     : 'Aucun match disputé pour le moment — la production s\'affichera dès les premiers matchs de la saison';
   const totPts = avecDonnees.reduce((s,l)=>s+(l.p.pts||0),0);
   const totB = avecDonnees.reduce((s,l)=>s+(l.p.goals||0),0);
   const totH = avecDonnees.reduce((s,l)=>s+(l.p.hits||0),0);
   $('#prodSommaire').innerHTML = `
     <div class="stat-carte"><div class="lbl">Saison en cours</div>
-      <div class="val">${ETAT.fiche}</div><div class="det">${enCours?'données en direct':'en attente des premiers matchs'}</div></div>
+      <div class="val">${ETAT.fiche}</div><div class="det">${enCours?(ETAT.prodSource||'données en direct'):'en attente des premiers matchs'}</div></div>
     <div class="stat-carte"><div class="lbl">Buts</div><div class="val">${totB}</div></div>
     <div class="stat-carte"><div class="lbl">Points</div><div class="val">${totPts}</div></div>
     <div class="stat-carte orange"><div class="lbl">Mises en échec</div><div class="val">${totH}</div></div>`;
@@ -3865,6 +3950,8 @@ function rendreProgression(){
   const matrices = chargerMatrices();
   const overrides = chargerOverrides();
   const grille = $('#progGrille');
+  const src = $('#progSource');
+  if (src) src.textContent = libelleSourceProduction();
   const ctx = {
     pmRangs: calculerPmRangs(ETAT.scoring.patineurs),
     limites: ETAT.limites
@@ -4261,6 +4348,64 @@ async function chargerRostersLocaux(){
   }
 }
 
+/* =====================================================================
+   PRODUCTION LOCALE : data/production.json, relevé côté serveur par
+   .github/workflows/production.yml (pointage, fiche et XtraStats du club).
+   Même origine → ni CORS ni relais : l'onglet Progression est rempli dès
+   l'ouverture, sur mobile aussi. Fichier absent ou illisible : rien ne
+   change et le bouton Actualiser reste possible.
+   ===================================================================== */
+const CHEMIN_PRODUCTION = 'data/production.json';
+
+function totalMatchs(fiche){
+  const m = String(fiche||'').match(/(\d+)-(\d+)-(\d+)/);
+  return m ? Number(m[1])+Number(m[2])+Number(m[3]) : -1;
+}
+function dateCourte(iso){
+  const d = new Date(iso);
+  return isNaN(d.getTime()) ? 'date inconnue'
+    : d.toLocaleString('fr-CA', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
+}
+
+/* Applique un data/production.json déjà analysé. Renvoie le nombre de joueurs
+   du pointage (0 avant le premier match, ou si seul XtraStats est présent), ou
+   null si la charge est inexploitable ou appartient à un autre club : une
+   interface n'affiche jamais la production d'une autre équipe (piège des portages). */
+function appliquerProduction(data){
+  if (!data || typeof data !== 'object' || data.equipe !== CONFIG.equipe) return null;
+  const p = data.pointage, x = data.xtra;
+  const pointageOk = !!p && Array.isArray(p.patineurs) && Array.isArray(p.gardiens);
+  const xtraOk = !!x && Array.isArray(x.joueurs) && x.joueurs.length > 0;
+  if (!pointageOk && !xtraOk) return null;
+  if (pointageOk){
+    ETAT.scoring = {patineurs: p.patineurs.map(r=>({...r})), gardiens: p.gardiens.map(r=>({...r}))};
+  }
+  // alignements et production ne sont pas relevés à la même heure : la fiche
+  // la plus avancée dans la saison l'emporte
+  if (data.fiche && totalMatchs(data.fiche) >= totalMatchs(ETAT.fiche)) ETAT.fiche = data.fiche;
+  if (xtraOk){
+    ETAT.xtra = x.joueurs.map(r=>({...r}));
+    ETAT.xtraDate = x.date || null;
+  }
+  ETAT.xtraArchive = xtraEstArchive(ETAT.xtra, matchsEquipe());
+  ETAT.prodSource = 'relevé automatique du ' + dateCourte(data.genere);
+  return pointageOk ? ETAT.scoring.patineurs.length + ETAT.scoring.gardiens.length : 0;
+}
+
+async function chargerProductionLocale(){
+  try{
+    const rep = await fetch(CHEMIN_PRODUCTION, {cache:'no-store'});
+    if (!rep.ok) throw new Error('HTTP ' + rep.status);
+    const data = await rep.json();
+    const n = appliquerProduction(data);
+    if (n === null) throw new Error('aucune production exploitable pour ' + CONFIG.equipe);
+    toutRendre();
+    return {ok:true, joueurs:n, genere:data.genere};
+  }catch(e){
+    return {ok:false, raison:e.message};
+  }
+}
+
 function toutRendre(){
   rendreAlignement();
   if (typeof window !== 'undefined' && window.__txPret) rendreTransactions();
@@ -4329,7 +4474,7 @@ $('#btnViderCache').addEventListener('click', ()=>{
 });
 $('#sourcesTexte').innerHTML =
   `Formation : <a style="color:var(--teal-bright)" href="${CONFIG.urls.roster}" target="_blank" rel="noopener">TeamRosters.php</a> ·
-   Production : <a style="color:var(--teal-bright)" href="${CONFIG.urls.scoring}" target="_blank" rel="noopener">TeamScoring.php</a> ·
+   Production : <a style="color:var(--teal-bright)" href="${CONFIG.urls.scoring}" target="_blank" rel="noopener">TeamScoring.php</a> (lue par son gabarit TeamScoringTemplate.php; relevé automatique : data/production.json) ·
    Minutes et mises en échec : <a style="color:var(--teal-bright)" href="${CONFIG.urls.xtra}" target="_blank" rel="noopener">USHLxtrastats.html</a> ·
    Limites d'utilisation des gardiens : <a style="color:var(--teal-bright)" href="${CONFIG.urlLimites}" target="_blank" rel="noopener">limites.json</a> (projet gestiongardiens) ·
    Profils : règlements USHL, tableaux 10-11-12 · Matrices et modificateurs : section 6.2 et «Attentes.docx» (recote été 2022, Y17).`;
@@ -5002,9 +5147,10 @@ function attacherTransactions(){
 attacherTransactions();
 rendreTransactions();
 
-/* Dernier geste du démarrage : tenter le fichier local produit par l'Action.
-   Asynchrone et non bloquant — l'interface est déjà utilisable avec le bloc intégré. */
-chargerRostersLocaux();
+/* Dernier geste du démarrage : tenter les fichiers locaux produits par les Actions,
+   les alignements puis la production. Asynchrone et non bloquant : l'interface est
+   déjà utilisable avec le bloc intégré. */
+chargerRostersLocaux().then(()=>chargerProductionLocale());
 
 /* exposition pour le harnais de tests (jsdom) */
 if (typeof window !== 'undefined'){
@@ -5013,6 +5159,7 @@ if (typeof window !== 'undefined'){
     modA, convertirJet, fourchetteRecote, modsEstime, matchsEquipe, xtraEstArchive, productionDe, ETAT,
     extraireFiche, validerPageEquipe, CONFIG, CLES_LS, parseFinance,
     appliquerRosters, chargerRostersLocaux, CHEMIN_ROSTERS, toutRendre, preparerRoster,
+    validerPointage, appliquerProduction, chargerProductionLocale, CHEMIN_PRODUCTION, libelleSourceProduction,
     litCompo, ecritCompo, joueursComposition, rendreComposition,
     litTrios, ecritTrios, validerAlignementTrios, rendreTrios, proposerTrios, TRIOS_VIDES,
     LIGUE, LIGUE_COLS, ligueFiche, ligueJoueurs, ligueNom, ligueVille, ovGardien, OV_ORDRE_G,
