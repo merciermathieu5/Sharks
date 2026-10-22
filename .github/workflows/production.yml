@@ -4,10 +4,11 @@ name: Relève de la production USHL
 # et XtraStats, écrits dans data/production.json. L'onglet Progression lit ce
 # fichier à l'ouverture, sans relais public.
 #
-# Deux passages par jour : en fin de soirée, puisque les simulations tombent
-# surtout en soirée, puis tôt le matin en filet de sécurité. Aussi à la demande
-# depuis l'onglet Actions (bouton « Run workflow »), et dès que ce fichier ou
-# le script change.
+# Deux passages par jour, décalés d'un club à l'autre comme les alignements
+# pour ne pas solliciter ushl.ca d'un seul coup : en fin de soirée, puisque les
+# simulations tombent surtout en soirée, puis 5 minutes après le relevé des
+# alignements du matin. Aussi à la demande depuis l'onglet Actions (bouton
+# « Run workflow »), et dès que ce fichier ou le script change.
 #
 # Comme pour les alignements, ushl.ca sert parfois une page de vérification
 # anti-robot au runner GitHub. Le script écrit quand même les parts obtenues;
@@ -15,8 +16,8 @@ name: Relève de la production USHL
 # autre adresse IP) après une pause.
 on:
   schedule:
-    - cron: '41 3 * * *'    # 03:41 UTC ≈ 23 h 41 à l'heure avancée de l'Est
-    - cron: '21 11 * * *'   # 11:21 UTC ≈ 7 h 21 à l'heure avancée de l'Est
+    - cron: '59 3 * * *'    # 03:59 UTC ≈ 23 h 59 à l'heure avancée de l'Est
+    - cron: '55 11 * * *'   # 11:55 UTC, 5 min après le relevé des alignements
   workflow_dispatch:
   push:
     branches: [main]
