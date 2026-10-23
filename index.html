@@ -716,7 +716,7 @@
   <!-- ================= OV DÉTAILLÉ ================= -->
   <section class="vue" id="vue-ovdetail">
     <h2>Calculateur d'OV détaillé</h2>
-    <div class="h2-sous">Reproduit au centième l'overall du simulateur à partir des 13 cotes, comme la fonction <em>overall()</em> du classeur Excel. Pondérations calibrées sur les rosters complets de la ligue (8 juillet 2026) : validées au centième sur les 17 OV détaillés de référence du classeur et sur l'arrondi des 697 patineurs de la ligue. Gardiens exclus — leur formule est distincte. Le sélecteur d'équipe couvre les 32 clubs : San Jose depuis l'alignement courant, les autres depuis les formations intégrées du fichier USHL22.ros.</div>
+    <div class="h2-sous">Reproduit l'overall du simulateur à partir des 13 cotes : moyenne à poids entiers sur 68, plus 4,5, avec trois jeux de poids (attaquants, défenseurs offensifs lorsque PA + OF ≥ DF + ST, défenseurs défensifs sinon). Vérifiée sur 1 358 profils de patineurs publiés sur ushl.ca de juillet au 23 octobre 2026 (aucun écart d'arrondi) et sur 18 OV détaillés de la fonction <em>overall()</em> du classeur Excel, à un centième près. Gardiens exclus : leur formule est distincte. Le sélecteur d'équipe couvre les 32 clubs : San Jose depuis l'alignement courant, les autres depuis le dernier relevé de la ligue (formations du fichier USHL22.ros en secours).</div>
     <div class="ovd-panneau">
       <div class="ovd-ligne">
         <label>Équipe
@@ -1507,7 +1507,9 @@ const SECOURS_ROSTER = [
    FORMATIONS DE LA LIGUE — fichier USHL22.ros (32 équipes, 668 joueurs)
    Sert au constructeur de transaction. Colonnes de chaque fiche : voir
    LIGUE_COLS. L'OV des patineurs est celui de ovDetaille(); celui des
-   gardiens vient de OV_POIDS_G (voir plus bas).
+   gardiens vient de OV_POIDS_G (voir plus bas). OV des patineurs recalculés
+   le 23 octobre 2026 avec la formule exacte : Porter Martone, Zayne Parekh, Ryan Pulock et Zeev Buium gagnent un point.
+   En ligne, ces formations sont remplacées par le relevé du jour (appliquerRosters).
    ===================================================================== */
 /* Colonnes : nom, po, hd, it, sp, st, en, du, di, sk, pa, pc, df, sc, ex, ld, ov, age, salaire, ct */
 const LIGUE_COLS = ["nom", "po", "hd", "it", "sp", "st", "en", "du", "di", "sk", "pa", "pc", "df", "sc", "ex", "ld", "ov", "age", "salaire", "ct"];
@@ -1642,7 +1644,7 @@ const LIGUE = [
   ["Jesper Bratt","AD","G",58,86,65,83,82,86,89,85,80,54,79,80,73,81,28,5950000,1],
   ["Alexander Holtz","AD","D",61,79,79,78,84,81,76,72,75,60,76,49,37,77,24,950000,3],
   ["Nico Myatovic","AD","D",70,75,83,69,82,74,70,69,69,63,77,50,47,76,22,800000,2],
-  ["Porter Martone","AD","D",67,71,76,76,73,71,71,78,76,62,75,40,39,76,20,975000,2],
+  ["Porter Martone","AD","D",67,71,76,76,73,71,71,78,76,62,75,40,39,77,20,975000,2],
   ["Josh Morrissey","D","G",77,78,71,85,79,70,80,78,79,75,75,76,58,82,31,7500000,0],
   ["Mikhail Sergachev","D","G",73,78,82,87,71,77,82,77,75,78,69,77,70,82,28,8750000,3],
   ["Jamie Drysdale","D","D",65,84,65,88,80,80,87,80,79,70,71,48,46,81,24,5325000,1],
@@ -1700,7 +1702,7 @@ const LIGUE = [
   ["Benjamin Roger","D","D",74,77,86,82,84,79,83,66,67,75,59,54,42,79,24,5750000,4],
   ["Michael Benning","D","D",66,79,66,83,79,80,80,75,77,63,76,62,57,79,24,1875000,1],
   ["Oliver Ekman-Larsson","D","G",65,78,67,79,77,73,77,73,74,69,59,98,73,75,35,1900000,1],
-  ["Zayne Parekh","D","D",62,76,59,77,69,74,76,77,76,66,69,38,31,75,20,975000,2],
+  ["Zayne Parekh","D","D",62,76,59,77,69,74,76,77,76,66,69,38,31,76,20,975000,2],
   ["Ilya Sorokin","G","G",86,91,87,93,89,86,89,73,86,null,null,79,67,84,31,8750000,4],
   ["Isaiah Saville","G","G",71,86,89,88,83,86,89,66,83,null,null,66,57,79,26,2250000,3],
   ["Will Cranley","G","G",80,84,83,79,79,76,82,67,78,null,null,58,51,76,24,700000,1]
@@ -2110,7 +2112,7 @@ const LIGUE = [
   ["Eric Florchuk","AD","G",59,83,80,73,74,68,72,76,69,53,72,62,38,75,26,7000,1],
   ["Connor Hall","D","G",87,73,95,81,81,79,73,61,62,85,55,69,75,82,28,8750000,3],
   ["Seth Jones","D","D",74,78,80,88,74,79,81,74,75,82,66,74,57,82,32,6250000,3],
-  ["Ryan Pulock","D","D",78,71,83,90,82,85,78,69,73,79,67,82,89,81,32,7200000,2],
+  ["Ryan Pulock","D","D",78,71,83,90,82,85,78,69,73,79,67,82,89,82,32,7200000,2],
   ["Alfons Malmstrom","D","G",85,76,85,83,68,65,79,54,62,85,50,79,67,79,28,3750000,3],
   ["Michael Vukojevic","D","G",78,66,91,84,89,68,80,61,65,80,56,63,48,79,25,3750000,3],
   ["Philippe Myers","D","D",73,73,99,74,73,59,76,49,54,87,48,78,68,78,29,4375000,2],
@@ -2155,7 +2157,7 @@ const LIGUE = [
   ["Niko Mikkola","D","G",81,73,86,85,81,71,74,67,68,80,56,71,66,80,30,5950000,1],
   ["Timothy Liljegren","D","D",62,87,70,83,77,89,88,74,79,60,72,66,57,80,27,4375000,1],
   ["Lane Hutson","D","G",64,81,57,74,71,73,80,72,76,61,69,54,41,76,22,800000,2],
-  ["Zeev Buium","D","G",63,74,67,80,78,76,71,75,76,71,68,43,37,75,21,975000,2],
+  ["Zeev Buium","D","G",63,74,67,80,78,76,71,75,76,71,68,43,37,76,21,975000,2],
   ["Jake Oettinger","G","G",81,93,90,97,98,89,94,71,90,null,null,66,70,85,28,12250000,2],
   ["Adam Gajan","G","G",78,84,79,80,79,75,82,67,82,null,null,54,52,76,22,800000,2]
  ]},
@@ -4488,21 +4490,42 @@ toutRendre();
 chargerLimites(false).then(()=>rendreProgression()).catch(()=>{});
 
 /* ------------------ CALCULATEUR OV DÉTAILLÉ ------------------
-   Pondérations calibrées par programme linéaire sur les rosters complets de la
-   ligue (26 équipes, recote du 8 juillet 2026) et sur les 17 OV détaillés de
-   référence produits par la fonction overall() du classeur Excel.
-   Validation : 17/17 références au centième (±0,005), 697/697 arrondis de la
-   ligue du 8 juillet, 22/22 sur l'alignement SANJOSE du 25 juin (hors
-   échantillon de calibration). Les défenseurs utilisent deux pondérations :
-   offensive lorsque PA + SC ≥ DF + ST, défensive sinon. Les gardiens ont une
-   formule distincte (50 partout → 48, contre 55 chez les patineurs) qui n'est
-   pas couverte ici. Ordre des cotes : IN SP ST EN DU DI SK PA PC DF OF EX LD. */
+   Formule du simulateur : moyenne pondérée à poids entiers sur 68, plus 4,5.
+     OV détaillé = (somme des poids × cotes + 306,5) / 68
+   Poids (IN SP ST EN DU DI SK PA PC DF OF EX LD), 68 au total dans chaque jeu :
+     attaquants            5  5  7  3  1  1  6 10  8  7 13  1  1
+     défenseurs offensifs  4  8  4  3  1  1  8 11  9  6 11  1  1
+     défenseurs défensifs  8  5 10  3  1  1  6  8  6 13  5  1  1
+   Un défenseur est offensif lorsque PA + OF ≥ DF + ST (égalité comprise),
+   défensif sinon.
+   Établie le 23 octobre 2026 sur toutes les données publiées disponibles :
+   1 358 profils de patineurs distincts (relevés quotidiens de data/rosters.json
+   du 9 septembre au 23 octobre 2026, alignements intégrés depuis juillet),
+   aucun écart d'arrondi. La règle de classement tient aussi aux cas limites :
+   Kolyachonok (PA + OF = DF + ST) suit la formule offensive, et Matheson et
+   Ekman-Larsson écartent l'hypothèse « meilleure des deux formules ».
+   L'OV affiché sur ushl.ca est exactement l'arrondi de (somme + 306) / 68,
+   soit (somme + 340) div 68 en entiers. La fonction overall() du classeur y
+   ajoute une fraction inférieure à 1/68 (0,015) qu'on ne peut pas tirer des
+   13 cotes publiées : la constante 306,5 en prend le milieu. Le résultat
+   rejoint le classeur à un centième près (11 des 18 références identiques,
+   les 7 autres à 0,01) sans jamais changer l'arrondi.
+   Remplace la calibration par programme linéaire du 8 juillet 2026 : ses
+   poids reproduisaient les 17 références du classeur mais pas la structure
+   de la formule. Sur ces 1 358 profils, ils en arrondissaient mal 17, dont
+   15 défenseurs (Werenski : 83,65 au lieu de 83,33).
+   Les gardiens ont une formule distincte (50 partout → 48, contre 55 chez
+   les patineurs) qui n'est pas couverte ici. */
 const OV_ORDRE = ['it','sp','st','en','du','di','sk','pa','pc','df','sc','ex','ld'];
-const OV_POIDS = {
-  F:     {w:[0.073423,0.072584,0.102613,0.043094,0.015318,0.014931,0.090409,0.147233,0.116690,0.102606,0.191218,0.014681,0.014822], cst:4.530845},
-  D_OFF: {w:[0.071201,0.160040,0.065793,0.050580,-0.001963,-0.003945,0.095153,0.168552,0.122700,0.086797,0.158935,0.013673,0.018993], cst:4.177806},
-  D_DEF: {w:[0.118770,0.077492,0.147627,0.043248,0.014035,0.015385,0.087341,0.118938,0.088093,0.193175,0.073577,0.015078,0.013870], cst:4.016048}
-};
+const OV_DIVISEUR = 68;
+const OV_CONSTANTE = 306.5;
+/* n : poids entiers de la formule; w et cst : forme décimale équivalente
+   (poids / 68 et 306,5 / 68), gardée pour les usages qui l'attendent. */
+const OV_POIDS = Object.fromEntries(Object.entries({
+  F:     [5, 5,  7, 3, 1, 1, 6, 10, 8,  7, 13, 1, 1],
+  D_OFF: [4, 8,  4, 3, 1, 1, 8, 11, 9,  6, 11, 1, 1],
+  D_DEF: [8, 5, 10, 3, 1, 1, 6,  8, 6, 13,  5, 1, 1]
+}).map(([cle, n]) => [cle, {n, w: n.map(p => p / OV_DIVISEUR), cst: OV_CONSTANTE / OV_DIVISEUR}]));
 function ovDetaille(cotes, groupe){
   /* cotes : objet portant it, sp, st, en, du, di, sk, pa, pc, df, sc, ex, ld.
      groupe : 'F' (attaquant) ou 'D' (défenseur).
@@ -4519,7 +4542,8 @@ function ovDetaille(cotes, groupe){
     jeu = OV_POIDS.F;
     formule = 'attaquant';
   }
-  const valeur = OV_ORDRE.reduce((s,k,i) => s + jeu.w[i]*cotes[k], jeu.cst);
+  const somme = OV_ORDRE.reduce((s,k,i) => s + jeu.n[i]*cotes[k], 0);
+  const valeur = (somme + OV_CONSTANTE) / OV_DIVISEUR;
   return {valeur, arrondi: Math.round(valeur), formule};
 }
 
@@ -5172,7 +5196,7 @@ if (typeof window !== 'undefined'){
     fmtArgentCourt, parseArgent, litResignatures, ecritResignatures,
     ouvrirProlongation, fermerProlongation, calculerMasse, PLAFOND, echelonEffectif, peutProlonger,
     MATRICES, STATS_PAR_MATRICE, NIVEAUX, SECOURS_ROSTER, PROFILS, STATS_DEF,
-    ovDetaille, OV_POIDS, OV_ORDRE, peuplerJoueursOvd, calculerOvd,
+    ovDetaille, OV_POIDS, OV_ORDRE, OV_DIVISEUR, OV_CONSTANTE, peuplerJoueursOvd, calculerOvd,
     peuplerEquipesOvd, sourceJoueursOvd,
     CS_COLONNES, CHARTE_OV_MIN, CHARTE_OV_MAX, verdictCharte, rendreCharte,
     peuplerJoueursCharte, calculerCharte, rendreApercuCharte, rangCharte, etiquetteOvCharte};

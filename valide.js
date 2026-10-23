@@ -668,7 +668,11 @@ const ATTENDU = {
   ok(typeof S.ovDetaille === 'function', 'ovDetaille exposée');
   tableauEgal(S.OV_ORDRE, ['it','sp','st','en','du','di','sk','pa','pc','df','sc','ex','ld'],
     'Ordre des cotes IN SP ST EN DU DI SK PA PC DF OF EX LD');
-  // 17 OV détaillés de référence produits par la fonction overall() du classeur Excel
+  // OV détaillés de référence produits par la fonction overall() du classeur Excel :
+  // 17 relevés en juillet, plus Werenski (83,33) transmis par le DG de Seattle le
+  // 23 octobre 2026. Le classeur ajoute à (somme + 306) / 68 une fraction inférieure
+  // à 1/68 qu'on ne peut pas tirer des cotes publiées; la formule en prend le milieu
+  // (306,5), d'où un écart d'au plus 0,011 avec le classeur.
   const refsOvd = [
     ['F',[68,85,69,77,79,75,83,71,74,56,75,49,37],76.37,'Lambert'],
     ['F',[77,71,82,79,79,77,74,78,74,73,78,77,64],80.81,'ErikssonEk'],
@@ -686,13 +690,38 @@ const ATTENDU = {
     ['D',[73,74,84,94,78,89,81,70,70,80,57,99,78],81.14,'Myers'],
     ['D',[65,72,82,78,75,79,75,71,72,78,60,70,65],77.84,'Graves'],
     ['D',[80,70,91,88,86,76,85,75,70,82,67,69,57],83.67,'Fleury'],
-    ['D',[68,74,76,76,74,80,76,71,72,78,61,80,75],77.83,'Schmidt']
+    ['D',[68,74,76,76,74,80,76,71,72,78,61,80,75],77.83,'Schmidt'],
+    ['D',[65,84,71,87,69,79,82,83,82,75,75,77,76],83.33,'Werenski']
   ];
   const versCotes = t => Object.fromEntries(S.OV_ORDRE.map((k,i)=>[k,t[i]]));
   refsOvd.forEach(([g,t,attendu,nom]) => {
-    proche(S.ovDetaille(versCotes(t), g).valeur, attendu, 0.005,
-      `Référence Excel : ${nom} → ${attendu}`);
+    const r = S.ovDetaille(versCotes(t), g);
+    proche(r.valeur, attendu, 0.011, `Référence Excel : ${nom} → ${attendu} (à un centième près)`);
+    egal(r.arrondi, Math.round(attendu), `Référence Excel : ${nom}, même arrondi que le classeur`);
   });
+  {
+    const identiques = refsOvd.filter(([g,t,attendu]) =>
+      S.ovDetaille(versCotes(t), g).valeur.toFixed(2) === attendu.toFixed(2)).length;
+    ok(identiques >= 11, `Références identiques au centième : ${identiques} sur ${refsOvd.length} (les autres à 0,01)`);
+  }
+  // structure de la formule : poids entiers, 68 au total dans chaque jeu, + 306,5
+  tableauEgal(S.OV_POIDS.F.n,     [5,5,7,3,1,1,6,10,8,7,13,1,1], 'Poids des attaquants (IN SP ST EN DU DI SK PA PC DF OF EX LD)');
+  tableauEgal(S.OV_POIDS.D_OFF.n, [4,8,4,3,1,1,8,11,9,6,11,1,1], 'Poids des défenseurs offensifs');
+  tableauEgal(S.OV_POIDS.D_DEF.n, [8,5,10,3,1,1,6,8,6,13,5,1,1], 'Poids des défenseurs défensifs');
+  ['F','D_OFF','D_DEF'].forEach(cl => {
+    egal(S.OV_POIDS[cl].n.reduce((a,b)=>a+b,0), 68, `Poids ${cl} : 68 au total`);
+    proche(S.OV_POIDS[cl].w.reduce((a,b)=>a+b,0), 1, 1e-12, `Poids ${cl} : forme décimale (somme 1)`);
+  });
+  egal(S.OV_DIVISEUR, 68, 'Diviseur 68');
+  egal(S.OV_CONSTANTE, 306.5, 'Constante 306,5 (4,5 × 68, plus le milieu de la fraction du classeur)');
+  // l'arrondi publié est exactement (somme + 340) div 68 : jamais d'égalité à ,5
+  {
+    let ecartsEntiers = 0;
+    for (let s = 3400; s <= 6800; s++){
+      if (Math.round((s + 306.5) / 68) !== Math.floor((s + 340) / 68)) ecartsEntiers++;
+    }
+    egal(ecartsEntiers, 0, 'Arrondi de (somme + 306,5) / 68 = (somme + 340) div 68 pour toute somme entière');
+  }
   egal(S.ovDetaille(versCotes([82,70,94,84,98,79,70,72,69,65,88,60,69]),'F').arrondi, 82,
     'Legare : arrondi 82 (OV affiché sur ushl.ca)');
   // classement des défenseurs : offensif si PA + OF >= DF + ST
@@ -700,18 +729,53 @@ const ATTENDU = {
     'Fox (PA 86 + OF 70 = 156 ≥ DF 79 + ST 70 = 149) → formule offensive');
   ok(S.ovDetaille(versCotes([68,70,78,84,68,82,72,73,74,84,62,85,80]),'D').formule.includes('défensif'),
     'Brodin (PA 73 + OF 62 = 135 < DF 84 + ST 78 = 162) → formule défensive');
-  // cohérence avec l'alignement de secours (hors échantillon de calibration) :
-  // la formule calibrée reproduit l'OV affiché pour la quasi-totalité des patineurs,
-  // avec au plus 1 point d'écart pour les rares exceptions
+  {
+    // égalité PA + OF = DF + ST (142 = 142) : formule offensive, seule à donner l'OV publié (75)
+    const kol = S.ovDetaille(versCotes([59,79,73,72,73,71,76,71,68,69,71,55,39]),'D');
+    ok(kol.formule.includes('offensif'), 'Kolyachonok (PA + OF = DF + ST) → formule offensive');
+    egal(kol.arrondi, 75, 'Kolyachonok : OV publié 75 retrouvé à l\'égalité');
+    // la règle n'est pas « la meilleure des deux formules » : Matheson (relevé du
+    // 17 octobre, OV publié 79) donnerait 80 avec la formule offensive
+    const cMat = versCotes([65,81,73,85,78,73,80,77,74,76,67,77,71]);
+    const mat = S.ovDetaille(cMat,'D');
+    ok(mat.formule.includes('défensif'), 'Matheson (PA + OF 144 < DF + ST 149) → formule défensive');
+    egal(mat.arrondi, 79, 'Matheson : OV publié 79');
+    const somOff = S.OV_ORDRE.reduce((s,k,i)=>s + S.OV_POIDS.D_OFF.n[i]*cMat[k], 0);
+    egal(Math.round((somOff + S.OV_CONSTANTE) / S.OV_DIVISEUR), 80,
+      'Matheson : la formule offensive donnerait 80, donc la plus haute des deux n\'est pas retenue');
+  }
+  // profils publiés que l'ancienne calibration (8 juillet) arrondissait mal :
+  // chacun retombe maintenant sur son OV publié (relevés de juillet à octobre 2026)
+  {
+    const difficiles = [["Zayne Parekh", "D", [62, 76, 59, 77, 69, 74, 76, 77, 76, 66, 69, 38, 31], 76],
+      ["Bode Wilde", "D", [58, 83, 78, 84, 89, 82, 89, 84, 78, 58, 73, 62, 59], 82],
+      ["John Marino", "D", [70, 77, 70, 81, 68, 77, 76, 74, 73, 78, 60, 70, 60], 77],
+      ["Brian Dumoulin", "D", [74, 73, 82, 78, 80, 81, 71, 72, 68, 78, 57, 80, 70], 78],
+      ["Zach Whitecloud", "D", [83, 73, 84, 77, 75, 82, 75, 65, 65, 82, 58, 68, 58], 79],
+      ["Matthew Schaefer", "D", [67, 76, 67, 77, 68, 78, 79, 76, 75, 70, 68, 34, 32], 77],
+      ["Cole Caufield", "F", [67, 86, 57, 90, 81, 84, 88, 75, 76, 58, 89, 63, 56], 80],
+      ["Zach Werenski", "D", [65, 84, 71, 87, 69, 79, 82, 83, 82, 75, 75, 77, 76], 83],
+      ["Jeremie Poirier", "D", [62, 80, 71, 86, 79, 78, 82, 78, 85, 60, 81, 61, 58], 82],
+      ["Zeev Buium", "D", [63, 74, 67, 80, 78, 76, 71, 75, 76, 71, 68, 43, 37], 76],
+      ["Carter Yakemchuk", "D", [77, 72, 77, 81, 80, 65, 71, 75, 77, 68, 79, 44, 43], 78],
+      ["Axel Sandin-Pellikka", "D", [64, 74, 71, 82, 73, 72, 78, 74, 73, 69, 71, 42, 43], 77],
+      ["Ryan Pulock", "D", [78, 71, 83, 90, 82, 85, 78, 69, 73, 79, 67, 82, 89], 82],
+      ["Porter Martone", "F", [67, 71, 76, 76, 73, 71, 71, 78, 76, 62, 75, 40, 39], 77],
+      ["Ethan Edwards", "D", [58, 70, 62, 70, 76, 71, 71, 75, 72, 67, 71, 49, 41], 74],
+      ["Domenick Fensore", "D", [65, 81, 51, 82, 73, 81, 83, 79, 77, 62, 75, 59, 48], 79],
+      ["Nikita Zadorov", "D", [87, 65, 88, 86, 82, 69, 70, 67, 72, 78, 62, 80, 66], 81]];
+    difficiles.forEach(([nom,g,t,ovPublie]) => {
+      egal(S.ovDetaille(versCotes(t), g).arrondi, ovPublie, `Cas difficile : ${nom} → OV publié ${ovPublie}`);
+    });
+  }
+  // cohérence avec l'alignement de secours (OV publiés du relevé intégré) :
+  // la formule exacte retombe sur l'OV affiché de chaque patineur, club-école compris
   {
     const pat = S.SECOURS_ROSTER.filter(j => j.po !== 'G');
     const res = pat.map(j => ({j, r: S.ovDetaille(j, j.po === 'D' ? 'D' : 'F')}));
     ok(res.every(x => !!x.r), 'Formule calculable pour tous les patineurs');
     const exacts = res.filter(x => x.r.arrondi === x.j.ov).length;
-    ok(exacts >= Math.ceil(pat.length * 0.85),
-      `Arrondi = OV affiché pour la quasi-totalité (${exacts}/${pat.length})`);
-    ok(res.every(x => Math.abs(x.r.arrondi - x.j.ov) <= 1),
-      'Aucun écart de plus de 1 point entre arrondi et OV affiché');
+    egal(exacts, pat.length, `Arrondi = OV affiché pour chaque patineur de l'alignement (${exacts}/${pat.length})`);
   }
   // ancre 50 partout et gardiens
   proche(S.ovDetaille(versCotes(Array(13).fill(50)),'F').arrondi, 55, 0,
