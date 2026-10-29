@@ -1,13 +1,13 @@
 {
- "genere": "2026-10-27T09:25:44.024Z",
+ "genere": "2026-10-29T10:33:11.749Z",
  "equipe": "SANJOSE",
- "fiche": "SANJOSE 1-3-1",
+ "fiche": "SANJOSE 1-3-2",
  "pointage": {
-  "releve": "2026-10-27T09:25:44.024Z",
+  "releve": "2026-10-29T10:33:11.749Z",
   "patineurs": [
    {
     "nom": "Mario Ferraro",
-    "gp": 5,
+    "gp": 6,
     "goals": 1,
     "assists": 4,
     "pts": 5,
@@ -15,12 +15,12 @@
     "pim": 6,
     "ppg": 0,
     "gwg": 0,
-    "shots": 12,
-    "hits": 12
+    "shots": 14,
+    "hits": 13
    },
    {
     "nom": "Jaden Schwartz",
-    "gp": 5,
+    "gp": 6,
     "goals": 1,
     "assists": 4,
     "pts": 5,
@@ -28,38 +28,38 @@
     "pim": 0,
     "ppg": 0,
     "gwg": 0,
-    "shots": 15,
-    "hits": 4
+    "shots": 16,
+    "hits": 5
    },
    {
     "nom": "Adam Fox",
-    "gp": 5,
+    "gp": 6,
     "goals": 0,
-    "assists": 4,
-    "pts": 4,
-    "plusminus": -2,
+    "assists": 5,
+    "pts": 5,
+    "plusminus": -1,
     "pim": 0,
     "ppg": 0,
     "gwg": 0,
-    "shots": 7,
-    "hits": 4
+    "shots": 9,
+    "hits": 7
    },
    {
     "nom": "Nathan Legare",
-    "gp": 5,
+    "gp": 6,
     "goals": 3,
     "assists": 0,
     "pts": 3,
-    "plusminus": -4,
+    "plusminus": -3,
     "pim": 4,
     "ppg": 2,
     "gwg": 0,
-    "shots": 12,
-    "hits": 9
+    "shots": 14,
+    "hits": 13
    },
    {
     "nom": "Kent Johnson",
-    "gp": 5,
+    "gp": 6,
     "goals": 1,
     "assists": 2,
     "pts": 3,
@@ -67,25 +67,38 @@
     "pim": 16,
     "ppg": 0,
     "gwg": 0,
-    "shots": 8,
-    "hits": 4
+    "shots": 9,
+    "hits": 5
    },
    {
     "nom": "Brendan Brisson",
-    "gp": 5,
+    "gp": 6,
     "goals": 1,
     "assists": 2,
     "pts": 3,
     "plusminus": -1,
+    "pim": 6,
+    "ppg": 0,
+    "gwg": 0,
+    "shots": 12,
+    "hits": 9
+   },
+   {
+    "nom": "Jesperi Kotkaniemi",
+    "gp": 6,
+    "goals": 1,
+    "assists": 1,
+    "pts": 2,
+    "plusminus": 0,
     "pim": 0,
     "ppg": 0,
     "gwg": 0,
-    "shots": 9,
-    "hits": 8
+    "shots": 17,
+    "hits": 3
    },
    {
     "nom": "Haydn Fleury",
-    "gp": 5,
+    "gp": 6,
     "goals": 0,
     "assists": 2,
     "pts": 2,
@@ -93,12 +106,12 @@
     "pim": 2,
     "ppg": 0,
     "gwg": 0,
-    "shots": 8,
-    "hits": 18
+    "shots": 9,
+    "hits": 21
    },
    {
     "nom": "Cameron Lund",
-    "gp": 5,
+    "gp": 6,
     "goals": 1,
     "assists": 0,
     "pts": 1,
@@ -111,7 +124,7 @@
    },
    {
     "nom": "Brad Lambert",
-    "gp": 5,
+    "gp": 6,
     "goals": 1,
     "assists": 0,
     "pts": 1,
@@ -119,12 +132,12 @@
     "pim": 6,
     "ppg": 0,
     "gwg": 0,
-    "shots": 2,
+    "shots": 5,
     "hits": 2
    },
    {
     "nom": "Reilly Smith",
-    "gp": 5,
+    "gp": 6,
     "goals": 1,
     "assists": 0,
     "pts": 1,
@@ -137,11 +150,11 @@
    },
    {
     "nom": "Braden Schneider",
-    "gp": 5,
+    "gp": 6,
     "goals": 1,
     "assists": 0,
     "pts": 1,
-    "plusminus": -6,
+    "plusminus": -5,
     "pim": 2,
     "ppg": 1,
     "gwg": 0,
@@ -149,17 +162,17 @@
     "hits": 12
    },
    {
-    "nom": "Jesperi Kotkaniemi",
-    "gp": 5,
+    "nom": "Kirby Dach",
+    "gp": 6,
     "goals": 0,
     "assists": 1,
     "pts": 1,
-    "plusminus": -1,
-    "pim": 0,
+    "plusminus": -4,
+    "pim": 2,
     "ppg": 0,
     "gwg": 0,
-    "shots": 14,
-    "hits": 3
+    "shots": 10,
+    "hits": 1
    },
    {
     "nom": "Cole Caufield",
@@ -175,19 +188,6 @@
     "hits": 2
    },
    {
-    "nom": "Shea Theodore",
-    "gp": 2,
-    "goals": 0,
-    "assists": 0,
-    "pts": 0,
-    "plusminus": -2,
-    "pim": 0,
-    "ppg": 0,
-    "gwg": 0,
-    "shots": 3,
-    "hits": 1
-   },
-   {
     "nom": "Back Up RW",
     "gp": 2,
     "goals": 0,
@@ -201,8 +201,21 @@
     "hits": 0
    },
    {
-    "nom": "Miko Matikka",
+    "nom": "Shea Theodore",
     "gp": 3,
+    "goals": 0,
+    "assists": 0,
+    "pts": 0,
+    "plusminus": -2,
+    "pim": 0,
+    "ppg": 0,
+    "gwg": 0,
+    "shots": 5,
+    "hits": 3
+   },
+   {
+    "nom": "Miko Matikka",
+    "gp": 4,
     "goals": 0,
     "assists": 0,
     "pts": 0,
@@ -215,7 +228,7 @@
    },
    {
     "nom": "Ryan O'Reilly",
-    "gp": 5,
+    "gp": 6,
     "goals": 0,
     "assists": 0,
     "pts": 0,
@@ -223,25 +236,12 @@
     "pim": 0,
     "ppg": 0,
     "gwg": 0,
-    "shots": 5,
-    "hits": 2
-   },
-   {
-    "nom": "Kirby Dach",
-    "gp": 5,
-    "goals": 0,
-    "assists": 0,
-    "pts": 0,
-    "plusminus": -5,
-    "pim": 2,
-    "ppg": 0,
-    "gwg": 0,
-    "shots": 7,
-    "hits": 0
+    "shots": 6,
+    "hits": 3
    },
    {
     "nom": "Artyom Grushnikov",
-    "gp": 5,
+    "gp": 6,
     "goals": 0,
     "assists": 0,
     "pts": 0,
@@ -254,7 +254,7 @@
    },
    {
     "nom": "Gianni Fairbrother",
-    "gp": 5,
+    "gp": 6,
     "goals": 0,
     "assists": 0,
     "pts": 0,
@@ -262,7 +262,7 @@
     "pim": 2,
     "ppg": 0,
     "gwg": 0,
-    "shots": 5,
+    "shots": 7,
     "hits": 7
    }
   ],
@@ -281,44 +281,44 @@
    },
    {
     "nom": "Philippe Desrosiers",
-    "gp": 5,
+    "gp": 6,
     "pim": 0,
     "w": 1,
     "l": 3,
-    "t": 1,
-    "avg": 3.64,
-    "svpct": 0.856,
+    "t": 2,
+    "avg": 3.13,
+    "svpct": 0.878,
     "so": 0,
-    "mp": 280
+    "mp": 345
    }
   ]
  },
  "xtra": {
-  "releve": "2026-10-27T09:25:44.024Z",
-  "date": "10/27/2026",
+  "releve": "2026-10-29T10:33:11.749Z",
+  "date": "10/29/2026",
   "joueurs": [
    {
     "nom": "Adam Fox",
     "pos": "D",
-    "gp": 5,
+    "gp": 6,
     "goals": 0,
-    "assists": 4,
-    "pts": 4,
-    "shots": 7,
+    "assists": 5,
+    "pts": 5,
+    "shots": 9,
     "pim": 0,
-    "mp": 116,
-    "hits": 4
+    "mp": 140,
+    "hits": 7
    },
    {
     "nom": "Artyom Grushnikov",
     "pos": "D",
-    "gp": 5,
+    "gp": 6,
     "goals": 0,
     "assists": 0,
     "pts": 0,
     "shots": 4,
     "pim": 2,
-    "mp": 45,
+    "mp": 46,
     "hits": 4
    },
    {
@@ -336,43 +336,43 @@
    {
     "nom": "Brad Lambert",
     "pos": "LW",
-    "gp": 5,
+    "gp": 6,
     "goals": 1,
     "assists": 0,
     "pts": 1,
-    "shots": 2,
+    "shots": 5,
     "pim": 6,
-    "mp": 73,
+    "mp": 96,
     "hits": 2
    },
    {
     "nom": "Braden Schneider",
     "pos": "D",
-    "gp": 5,
+    "gp": 6,
     "goals": 1,
     "assists": 0,
     "pts": 1,
     "shots": 12,
     "pim": 2,
-    "mp": 125,
+    "mp": 150,
     "hits": 12
    },
    {
     "nom": "Brendan Brisson",
     "pos": "LW",
-    "gp": 5,
+    "gp": 6,
     "goals": 1,
     "assists": 2,
     "pts": 3,
-    "shots": 9,
-    "pim": 0,
-    "mp": 113,
-    "hits": 8
+    "shots": 12,
+    "pim": 6,
+    "mp": 135,
+    "hits": 9
    },
    {
     "nom": "Cameron Lund",
     "pos": "C",
-    "gp": 5,
+    "gp": 6,
     "goals": 1,
     "assists": 0,
     "pts": 1,
@@ -396,115 +396,115 @@
    {
     "nom": "Gianni Fairbrother",
     "pos": "D",
-    "gp": 5,
-    "goals": 0,
-    "assists": 0,
-    "pts": 0,
-    "shots": 5,
-    "pim": 2,
-    "mp": 65,
-    "hits": 7
-   },
-   {
-    "nom": "Haydn Fleury",
-    "pos": "D",
-    "gp": 5,
-    "goals": 0,
-    "assists": 2,
-    "pts": 2,
-    "shots": 8,
-    "pim": 2,
-    "mp": 125,
-    "hits": 18
-   },
-   {
-    "nom": "Jaden Schwartz",
-    "pos": "C",
-    "gp": 5,
-    "goals": 1,
-    "assists": 4,
-    "pts": 5,
-    "shots": 15,
-    "pim": 0,
-    "mp": 97,
-    "hits": 4
-   },
-   {
-    "nom": "Jesperi Kotkaniemi",
-    "pos": "C",
-    "gp": 5,
-    "goals": 0,
-    "assists": 1,
-    "pts": 1,
-    "shots": 14,
-    "pim": 0,
-    "mp": 106,
-    "hits": 3
-   },
-   {
-    "nom": "Kent Johnson",
-    "pos": "RW",
-    "gp": 5,
-    "goals": 1,
-    "assists": 2,
-    "pts": 3,
-    "shots": 8,
-    "pim": 16,
-    "mp": 99,
-    "hits": 4
-   },
-   {
-    "nom": "Kirby Dach",
-    "pos": "RW",
-    "gp": 5,
+    "gp": 6,
     "goals": 0,
     "assists": 0,
     "pts": 0,
     "shots": 7,
     "pim": 2,
-    "mp": 97,
-    "hits": 0
+    "mp": 81,
+    "hits": 7
+   },
+   {
+    "nom": "Haydn Fleury",
+    "pos": "D",
+    "gp": 6,
+    "goals": 0,
+    "assists": 2,
+    "pts": 2,
+    "shots": 9,
+    "pim": 2,
+    "mp": 147,
+    "hits": 21
+   },
+   {
+    "nom": "Jaden Schwartz",
+    "pos": "C",
+    "gp": 6,
+    "goals": 1,
+    "assists": 4,
+    "pts": 5,
+    "shots": 16,
+    "pim": 0,
+    "mp": 116,
+    "hits": 5
+   },
+   {
+    "nom": "Jesperi Kotkaniemi",
+    "pos": "C",
+    "gp": 6,
+    "goals": 1,
+    "assists": 1,
+    "pts": 2,
+    "shots": 17,
+    "pim": 0,
+    "mp": 130,
+    "hits": 3
+   },
+   {
+    "nom": "Kent Johnson",
+    "pos": "RW",
+    "gp": 6,
+    "goals": 1,
+    "assists": 2,
+    "pts": 3,
+    "shots": 9,
+    "pim": 16,
+    "mp": 118,
+    "hits": 5
+   },
+   {
+    "nom": "Kirby Dach",
+    "pos": "RW",
+    "gp": 6,
+    "goals": 0,
+    "assists": 1,
+    "pts": 1,
+    "shots": 10,
+    "pim": 2,
+    "mp": 121,
+    "hits": 1
    },
    {
     "nom": "Mario Ferraro",
     "pos": "D",
-    "gp": 5,
+    "gp": 6,
     "goals": 1,
     "assists": 4,
     "pts": 5,
-    "shots": 12,
+    "shots": 14,
     "pim": 6,
-    "mp": 102,
-    "hits": 12
+    "mp": 122,
+    "hits": 13
    },
    {
     "nom": "Miko Matikka",
     "pos": "RW",
-    "gp": 3,
+    "gp": 4,
     "goals": 0,
     "assists": 0,
     "pts": 0,
     "shots": 1,
     "pim": 0,
-    "mp": 38,
+    "mp": 40,
     "hits": 2
    },
    {
     "nom": "Nathan Legare",
     "pos": "LW",
-    "gp": 5,
+    "gp": 6,
     "goals": 3,
     "assists": 0,
     "pts": 3,
-    "shots": 12,
+    "shots": 14,
     "pim": 4,
-    "mp": 110,
-    "hits": 9
+    "mp": 137,
+    "hits": 13
    },
    {
     "nom": "Philippe Desrosiers",
     "pos": "G",
-    "gp": 5,
+    "gp": 6,
     "goals": 0,
     "assists": 0,
     "pts": 0,
@@ -512,7 +512,7 @@
     "pim": 0,
     "mp": 0,
     "hits": 0,
-    "qg": 1,
+    "qg": 2,
     "hs": 0
    },
    {
@@ -532,38 +532,38 @@
    {
     "nom": "Reilly Smith",
     "pos": "LW",
-    "gp": 5,
+    "gp": 6,
     "goals": 1,
     "assists": 0,
     "pts": 1,
     "shots": 4,
     "pim": 0,
-    "mp": 26,
+    "mp": 46,
     "hits": 6
    },
    {
     "nom": "Ryan O'Reilly",
     "pos": "C",
-    "gp": 5,
+    "gp": 6,
+    "goals": 0,
+    "assists": 0,
+    "pts": 0,
+    "shots": 6,
+    "pim": 0,
+    "mp": 86,
+    "hits": 3
+   },
+   {
+    "nom": "Shea Theodore",
+    "pos": "D",
+    "gp": 3,
     "goals": 0,
     "assists": 0,
     "pts": 0,
     "shots": 5,
     "pim": 0,
-    "mp": 69,
-    "hits": 2
-   },
-   {
-    "nom": "Shea Theodore",
-    "pos": "D",
-    "gp": 2,
-    "goals": 0,
-    "assists": 0,
-    "pts": 0,
-    "shots": 3,
-    "pim": 0,
-    "mp": 38,
-    "hits": 1
+    "mp": 57,
+    "hits": 3
    }
   ]
  },
