@@ -1,13 +1,13 @@
 {
- "genere": "2026-10-28T17:27:07.585Z",
- "maj": "oct 27 2026",
+ "genere": "2026-10-29T17:34:55.549Z",
+ "maj": "oct 29 2026",
  "source": "ushl.ca — TeamRosters.php (PRO)",
  "nbEquipes": 32,
  "reprises": [],
  "equipes": {
   "ANAHEIM": {
-   "fiche": "ANAHEIM 2-1-2",
-   "maj": "oct 27 2026",
+   "fiche": "ANAHEIM 2-2-2",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Sidney Crosby",
@@ -612,8 +612,8 @@
    ]
   },
   "BOSTON": {
-   "fiche": "BOSTON 3-1-1",
-   "maj": "oct 27 2026",
+   "fiche": "BOSTON 4-1-1",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Anthony Cirelli",
@@ -1170,8 +1170,8 @@
    ]
   },
   "BUFFALO": {
-   "fiche": "BUFFALO 3-2-0",
-   "maj": "oct 27 2026",
+   "fiche": "BUFFALO 4-2-1",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Mika Zibanejad",
@@ -1362,6 +1362,30 @@
      "age": 23,
      "salaire": 775000,
      "ct": 2,
+     "backup": false,
+     "horsAlignement": false
+    },
+    {
+     "nom": "Dylan James",
+     "po": "AG",
+     "hd": "G",
+     "it": 79,
+     "sp": 71,
+     "st": 74,
+     "en": 73,
+     "du": 82,
+     "di": 73,
+     "sk": 73,
+     "pa": 69,
+     "pc": 68,
+     "df": 68,
+     "sc": 67,
+     "ex": 48,
+     "ld": 49,
+     "ov": 74,
+     "age": 23,
+     "salaire": 80000,
+     "ct": 1,
      "backup": false,
      "horsAlignement": false
     },
@@ -1582,6 +1606,30 @@
      "horsAlignement": false
     },
     {
+     "nom": "Back Up D",
+     "po": "D",
+     "hd": "G",
+     "it": 50,
+     "sp": 50,
+     "st": 50,
+     "en": 50,
+     "du": 50,
+     "di": 50,
+     "sk": 50,
+     "pa": 50,
+     "pc": 50,
+     "df": 50,
+     "sc": 50,
+     "ex": 50,
+     "ld": 50,
+     "ov": 55,
+     "age": 25,
+     "salaire": 0,
+     "ct": 0,
+     "backup": true,
+     "horsAlignement": false
+    },
+    {
      "nom": "Nikita Zadorov",
      "po": "D",
      "hd": "G",
@@ -1700,36 +1748,12 @@
      "ct": 4,
      "backup": false,
      "horsAlignement": false
-    },
-    {
-     "nom": "Dylan James",
-     "po": "AG",
-     "hd": "G",
-     "it": 79,
-     "sp": 71,
-     "st": 74,
-     "en": 73,
-     "du": 82,
-     "di": 73,
-     "sk": 73,
-     "pa": 69,
-     "pc": 68,
-     "df": 68,
-     "sc": 67,
-     "ex": 48,
-     "ld": 49,
-     "ov": 74,
-     "age": 23,
-     "salaire": 80000,
-     "ct": 1,
-     "backup": false,
-     "horsAlignement": true
     }
    ]
   },
   "CALGARY": {
-   "fiche": "CALGARY 2-2-1",
-   "maj": "oct 27 2026",
+   "fiche": "CALGARY 3-2-1",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Olivier Nadeau",
@@ -2430,8 +2454,8 @@
    ]
   },
   "CAROLINA": {
-   "fiche": "CAROLINA 2-3-0",
-   "maj": "oct 27 2026",
+   "fiche": "CAROLINA 3-3-0",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Evan Vierling",
@@ -3012,8 +3036,8 @@
    ]
   },
   "CHICAGO": {
-   "fiche": "CHICAGO 1-4-0",
-   "maj": "oct 27 2026",
+   "fiche": "CHICAGO 1-5-0",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Tim Stutzle",
@@ -3618,8 +3642,8 @@
    ]
   },
   "COLORADO": {
-   "fiche": "COLORADO 2-2-1",
-   "maj": "oct 27 2026",
+   "fiche": "COLORADO 2-2-2",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Nicolas Petan",
@@ -4200,8 +4224,8 @@
    ]
   },
   "COLUMBUS": {
-   "fiche": "COLUMBUS 5-0-0",
-   "maj": "oct 27 2026",
+   "fiche": "COLUMBUS 6-0-0",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Ryan McLeod",
@@ -4734,8 +4758,8 @@
    ]
   },
   "DALLAS": {
-   "fiche": "DALLAS 3-1-1",
-   "maj": "oct 27 2026",
+   "fiche": "DALLAS 4-1-1",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Gabriel Vilardi",
@@ -5292,8 +5316,8 @@
    ]
   },
   "DETROIT": {
-   "fiche": "DETROIT 2-2-1",
-   "maj": "oct 27 2026",
+   "fiche": "DETROIT 2-3-1",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Martin Necas",
@@ -5922,8 +5946,8 @@
    ]
   },
   "EDMONTON": {
-   "fiche": "EDMONTON 4-1-0",
-   "maj": "oct 27 2026",
+   "fiche": "EDMONTON 4-2-0",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Xavier Bourgault",
@@ -6504,8 +6528,8 @@
    ]
   },
   "FLORIDE": {
-   "fiche": "FLORIDE 3-2-0",
-   "maj": "oct 27 2026",
+   "fiche": "FLORIDE 3-3-0",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Rory Kerins",
@@ -7158,8 +7182,8 @@
    ]
   },
   "ISLANDERS": {
-   "fiche": "ISLANDERS 2-1-2",
-   "maj": "oct 27 2026",
+   "fiche": "ISLANDERS 3-2-2",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Jack Hughes",
@@ -7716,8 +7740,8 @@
    ]
   },
   "LOSANGELES": {
-   "fiche": "LOSANGELES 4-1-0",
-   "maj": "oct 27 2026",
+   "fiche": "LOSANGELES 4-2-0",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Brayden Yager",
@@ -8298,8 +8322,8 @@
    ]
   },
   "MINNESOTA": {
-   "fiche": "MINNESOTA 1-4-0",
-   "maj": "oct 27 2026",
+   "fiche": "MINNESOTA 1-5-0",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Patrick Guay",
@@ -8880,8 +8904,8 @@
    ]
   },
   "MONTREAL": {
-   "fiche": "MONTREAL 1-4-0",
-   "maj": "oct 27 2026",
+   "fiche": "MONTREAL 1-5-0",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Steven Stamkos",
@@ -9172,30 +9196,6 @@
      "horsAlignement": false
     },
     {
-     "nom": "Artyom Duda",
-     "po": "D",
-     "hd": "G",
-     "it": 65,
-     "sp": 72,
-     "st": 74,
-     "en": 75,
-     "du": 72,
-     "di": 81,
-     "sk": 73,
-     "pa": 72,
-     "pc": 72,
-     "df": 73,
-     "sc": 69,
-     "ex": 45,
-     "ld": 30,
-     "ov": 75,
-     "age": 22,
-     "salaire": 80000,
-     "ct": 2,
-     "backup": false,
-     "horsAlignement": false
-    },
-    {
      "nom": "Gabriel Carlsson",
      "po": "D",
      "hd": "G",
@@ -9460,6 +9460,30 @@
      "horsAlignement": true
     },
     {
+     "nom": "Artyom Duda",
+     "po": "D",
+     "hd": "G",
+     "it": 65,
+     "sp": 72,
+     "st": 74,
+     "en": 75,
+     "du": 72,
+     "di": 81,
+     "sk": 73,
+     "pa": 72,
+     "pc": 72,
+     "df": 73,
+     "sc": 69,
+     "ex": 45,
+     "ld": 30,
+     "ov": 75,
+     "age": 22,
+     "salaire": 80000,
+     "ct": 2,
+     "backup": false,
+     "horsAlignement": true
+    },
+    {
      "nom": "Seamus Casey",
      "po": "D",
      "hd": "D",
@@ -9486,8 +9510,8 @@
    ]
   },
   "NASHVILLE": {
-   "fiche": "NASHVILLE 3-2-0",
-   "maj": "oct 27 2026",
+   "fiche": "NASHVILLE 4-2-0",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Nazem Kadri",
@@ -10092,8 +10116,8 @@
    ]
   },
   "NEWJERSEY": {
-   "fiche": "NEWJERSEY 1-4-0",
-   "maj": "oct 27 2026",
+   "fiche": "NEWJERSEY 1-6-0",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Morgan Frost",
@@ -10770,8 +10794,8 @@
    ]
   },
   "NYRANGERS": {
-   "fiche": "NYRANGERS 3-1-2",
-   "maj": "oct 27 2026",
+   "fiche": "NYRANGERS 3-2-2",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Calum Ritchie",
@@ -11328,8 +11352,8 @@
    ]
   },
   "OTTAWA": {
-   "fiche": "OTTAWA 1-4-0",
-   "maj": "oct 27 2026",
+   "fiche": "OTTAWA 2-4-1",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Ryan Poehling",
@@ -11982,8 +12006,8 @@
    ]
   },
   "PHILLY": {
-   "fiche": "PHILLY 3-2-0",
-   "maj": "oct 27 2026",
+   "fiche": "PHILLY 4-2-0",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Sebastian Aho",
@@ -12130,6 +12154,30 @@
      "horsAlignement": false
     },
     {
+     "nom": "Brandon Tanev",
+     "po": "AG",
+     "hd": "G",
+     "it": 76,
+     "sp": 77,
+     "st": 78,
+     "en": 71,
+     "du": 72,
+     "di": 79,
+     "sk": 74,
+     "pa": 67,
+     "pc": 68,
+     "df": 71,
+     "sc": 75,
+     "ex": 81,
+     "ld": 71,
+     "ov": 77,
+     "age": 34,
+     "salaire": 950000,
+     "ct": 1,
+     "backup": false,
+     "horsAlignement": false
+    },
+    {
      "nom": "Barclay Goodrow",
      "po": "AG",
      "hd": "G",
@@ -12244,30 +12292,6 @@
      "ld": 55,
      "ov": 77,
      "age": 30,
-     "salaire": 950000,
-     "ct": 1,
-     "backup": false,
-     "horsAlignement": false
-    },
-    {
-     "nom": "Brandon Tanev",
-     "po": "AD",
-     "hd": "G",
-     "it": 76,
-     "sp": 77,
-     "st": 78,
-     "en": 71,
-     "du": 72,
-     "di": 79,
-     "sk": 74,
-     "pa": 67,
-     "pc": 68,
-     "df": 71,
-     "sc": 75,
-     "ex": 81,
-     "ld": 71,
-     "ov": 77,
-     "age": 34,
      "salaire": 950000,
      "ct": 1,
      "backup": false,
@@ -12516,8 +12540,8 @@
    ]
   },
   "PITTSBURGH": {
-   "fiche": "PITTSBURGH 2-3-1",
-   "maj": "oct 27 2026",
+   "fiche": "PITTSBURGH 3-3-1",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Ryan Strome",
@@ -13146,8 +13170,8 @@
    ]
   },
   "SANJOSE": {
-   "fiche": "SANJOSE 1-3-1",
-   "maj": "oct 27 2026",
+   "fiche": "SANJOSE 1-3-2",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Jesperi Kotkaniemi",
@@ -13704,8 +13728,8 @@
    ]
   },
   "SEATTLE": {
-   "fiche": "SEATTLE 2-3-0",
-   "maj": "oct 27 2026",
+   "fiche": "SEATTLE 2-4-0",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "T.J. Tynan",
@@ -14286,8 +14310,8 @@
    ]
   },
   "ST.LOUIS": {
-   "fiche": "ST.LOUIS 2-3-0",
-   "maj": "oct 27 2026",
+   "fiche": "ST.LOUIS 2-4-0",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Jack Roslovic",
@@ -14892,8 +14916,8 @@
    ]
   },
   "TAMPABAY": {
-   "fiche": "TAMPABAY 4-1-0",
-   "maj": "oct 27 2026",
+   "fiche": "TAMPABAY 4-2-0",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Tyson Jost",
@@ -15498,8 +15522,8 @@
    ]
   },
   "TORONTO": {
-   "fiche": "TORONTO 1-3-1",
-   "maj": "oct 27 2026",
+   "fiche": "TORONTO 2-3-1",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Mathew Barzal",
@@ -16032,8 +16056,8 @@
    ]
   },
   "UTAH": {
-   "fiche": "UTAH 0-3-2",
-   "maj": "oct 27 2026",
+   "fiche": "UTAH 1-3-2",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Nick Suzuki",
@@ -16710,8 +16734,8 @@
    ]
   },
   "VANCOUVER": {
-   "fiche": "VANCOUVER 1-4-0",
-   "maj": "oct 27 2026",
+   "fiche": "VANCOUVER 2-4-0",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Joseph Veleno",
@@ -17268,8 +17292,8 @@
    ]
   },
   "VEGAS": {
-   "fiche": "VEGAS 2-3-0",
-   "maj": "oct 27 2026",
+   "fiche": "VEGAS 2-4-0",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Tye Kartye",
@@ -17898,8 +17922,8 @@
    ]
   },
   "WASHINGTON": {
-   "fiche": "WASHINGTON 2-1-2",
-   "maj": "oct 27 2026",
+   "fiche": "WASHINGTON 3-1-2",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Danton Heinen",
@@ -18432,8 +18456,8 @@
    ]
   },
   "WINNIPEG": {
-   "fiche": "WINNIPEG 3-0-2",
-   "maj": "oct 27 2026",
+   "fiche": "WINNIPEG 4-0-2",
+   "maj": "oct 29 2026",
    "joueurs": [
     {
      "nom": "Brayden Point",
