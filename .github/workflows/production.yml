@@ -4,10 +4,10 @@ name: Relève de la production USHL
 # et XtraStats, écrits dans data/production.json. L'onglet Progression lit ce
 # fichier à l'ouverture, sans relais public.
 #
-# Deux passages par jour, décalés d'un club à l'autre comme les alignements
-# pour ne pas solliciter ushl.ca d'un seul coup : en fin de soirée, puisque les
-# simulations tombent surtout en soirée, puis 5 minutes après le relevé des
-# alignements du matin. Aussi à la demande depuis l'onglet Actions (bouton
+# Deux passages par jour, décalés d'un club à l'autre pour ne pas solliciter
+# ushl.ca d'un seul coup : en fin de soirée, puisque les simulations tombent
+# surtout en soirée, puis le matin. Le dépôt ushl-releve les lance aussi après
+# chaque simulation, espacés de 30 s. Aussi à la demande depuis l'onglet Actions (bouton
 # « Run workflow »), et dès que ce fichier ou le script change.
 #
 # Comme pour les alignements, ushl.ca sert parfois une page de vérification
@@ -43,6 +43,13 @@ jobs:
     outputs:
       ok: ${{ steps.releve.outputs.ok }}
     steps:
+      # GitHub retarde souvent les crons de plusieurs heures et les 22 relevés
+      # programmés finissent par partir ensemble. Une attente aléatoire (0 à
+      # 5 min) les étale. Les relevés lancés par ushl-releve sont déjà espacés.
+      - name: Étaler les relevés programmés
+        if: ${{ github.event_name == 'schedule' }}
+        run: sleep $((RANDOM % 300))
+
       # la pointe actuelle de la branche plutôt que le commit déclencheur : un
       # relevé des alignements a pu pousser pendant l'attente dans le groupe
       - uses: actions/checkout@v5

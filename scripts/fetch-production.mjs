@@ -35,7 +35,24 @@ import { JSDOM } from 'jsdom';
 const RACINE = process.env.USHL_RACINE || null;
 const DELAI_MS = 20000;
 const ESSAIS = 3;
-const PAUSE_MS = 400;
+/* Ménagement de ushl.ca (26 novembre 2026, après une vague de pages anti-robot) :
+   pause aléatoire de 2 à 4 s entre deux sources, longue pause après une page
+   anti-robot. USHL_RAPIDE=1 supprime les pauses (tests hors ligne seulement). */
+const RAPIDE = process.env.USHL_RAPIDE === '1';
+const PAUSE_MIN_MS = RAPIDE ? 0 : 2000;
+const PAUSE_MAX_MS = RAPIDE ? 0 : 4000;
+const PAUSE_BLOCAGE_MS = RAPIDE ? 0 : 15000;
+
+/* Un navigateur ordinaire : l'ancien « usc-dashboard-bot » s'annonçait robot. */
+const ENTETES = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+  'Accept-Language': 'fr-CA,fr;q=0.9,en;q=0.8'
+};
+const ANTI_ROBOT = /request is being verified|One moment, please/i;
+
+/** Page de vérification anti-robot reçue à la place de la vraie page. */
+class PageBloquee extends Error {}
 const MIN_XTRA = 5;
 
 const args = process.argv.slice(2);
@@ -47,6 +64,7 @@ const SORTIE = lireArg('--sortie', 'data/production.json');
 const ROSTERS = lireArg('--rosters', 'data/rosters.json');
 
 const dodo = ms => new Promise(r => setTimeout(r, ms));
+const pause = () => dodo(PAUSE_MIN_MS + Math.random() * (PAUSE_MAX_MS - PAUSE_MIN_MS));
 const adresse = url => (RACINE ? url.replace(/^https:\/\/ushl\.ca/, RACINE) : url);
 
 /** Charge index.html dans jsdom et renvoie les fonctions d'analyse de l'interface. */
@@ -79,18 +97,19 @@ async function chercher(url) {
     try {
       const ctl = new AbortController();
       const t = setTimeout(() => ctl.abort(), DELAI_MS);
-      const rep = await fetch(url, {
-        signal: ctl.signal,
-        headers: { 'User-Agent': 'usc-dashboard-bot/1.0 (+github actions)' }
-      });
+      const rep = await fetch(url, { signal: ctl.signal, headers: ENTETES });
       clearTimeout(t);
       if (!rep.ok) throw new Error('HTTP ' + rep.status);
       const txt = await rep.text();
+      if (ANTI_ROBOT.test(txt)) {
+        throw new PageBloquee(`page anti-robot · HTTP ${rep.status}, ${txt.length} car. · « ${extraitDePage(txt)} »`);
+      }
       if (txt.length < 500) throw new Error(`réponse anormalement courte (HTTP ${rep.status}, ${txt.length} car.)`);
       return { texte: txt, statut: rep.status, longueur: txt.length };
     } catch (e) {
       derniere = e;
-      if (essai < ESSAIS) await dodo(PAUSE_MS * essai);
+      // Bloqué : on laisse au serveur le temps de se calmer avant de retenter.
+      if (essai < ESSAIS) await dodo(e instanceof PageBloquee ? PAUSE_BLOCAGE_MS * essai : 1000 * essai);
     }
   }
   throw derniere;
@@ -168,7 +187,7 @@ async function main() {
     }
     console.log(`  pointage   ✗ ${e.message}${precedent?.pointage ? ' · reprise du relevé précédent' : ''}`);
   }
-  await dodo(PAUSE_MS);
+  await pause();
 
   // 2) Fiche du club, sur la page TeamScoring.php
   try {
@@ -182,7 +201,7 @@ async function main() {
     charge.fiche = precedent?.fiche || rosters?.equipes?.[code]?.fiche || null;
     console.log(`  fiche      ✗ ${e.message}${charge.fiche ? ` · ${charge.fiche} conservée` : ''}`);
   }
-  await dodo(PAUSE_MS);
+  await pause();
 
   // 3) XtraStats
   try {
