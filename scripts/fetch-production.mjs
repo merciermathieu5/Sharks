@@ -49,7 +49,8 @@ const ENTETES = {
   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
   'Accept-Language': 'fr-CA,fr;q=0.9,en;q=0.8'
 };
-const ANTI_ROBOT = /request is being verified|One moment, please/i;
+/* La page anti-robot est traduite selon Accept-Language (constaté le 26 novembre 2026). */
+const ANTI_ROBOT = /being verified|One moment, please|en cours de v[ée]rification|Un instant, s.il vous pla[iî]t/i;
 
 /** Page de vérification anti-robot reçue à la place de la vraie page. */
 class PageBloquee extends Error {}
